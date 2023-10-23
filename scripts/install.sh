@@ -77,12 +77,12 @@ else
 fi
 
 cd /tmp
-sudo wget -q https://github.com/kubesimplify/ksctl-cli/releases/download/v${RELEASE_VERSION}/ksctl_${RELEASE_VERSION}_checksums.txt
-sudo wget https://github.com/kubesimplify/ksctl-cli/releases/download/v${RELEASE_VERSION}/ksctl_${RELEASE_VERSION}_${OS}_${ARCH}.tar.gz
-sudo wget -q https://github.com/kubesimplify/ksctl-cli/releases/download/v${RELEASE_VERSION}/ksctl_${RELEASE_VERSION}_${OS}_${ARCH}.tar.gz.cert
+sudo wget -q https://github.com/kubesimplify/ksctl-cli/releases/download/v${RELEASE_VERSION}/ksctl-cli_${RELEASE_VERSION}_checksums.txt
+sudo wget https://github.com/kubesimplify/ksctl-cli/releases/download/v${RELEASE_VERSION}/ksctl-cli_${RELEASE_VERSION}_${OS}_${ARCH}.tar.gz
+sudo wget -q https://github.com/kubesimplify/ksctl-cli/releases/download/v${RELEASE_VERSION}/ksctl-cli_${RELEASE_VERSION}_${OS}_${ARCH}.tar.gz.cert
 
-file=$(sha256sum ksctl_${RELEASE_VERSION}_${OS}_${ARCH}.tar.gz | awk '{print $1}')
-checksum=$(cat ksctl_${RELEASE_VERSION}_checksums.txt | grep ksctl_${RELEASE_VERSION}_${OS}_${ARCH}.tar.gz | awk '{print $1}')
+file=$(sha256sum ksctl-cli_${RELEASE_VERSION}_${OS}_${ARCH}.tar.gz | awk '{print $1}')
+checksum=$(cat ksctl-cli_${RELEASE_VERSION}_checksums.txt | grep ksctl-cli_${RELEASE_VERSION}_${OS}_${ARCH}.tar.gz | awk '{print $1}')
 
 if [[ $file != $checksum ]]; then
     echo -e "${Red}Checksum didn't matched!${NoColor}"
@@ -91,7 +91,7 @@ else
     echo -e "${Green}CheckSum are verified${NoColor}"
 fi
 
-sudo tar -xvf ksctl_${RELEASE_VERSION}_${OS}_${ARCH}.tar.gz
+sudo tar -xvf ksctl-cli_${RELEASE_VERSION}_${OS}_${ARCH}.tar.gz
 
 sudo mv -v ksctl /usr/local/bin/ksctl
 # Setup the configurations dir
