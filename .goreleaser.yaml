@@ -1,4 +1,4 @@
-project_name: ksctl
+project_name: ksctl-cli
 
 builds:
   - binary: ksctl
