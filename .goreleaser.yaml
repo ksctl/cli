@@ -2,7 +2,7 @@ project_name: ksctl
 
 builds:
   - binary: ksctl
-    main: ./cmd/cli
+    main: ./cli
     goos:
       - linux
       - darwin
