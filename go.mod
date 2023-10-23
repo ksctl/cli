@@ -1,6 +1,6 @@
 module github.com/kubesimplify/ksctl-cli
 
-go 1.21.0
+go 1.20
 
 require (
 	github.com/kubesimplify/ksctl v1.1.1-rc1
