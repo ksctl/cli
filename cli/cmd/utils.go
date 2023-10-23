@@ -176,9 +176,6 @@ func SetDefaults(provider consts.KsctlCloud, clusterType consts.KsctlClusterType
 		if len(k8sVer) == 0 {
 			k8sVer = "1.27.1"
 		}
-		if len(distro) == 0 {
-			distro = string(consts.K8S_K3S)
-		}
 
 	case string(consts.CLOUD_AZURE) + string(consts.CLUSTER_TYPE_MANG):
 		if len(nodeSizeMP) == 0 {
@@ -193,9 +190,7 @@ func SetDefaults(provider consts.KsctlCloud, clusterType consts.KsctlClusterType
 		if len(k8sVer) == 0 {
 			k8sVer = "1.27"
 		}
-		if len(distro) == 0 {
-			distro = string(consts.K8S_K3S)
-		}
+
 
 	case string(consts.CLOUD_CIVO) + string(consts.CLUSTER_TYPE_MANG):
 		if len(nodeSizeMP) == 0 {
@@ -209,9 +204,6 @@ func SetDefaults(provider consts.KsctlCloud, clusterType consts.KsctlClusterType
 		}
 		if len(k8sVer) == 0 {
 			k8sVer = "1.27.1"
-		}
-		if len(distro) == 0 {
-			distro = string(consts.K8S_K3S)
 		}
 
 	case string(consts.CLOUD_AZURE) + string(consts.CLUSTER_TYPE_HA):
