@@ -26,7 +26,7 @@ fi
 # get the release version
 echo -e "${Blue}Available Releases${NoColor}"
 
-response=$(curl --silent "https://api.github.com/repos/kubesimplify/ksctl/releases")
+response=$(curl --silent "https://api.github.com/repos/kubesimplify/ksctl-cli/releases")
 
 # Loop through the releases and extract the tag names
 for release in $(echo "${response}" | jq -r '.[].tag_name'); do
@@ -77,9 +77,9 @@ else
 fi
 
 cd /tmp
-sudo wget -q https://github.com/kubesimplify/ksctl/releases/download/v${RELEASE_VERSION}/ksctl_${RELEASE_VERSION}_checksums.txt
-sudo wget https://github.com/kubesimplify/ksctl/releases/download/v${RELEASE_VERSION}/ksctl_${RELEASE_VERSION}_${OS}_${ARCH}.tar.gz
-sudo wget -q https://github.com/kubesimplify/ksctl/releases/download/v${RELEASE_VERSION}/ksctl_${RELEASE_VERSION}_${OS}_${ARCH}.tar.gz.cert
+sudo wget -q https://github.com/kubesimplify/ksctl-cli/releases/download/v${RELEASE_VERSION}/ksctl_${RELEASE_VERSION}_checksums.txt
+sudo wget https://github.com/kubesimplify/ksctl-cli/releases/download/v${RELEASE_VERSION}/ksctl_${RELEASE_VERSION}_${OS}_${ARCH}.tar.gz
+sudo wget -q https://github.com/kubesimplify/ksctl-cli/releases/download/v${RELEASE_VERSION}/ksctl_${RELEASE_VERSION}_${OS}_${ARCH}.tar.gz.cert
 
 file=$(sha256sum ksctl_${RELEASE_VERSION}_${OS}_${ARCH}.tar.gz | awk '{print $1}')
 checksum=$(cat ksctl_${RELEASE_VERSION}_checksums.txt | grep ksctl_${RELEASE_VERSION}_${OS}_${ARCH}.tar.gz | awk '{print $1}')
