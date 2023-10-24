@@ -169,7 +169,7 @@ func createApproval(showMsg bool) error {
 
 func SetDefaults(provider consts.KsctlCloud, clusterType consts.KsctlClusterType) {
 	switch string(provider) + string(clusterType) {
-	case string(consts.CLOUD_LOCAL) + string(consts.CLUSTER_TYPE_MANG):
+	case string(consts.CloudLocal) + string(consts.ClusterTypeMang):
 		if noMP == -1 {
 			noMP = 2
 		}
@@ -177,7 +177,7 @@ func SetDefaults(provider consts.KsctlCloud, clusterType consts.KsctlClusterType
 			k8sVer = "1.27.1"
 		}
 
-	case string(consts.CLOUD_AZURE) + string(consts.CLUSTER_TYPE_MANG):
+	case string(consts.CloudAzure) + string(consts.ClusterTypeMang):
 		if len(nodeSizeMP) == 0 {
 			nodeSizeMP = "Standard_DS2_v2"
 		}
@@ -191,8 +191,7 @@ func SetDefaults(provider consts.KsctlCloud, clusterType consts.KsctlClusterType
 			k8sVer = "1.27"
 		}
 
-
-	case string(consts.CLOUD_CIVO) + string(consts.CLUSTER_TYPE_MANG):
+	case string(consts.CloudCivo) + string(consts.ClusterTypeMang):
 		if len(nodeSizeMP) == 0 {
 			nodeSizeMP = "g4s.kube.small"
 		}
@@ -206,7 +205,7 @@ func SetDefaults(provider consts.KsctlCloud, clusterType consts.KsctlClusterType
 			k8sVer = "1.27.1"
 		}
 
-	case string(consts.CLOUD_AZURE) + string(consts.CLUSTER_TYPE_HA):
+	case string(consts.CloudAzure) + string(consts.ClusterTypeHa):
 		if len(nodeSizeCP) == 0 {
 			nodeSizeCP = "Standard_F2s"
 		}
@@ -235,10 +234,10 @@ func SetDefaults(provider consts.KsctlCloud, clusterType consts.KsctlClusterType
 			k8sVer = "1.27.1"
 		}
 		if len(distro) == 0 {
-			distro = string(consts.K8S_K3S)
+			distro = string(consts.K8sK3s)
 		}
 
-	case string(consts.CLOUD_CIVO) + string(consts.CLUSTER_TYPE_HA):
+	case string(consts.CloudCivo) + string(consts.ClusterTypeHa):
 		if len(nodeSizeCP) == 0 {
 			nodeSizeCP = "g3.small"
 		}
@@ -267,7 +266,7 @@ func SetDefaults(provider consts.KsctlCloud, clusterType consts.KsctlClusterType
 			k8sVer = "1.27.1"
 		}
 		if len(distro) == 0 {
-			distro = string(consts.K8S_K3S)
+			distro = string(consts.K8sK3s)
 		}
 	}
 }

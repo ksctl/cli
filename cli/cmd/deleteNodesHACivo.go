@@ -23,10 +23,10 @@ ksctl delete-cluster ha-civo delete-nodes <arguments to civo cloud provider>
 			panic(err)
 		}
 		SetRequiredFeatureFlags(cmd)
-		cli.Client.Metadata.Provider = consts.CLOUD_CIVO
+		cli.Client.Metadata.Provider = consts.CloudCivo
 		cli.Client.Metadata.IsHA = true
 
-		SetDefaults(consts.CLOUD_CIVO, consts.CLUSTER_TYPE_HA)
+		SetDefaults(consts.CloudCivo, consts.ClusterTypeHa)
 		cli.Client.Metadata.NoWP = noWP
 		cli.Client.Metadata.ClusterName = clusterName
 		cli.Client.Metadata.Region = region
