@@ -1,0 +1,44 @@
+name: "Test Functionality of the Mock cli"
+on:
+  pull_request:
+    paths:
+      - 'cli/**'
+      - 'scripts/**'
+      - 'go.mod'
+      - 'go.sum'
+    types: [ labeled ]
+    branches: [ main ]
+  push:
+    paths:
+      - 'scripts/**'
+      - 'cli/**'
+      - 'go.mod'
+      - 'go.sum'
+    branches: [ main ]
+jobs:
+  civo:
+#    if: ${{ github.event.label.name == 'pr/lgtm' }}
+    runs-on: ubuntu-latest
+    env:
+      KSCTL_FAKE_FLAG_ENABLED: "1"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: 1.21.0
+
+      - name: build ksctl
+        run: |
+          make install_linux
+          ksctl -h
+
+      - name: civo tests
+        run: |
+          ksctl create civo -n demo -r LON1 -v --approve
+          ksctl switch -p civo -n demo -r LON1
+          ksctl create ha-civo -n demo -r FRA1 -v --approve
+          ksctl switch -p ha-civo -n demo -r FRA1
+          ksctl get -p civo

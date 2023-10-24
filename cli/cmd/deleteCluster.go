@@ -33,8 +33,8 @@ ksctl create-cluster azure <arguments to civo cloud provider>
 		}
 
 		SetRequiredFeatureFlags(cmd)
-		cli.Client.Metadata.Provider = consts.CLOUD_AZURE
-		SetDefaults(consts.CLOUD_AZURE, consts.CLUSTER_TYPE_MANG)
+		cli.Client.Metadata.Provider = consts.CloudAzure
+		SetDefaults(consts.CloudAzure, consts.ClusterTypeMang)
 
 		deleteManaged(cmd.Flags().Lookup("approve").Changed)
 	},
@@ -54,8 +54,8 @@ ksctl delete-cluster civo
 		}
 
 		SetRequiredFeatureFlags(cmd)
-		cli.Client.Metadata.Provider = consts.CLOUD_CIVO
-		SetDefaults(consts.CLOUD_CIVO, consts.CLUSTER_TYPE_MANG)
+		cli.Client.Metadata.Provider = consts.CloudCivo
+		SetDefaults(consts.CloudCivo, consts.ClusterTypeMang)
 
 		deleteManaged(cmd.Flags().Lookup("approve").Changed)
 
@@ -76,8 +76,8 @@ var deleteClusterHAAzure = &cobra.Command{
 		}
 
 		SetRequiredFeatureFlags(cmd)
-		cli.Client.Metadata.Provider = consts.CLOUD_AZURE
-		SetDefaults(consts.CLOUD_AZURE, consts.CLUSTER_TYPE_HA)
+		cli.Client.Metadata.Provider = consts.CloudAzure
+		SetDefaults(consts.CloudAzure, consts.ClusterTypeHa)
 
 		deleteHA(cmd.Flags().Lookup("approve").Changed)
 	},
@@ -97,8 +97,8 @@ ksctl delete-cluster ha-civo <arguments to civo cloud provider>
 		}
 
 		SetRequiredFeatureFlags(cmd)
-		cli.Client.Metadata.Provider = consts.CLOUD_CIVO
-		SetDefaults(consts.CLOUD_CIVO, consts.CLUSTER_TYPE_HA)
+		cli.Client.Metadata.Provider = consts.CloudCivo
+		SetDefaults(consts.CloudCivo, consts.ClusterTypeHa)
 
 		deleteHA(cmd.Flags().Lookup("approve").Changed)
 	},
@@ -118,8 +118,8 @@ ksctl delete-cluster local <arguments to local/Docker provider>
 		}
 
 		SetRequiredFeatureFlags(cmd)
-		cli.Client.Metadata.Provider = consts.CLOUD_LOCAL
-		SetDefaults(consts.CLOUD_LOCAL, consts.CLUSTER_TYPE_MANG)
+		cli.Client.Metadata.Provider = consts.CloudLocal
+		SetDefaults(consts.CloudLocal, consts.ClusterTypeMang)
 
 		deleteManaged(cmd.Flags().Lookup("approve").Changed)
 	},

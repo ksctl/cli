@@ -24,8 +24,8 @@ ksctl create-cluster ha-civo add-nodes <arguments to civo cloud provider>
 			panic(err)
 		}
 		SetRequiredFeatureFlags(cmd)
-		cli.Client.Metadata.Provider = consts.CLOUD_CIVO
-		SetDefaults(consts.CLOUD_CIVO, consts.CLUSTER_TYPE_HA)
+		cli.Client.Metadata.Provider = consts.CloudCivo
+		SetDefaults(consts.CloudCivo, consts.ClusterTypeHa)
 		cli.Client.Metadata.NoWP = noWP
 		cli.Client.Metadata.WorkerPlaneNodeType = nodeSizeWP
 		cli.Client.Metadata.ClusterName = clusterName

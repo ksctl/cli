@@ -26,22 +26,22 @@ ksctl switch-context -p <civo,local,civo-ha,azure-ha,azure>  -n <clustername> -r
 		cli.Client.Metadata.Region = region
 
 		switch provider {
-		case string(consts.CLOUD_LOCAL):
-			cli.Client.Metadata.Provider = consts.CLOUD_LOCAL
+		case string(consts.CloudLocal):
+			cli.Client.Metadata.Provider = consts.CloudLocal
 
-		case string(consts.CLUSTER_TYPE_HA) + "-" + string(consts.CLOUD_CIVO):
-			cli.Client.Metadata.Provider = consts.CLOUD_CIVO
+		case string(consts.ClusterTypeHa) + "-" + string(consts.CloudCivo):
+			cli.Client.Metadata.Provider = consts.CloudCivo
 			cli.Client.Metadata.IsHA = true
 
-		case string(consts.CLOUD_CIVO):
-			cli.Client.Metadata.Provider = consts.CLOUD_CIVO
+		case string(consts.CloudCivo):
+			cli.Client.Metadata.Provider = consts.CloudCivo
 
-		case string(consts.CLUSTER_TYPE_HA) + "-" + string(consts.CLOUD_AZURE):
-			cli.Client.Metadata.Provider = consts.CLOUD_AZURE
+		case string(consts.ClusterTypeHa) + "-" + string(consts.CloudAzure):
+			cli.Client.Metadata.Provider = consts.CloudAzure
 			cli.Client.Metadata.IsHA = true
 
-		case string(consts.CLOUD_AZURE):
-			cli.Client.Metadata.Provider = consts.CLOUD_AZURE
+		case string(consts.CloudAzure):
+			cli.Client.Metadata.Provider = consts.CloudAzure
 		}
 
 		stat, err := controller.SwitchCluster(&cli.Client)
