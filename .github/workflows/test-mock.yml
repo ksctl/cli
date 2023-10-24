@@ -17,7 +17,7 @@ on:
       - 'go.sum'
     branches: [ main ]
 jobs:
-  binary:
+  ksctl-cli-linux:
     if: ${{ github.event.label.name == 'pr/lgtm' || (github.event_name == 'push' && github.ref == 'refs/heads/main') }}
     runs-on: ubuntu-latest
     env:
@@ -68,6 +68,17 @@ jobs:
         run: |
           ksctl switch -p azure -n demo -r fake
           ksctl switch -p ha-azure -n ha-demo -r fake
+
+
+      - name: civo scale up and down
+        run: |
+          ksctl delete ha-civo delete-nodes -n ha-demo --noWP 0 -r LON1 --approve -v
+          ksctl create ha-civo add-nodes -n ha-demo --noWP 1 --nodeSizeWP "fake.small" -r LON1 -v --approve
+
+      - name: azure scale up and down
+        run: |
+          ksctl delete ha-azure delete-nodes -n ha-demo --noWP 0 -r fake --approve -v
+          ksctl create ha-azure add-nodes -n ha-demo --noWP 1 --nodeSizeWP "fake" -r fake -v --approve
 
       - name: civo delete
         run: |
