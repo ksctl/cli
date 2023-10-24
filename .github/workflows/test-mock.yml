@@ -18,7 +18,7 @@ on:
     branches: [ main ]
 jobs:
   binary:
-    if: ${{ github.event.label.name == 'pr/lgtm' && github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+    if: ${{ github.event.label.name == 'pr/lgtm' || (github.event_name == 'push' && github.ref == 'refs/heads/main') }}
     runs-on: ubuntu-latest
     env:
       KSCTL_FAKE_FLAG_ENABLED: "1"
