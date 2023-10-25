@@ -18,9 +18,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-go@v3
+      - name: Set up Go
+        uses: actions/setup-go@v4
         with:
-          go-version: '1.20' # The Go version to download (if necessary) and use.
+          go-version: 1.21.0
       - run: go version
       - name: Build and install the latest version
         run: |
@@ -31,9 +32,10 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-go@v3
+      - name: Set up Go
+        uses: actions/setup-go@v4
         with:
-          go-version: '1.20' # The Go version to download (if necessary) and use.
+          go-version: 1.21.0
       - run: go version
       # TODO: add support to check for the M1 chip as well
       - name: Build and install the latest version on intel chip
@@ -45,9 +47,10 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-go@v3
+      - name: Set up Go
+        uses: actions/setup-go@v4
         with:
-          go-version: '1.20' # The Go version to download (if necessary) and use.
+          go-version: 1.21.0
       - run: go version
       - name: Build and install the latest version
         run: |
