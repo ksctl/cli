@@ -3,7 +3,7 @@ module github.com/kubesimplify/ksctl-cli
 go 1.21.0
 
 require (
-	github.com/kubesimplify/ksctl v1.1.1-rc2
+	github.com/kubesimplify/ksctl v1.1.1
 	github.com/spf13/cobra v1.7.0
 )
 
