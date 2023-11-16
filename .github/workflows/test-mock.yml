@@ -2,6 +2,7 @@ name: "Test Functionality of the Mock cli"
 on:
   pull_request:
     paths:
+      - '.github/workflows/test-mock.yml'
       - 'cli/**'
       - 'scripts/**'
       - 'go.mod'
