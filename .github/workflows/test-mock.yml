@@ -49,7 +49,7 @@ jobs:
       - name: build ksctl macos
         if: ${{ matrix.os == 'macos-latest' }}
         run: |
-          make install_macos
+          make install_macos_intel
           ksctl version
 
       - name: civo create
