@@ -4,7 +4,7 @@ go 1.21.0
 
 require (
 	github.com/kubesimplify/ksctl v1.1.2
-	github.com/spf13/cobra v1.7.0
+	github.com/spf13/cobra v1.8.0
 )
 
 require (
