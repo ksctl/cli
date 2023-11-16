@@ -2,6 +2,7 @@ name: "Test Functionality of the Mock cli"
 on:
   pull_request:
     paths:
+      - '.github/workflows/test-mock.yml'
       - 'cli/**'
       - 'scripts/**'
       - 'go.mod'
@@ -17,9 +18,9 @@ on:
       - 'go.sum'
     branches: [ main ]
 jobs:
-  ksctl-cli-linux:
+  ksctl-cli-windows:
     if: ${{ github.event.label.name == 'pr/lgtm' || (github.event_name == 'push' && github.ref == 'refs/heads/main') }}
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     env:
       KSCTL_FAKE_FLAG_ENABLED: "1"
     steps:
@@ -31,9 +32,131 @@ jobs:
         with:
           go-version: 1.21.0
 
+      - name: Set up Docker
+        uses: crazy-max/ghaction-setup-docker@v2
+
       - name: build ksctl
         run: |
+          cd .\scripts
+          .\builder.ps1
+          cd C:\Users\runneradmin\AppData\Local\ksctl
+          .\ksctl.exe version
+
+      - name: civo create
+        working-directory: 'C:\Users\runneradmin\AppData\Local\ksctl'
+        run: |
+          .\ksctl.exe create civo -n demo -r LON1 --nodeSizeMP "g4s.kube.small" --verbose -1 --approve
+          .\ksctl.exe create ha-civo -n ha-demo --nodeSizeDS "fake.small" --nodeSizeLB "fake.small" --nodeSizeCP "fake.small" --nodeSizeWP "fake.small" -r LON1 --verbose -1 --approve
+
+      - name: azure create
+        working-directory: 'C:\Users\runneradmin\AppData\Local\ksctl'
+        run: |
+          .\ksctl.exe create azure -n demo -r fake --nodeSizeMP "fake" --verbose -1 --approve
+          .\ksctl.exe create ha-azure -n ha-demo --nodeSizeDS "fake" --nodeSizeLB "fake" --nodeSizeCP "fake" --nodeSizeWP "fake" -r fake --verbose -1 --approve
+
+      - name: local create
+        working-directory: 'C:\Users\runneradmin\AppData\Local\ksctl'
+        run: |
+          .\ksctl.exe create local -n demolocal --verbose -1 --approve
+
+      - name: civo get
+        working-directory: 'C:\Users\runneradmin\AppData\Local\ksctl'
+        run: |
+          .\ksctl.exe get -p civo
+
+      - name: azure get
+        working-directory: 'C:\Users\runneradmin\AppData\Local\ksctl'
+        run: |
+          .\ksctl.exe get -p azure
+
+      - name: get all
+        working-directory: 'C:\Users\runneradmin\AppData\Local\ksctl'
+        run: |
+          .\ksctl.exe get
+
+      - name: civo switch
+        working-directory: 'C:\Users\runneradmin\AppData\Local\ksctl'
+        run: |
+          .\ksctl.exe switch -p civo -n demo -r LON1
+          .\ksctl.exe switch -p ha-civo -n ha-demo -r LON1
+          
+      - name: azure switch
+        working-directory: 'C:\Users\runneradmin\AppData\Local\ksctl'
+        run: |
+          .\ksctl.exe switch -p azure -n demo -r fake
+          .\ksctl.exe switch -p ha-azure -n ha-demo -r fake
+
+
+      - name: civo scale up and down
+        working-directory: 'C:\Users\runneradmin\AppData\Local\ksctl'
+        run: |
+          .\ksctl.exe delete ha-civo delete-nodes -n ha-demo --noWP 0 -r LON1 --approve -v -1
+          .\ksctl.exe create ha-civo add-nodes -n ha-demo --noWP 1 --nodeSizeWP "fake.small" -r LON1 -v -1 --approve
+
+      - name: azure scale up and down
+        working-directory: 'C:\Users\runneradmin\AppData\Local\ksctl'
+        run: |
+          .\ksctl.exe delete ha-azure delete-nodes -n ha-demo --noWP 0 -r fake --approve -v -1
+          .\ksctl.exe create ha-azure add-nodes -n ha-demo --noWP 1 --nodeSizeWP "fake" -r fake -v -1 --approve
+
+      - name: civo delete
+        working-directory: 'C:\Users\runneradmin\AppData\Local\ksctl'
+        run: |
+          .\ksctl.exe delete civo -n demo -r LON1 -v -1 --approve
+          .\ksctl.exe delete ha-civo -n ha-demo -r LON1 -v -1 --approve
+
+
+      - name: azure delete
+        working-directory: 'C:\Users\runneradmin\AppData\Local\ksctl'
+        run: |
+          .\ksctl.exe delete azure -n demo -r fake -v -1 --approve
+          .\ksctl.exe delete ha-azure -n ha-demo -r fake -v -1 --approve
+
+      - name: local delete
+        working-directory: 'C:\Users\runneradmin\AppData\Local\ksctl'
+        run: |
+          .\ksctl.exe delete local -n demolocal -v -1 --approve
+
+      - name: uninstall
+        run: |
+          cd .\scripts
+          .\uninstall.ps1
+          cd C:\Users\runneradmin\AppData\Local\ksctl
+          .\ksctl.exe version
+
+
+  ksctl-cli-unix:
+    strategy:
+      matrix:
+        os: [macos-latest, ubuntu-latest]
+
+    if: ${{ github.event.label.name == 'pr/lgtm' || (github.event_name == 'push' && github.ref == 'refs/heads/main') }}
+    runs-on: ${{ matrix.os }}
+    env:
+      KSCTL_FAKE_FLAG_ENABLED: "1"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: 1.21.0
+
+      - name: Set up Docker
+        uses: crazy-max/ghaction-setup-docker@v2
+
+      - name: build ksctl linux
+        if: ${{ matrix.os == 'ubuntu-latest' }}
+        run: |
           make install_linux
+          ksctl version
+
+
+      - name: build ksctl macos
+        if: ${{ matrix.os == 'macos-latest' }}
+        run: |
+          make install_macos_intel
           ksctl version
 
       - name: civo create
