@@ -1,5 +1,6 @@
 package cmd
 
+// authors Dipankar <dipankar@dipankar-das.com>
 import (
 	"encoding/json"
 	"fmt"
@@ -20,17 +21,18 @@ func createManaged(approval bool) {
 
 	cli.Client.Metadata.CNIPlugin = cni
 	cli.Client.Metadata.Applications = apps
+	cli.Client.Metadata.LogWritter = os.Stdout
 	if err := createApproval(approval); err != nil {
-		cli.Client.Storage.Logger().Err(err.Error())
+		log.Error(err.Error())
 		os.Exit(1)
 	}
 
-	stat, err := controller.CreateManagedCluster(&cli.Client)
+	err := controller.CreateManagedCluster(&cli.Client)
 	if err != nil {
-		cli.Client.Storage.Logger().Err(err.Error())
+		log.Error("Failed to create managed cluster", "Reason", err)
 		os.Exit(1)
 	}
-	cli.Client.Storage.Logger().Success(stat)
+	log.Success("Created the managed cluster successfully")
 }
 
 func createHA(approval bool) {
@@ -53,16 +55,17 @@ func createHA(approval bool) {
 	cli.Client.Metadata.CNIPlugin = cni
 	cli.Client.Metadata.Applications = apps
 
+	cli.Client.Metadata.LogWritter = os.Stdout
 	if err := createApproval(approval); err != nil {
-		cli.Client.Storage.Logger().Err(err.Error())
+		log.Error(err.Error())
 		os.Exit(1)
 	}
-	stat, err := controller.CreateHACluster(&cli.Client)
+	err := controller.CreateHACluster(&cli.Client)
 	if err != nil {
-		cli.Client.Storage.Logger().Err(err.Error())
+		log.Error("Failed to create self-managed HA cluster", "Reason", err)
 		os.Exit(1)
 	}
-	cli.Client.Storage.Logger().Success(stat)
+	log.Success("Created the self-managed HA cluster successfully")
 }
 
 func deleteManaged(approval bool) {
@@ -71,16 +74,17 @@ func deleteManaged(approval bool) {
 	cli.Client.Metadata.K8sDistro = consts.KsctlKubernetes(distro)
 	cli.Client.Metadata.Region = region
 
+	cli.Client.Metadata.LogWritter = os.Stdout
 	if err := deleteApproval(approval); err != nil {
-		cli.Client.Storage.Logger().Err(err.Error())
+		log.Error(err.Error())
 		os.Exit(1)
 	}
-	stat, err := controller.DeleteManagedCluster(&cli.Client)
+	err := controller.DeleteManagedCluster(&cli.Client)
 	if err != nil {
-		cli.Client.Storage.Logger().Err(err.Error())
+		log.Error("Failed to delete managed cluster", "Reason", err)
 		os.Exit(1)
 	}
-	cli.Client.Storage.Logger().Success(stat)
+	log.Success("Deleted the managed cluster successfully")
 }
 
 func deleteHA(approval bool) {
@@ -91,16 +95,17 @@ func deleteHA(approval bool) {
 	cli.Client.Metadata.K8sDistro = consts.KsctlKubernetes(distro)
 	cli.Client.Metadata.Region = region
 
+	cli.Client.Metadata.LogWritter = os.Stdout
 	if err := deleteApproval(approval); err != nil {
-		cli.Client.Storage.Logger().Err(err.Error())
+		log.Error(err.Error())
 		os.Exit(1)
 	}
-	stat, err := controller.DeleteHACluster(&cli.Client)
+	err := controller.DeleteHACluster(&cli.Client)
 	if err != nil {
-		cli.Client.Storage.Logger().Err(err.Error())
+		log.Error("Failed to delete self-managed HA cluster", "Reason", err)
 		os.Exit(1)
 	}
-	cli.Client.Storage.Logger().Success(stat)
+	log.Success("Deleted the self-managed HA cluster successfully")
 }
 
 func getRequestPayload() ([]byte, error) {
@@ -117,12 +122,12 @@ func deleteApproval(showMsg bool) error {
 	if err != nil {
 		return err
 	}
-	fmt.Println(string(a))
+	log.Print(string(a))
 
 	if !showMsg {
-		fmt.Println(fmt.Sprintf("🚨 THIS IS A DESTRUCTIVE STEP MAKE SURE IF YOU WANT TO DELETE THE CLUSTER"))
+		log.Box("Warning 🚨", "THIS IS A DESTRUCTIVE STEP MAKE SURE IF YOU WANT TO DELETE THE CLUSTER")
 
-		fmt.Println("Enter your choice to continue..[y/N]")
+		log.Print("Enter your choice to continue..[y/N]")
 		choice := "n"
 		unsafe := false
 		fmt.Scanf("%s", &choice)
@@ -133,7 +138,7 @@ func deleteApproval(showMsg bool) error {
 		}
 
 		if !unsafe {
-			return fmt.Errorf("[ksctl] approval cancelled")
+			return log.NewError("approval cancelled")
 		}
 	}
 	return nil
@@ -145,12 +150,12 @@ func createApproval(showMsg bool) error {
 	if err != nil {
 		return err
 	}
-	fmt.Println(string(a))
+	log.Print(string(a))
 
 	if !showMsg {
-		fmt.Println(fmt.Sprintf("🚨 THIS IS A CREATION STEP MAKE SURE IF YOU WANT TO CREATE THE CLUSTER"))
+		log.Box("Warning 🚨", "THIS IS A CREATION STEP MAKE SURE IF YOU WANT TO CREATE THE CLUSTER")
 
-		fmt.Println("Enter your choice to continue..[y/N]")
+		log.Print("Enter your choice to continue..[y/N]")
 		choice := "n"
 		unsafe := false
 		fmt.Scanf("%s", &choice)
@@ -161,7 +166,7 @@ func createApproval(showMsg bool) error {
 		}
 
 		if !unsafe {
-			return fmt.Errorf("[ksctl] approval cancelled")
+			return log.NewError("approval cancelled")
 		}
 	}
 	return nil

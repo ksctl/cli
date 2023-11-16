@@ -1,6 +1,6 @@
 /*
 Kubesimplify
-@maintainer: 	Dipankar Das <dipankardas0115@gmail.com>
+authors			Dipankar <dipankar@dipankar-das.com>
 				Anurag Kumar <contact.anurag7@gmail.com>
 				Avinesh Tripathi <avineshtripathi1@gmail.com>
 */
@@ -8,11 +8,11 @@ Kubesimplify
 package cmd
 
 import (
-	"fmt"
 	"os"
 	"time"
 
 	controlPkg "github.com/kubesimplify/ksctl/pkg/controllers"
+	"github.com/kubesimplify/ksctl/pkg/logger"
 	"github.com/kubesimplify/ksctl/pkg/resources"
 	"github.com/kubesimplify/ksctl/pkg/resources/controllers"
 	"github.com/kubesimplify/ksctl/pkg/utils/consts"
@@ -41,9 +41,17 @@ var (
 	cloud  map[int]string
 )
 
+type CobraCmd struct {
+	ClusterName string
+	Region      string
+	Client      resources.KsctlClient
+	Version     string
+}
+
 var (
-	cli        *resources.CobraCmd
+	cli        *CobraCmd
 	controller controllers.Controller
+	log        resources.LoggerFactory
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -61,8 +69,10 @@ from local clusters to cloud provider specific clusters.`,
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
 
-	cli = &resources.CobraCmd{}
+	cli = new(CobraCmd)
 	controller = controlPkg.GenKsctlController()
+	log = logger.NewDefaultLogger(0, os.Stdout)
+	log.SetPackageName("cli")
 
 	cloud = map[int]string{
 		1: string(consts.CloudAws),
@@ -74,12 +84,10 @@ func Execute() {
 
 	timer := time.Now()
 	err := rootCmd.Execute()
-	if cli.Client.Storage == nil {
-		defer fmt.Printf("⏰  %v\n", time.Since(timer))
-	} else {
-		defer cli.Client.Storage.Logger().Print(fmt.Sprintf("⏰  %v\n", time.Since(timer)))
-	}
+	defer log.Print("Time Took", "⏰", time.Since(timer).String())
+
 	if err != nil {
+		log.Error("Initialization of cli failed", "Reason", err)
 		os.Exit(1)
 	}
 }

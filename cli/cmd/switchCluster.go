@@ -1,5 +1,7 @@
 package cmd
 
+// authors Dipankar <dipankar@dipankar-das.com>
+
 import (
 	"os"
 
@@ -17,13 +19,15 @@ var switchCluster = &cobra.Command{
 ksctl switch-context -p <civo,local,civo-ha,azure-ha,azure>  -n <clustername> -r <region> <arguments to civo cloud provider>
 `,
 	Run: func(cmd *cobra.Command, args []string) {
-		isSet := cmd.Flags().Lookup("verbose").Changed
-		if _, err := control_pkg.InitializeStorageFactory(&cli.Client, isSet); err != nil {
-			panic(err)
+		verbosity, _ := cmd.Flags().GetInt("verbose")
+		if err := control_pkg.InitializeStorageFactory(&cli.Client); err != nil {
+			log.Error("Inialize Storage Driver", "Reason", err)
 		}
 		SetRequiredFeatureFlags(cmd)
 		cli.Client.Metadata.ClusterName = clusterName
 		cli.Client.Metadata.Region = region
+		cli.Client.Metadata.LogVerbosity = verbosity
+		cli.Client.Metadata.LogWritter = os.Stdout
 
 		switch provider {
 		case string(consts.CloudLocal):
@@ -44,12 +48,12 @@ ksctl switch-context -p <civo,local,civo-ha,azure-ha,azure>  -n <clustername> -r
 			cli.Client.Metadata.Provider = consts.CloudAzure
 		}
 
-		stat, err := controller.SwitchCluster(&cli.Client)
+		err := controller.SwitchCluster(&cli.Client)
 		if err != nil {
-			cli.Client.Storage.Logger().Err(err.Error())
+			log.Error("Switch cluster failed", "Reason", err)
 			os.Exit(1)
 		}
-		cli.Client.Storage.Logger().Success(stat)
+		log.Success("Switch cluster Successful")
 	},
 }
 

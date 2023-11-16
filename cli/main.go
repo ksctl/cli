@@ -1,6 +1,6 @@
 package main
 
-// maintainer Dipankar Das <dipankardas0115@gmail.com>
+// authors Dipankar Das <dipankardas0115@gmail.com>
 
 import "github.com/kubesimplify/ksctl-cli/cli/cmd"
 

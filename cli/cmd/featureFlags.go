@@ -1,8 +1,7 @@
 package cmd
 
+// authors Dipankar <dipankar@dipankar-das.com>
 import (
-	"errors"
-	"fmt"
 	"os"
 	"strings"
 
@@ -23,6 +22,7 @@ func featureFlag(f *cobra.Command) {
 func SetRequiredFeatureFlags(cmd *cobra.Command) {
 	rawFeatures, err := cmd.Flags().GetString("feature-flags")
 	if err != nil {
+		log.Error(err.Error())
 		return
 	}
 	features := strings.Split(rawFeatures, ",")
@@ -32,22 +32,13 @@ func SetRequiredFeatureFlags(cmd *cobra.Command) {
 		switch consts.KsctlSpecialFlags(feature) {
 		case ksctl_feature_auto_scale:
 			if err := os.Setenv(string(consts.KsctlFeatureFlagHaAutoscale), "true"); err != nil {
-				if cli.Client.Storage != nil {
-					cli.Client.Storage.Logger().Err("Unable to set the ha autoscale feature")
-				} else {
-					fmt.Println(errors.New("Unable to set the ha autoscale feature"))
-				}
+				log.Error("Unable to set the ha autoscale feature")
 			}
 
 		case ksctl_feature_applications:
 			if err := os.Setenv(string(consts.KsctlFeatureFlagApplications), "true"); err != nil {
-				if cli.Client.Storage != nil {
-					cli.Client.Storage.Logger().Err("Unable to set applications feature")
-				} else {
-					fmt.Println(errors.New("Unable to set the applications feature"))
-				}
+				log.Error("Unable to set applications feature")
 			}
-
 		}
 	}
 }
