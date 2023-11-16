@@ -114,11 +114,6 @@ jobs:
         run: |
           .\ksctl.exe delete local -n demolocal -v -1 --approve
 
-      - name: uninstall
-        run: |
-          cd .\scripts
-          .\uninstall.ps1
-
   ksctl-cli-unix:
     strategy:
       matrix:
@@ -207,8 +202,3 @@ jobs:
       - name: local delete
         run: |
           ksctl delete local -n demolocal -v -1 --approve
-
-      - name: uninstall
-        run: |
-          make uninstall
-
