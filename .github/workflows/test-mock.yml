@@ -47,7 +47,7 @@ jobs:
 
 
       - name: build ksctl macos
-        if: ${{ matrix.os == 'ubuntu-latest' }}
+        if: ${{ matrix.os == 'macos-latest' }}
         run: |
           make install_macos
           ksctl version
