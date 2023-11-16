@@ -32,9 +32,6 @@ jobs:
         with:
           go-version: 1.21.0
 
-      - name: Set up Docker
-        uses: crazy-max/ghaction-setup-docker@v2
-
       - name: build ksctl
         run: |
           cd .\scripts
@@ -117,14 +114,6 @@ jobs:
         run: |
           .\ksctl.exe delete local -n demolocal -v -1 --approve
 
-      - name: uninstall
-        run: |
-          cd .\scripts
-          .\uninstall.ps1
-          cd C:\Users\runneradmin\AppData\Local\ksctl
-          .\ksctl.exe version
-
-
   ksctl-cli-unix:
     strategy:
       matrix:
@@ -143,15 +132,11 @@ jobs:
         with:
           go-version: 1.21.0
 
-      - name: Set up Docker
-        uses: crazy-max/ghaction-setup-docker@v2
-
       - name: build ksctl linux
         if: ${{ matrix.os == 'ubuntu-latest' }}
         run: |
           make install_linux
           ksctl version
-
 
       - name: build ksctl macos
         if: ${{ matrix.os == 'macos-latest' }}
