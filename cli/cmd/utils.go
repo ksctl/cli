@@ -122,7 +122,7 @@ func deleteApproval(showMsg bool) error {
 	if err != nil {
 		return err
 	}
-	log.Print(string(a))
+	log.Box("Input in Json", string(a))
 
 	if !showMsg {
 		log.Box("Warning 🚨", "THIS IS A DESTRUCTIVE STEP MAKE SURE IF YOU WANT TO DELETE THE CLUSTER")
@@ -150,7 +150,7 @@ func createApproval(showMsg bool) error {
 	if err != nil {
 		return err
 	}
-	log.Print(string(a))
+	log.Box("Input in Json", string(a))
 
 	if !showMsg {
 		log.Box("Warning 🚨", "THIS IS A CREATION STEP MAKE SURE IF YOU WANT TO CREATE THE CLUSTER")
