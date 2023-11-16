@@ -17,9 +17,13 @@ on:
       - 'go.sum'
     branches: [ main ]
 jobs:
-  ksctl-cli-linux:
+  ksctl-cli:
+    strategy:
+      matrix:
+        os: [macos-latest, ubuntu-latest]
+
     if: ${{ github.event.label.name == 'pr/lgtm' || (github.event_name == 'push' && github.ref == 'refs/heads/main') }}
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     env:
       KSCTL_FAKE_FLAG_ENABLED: "1"
     steps:
@@ -31,9 +35,20 @@ jobs:
         with:
           go-version: 1.21.0
 
-      - name: build ksctl
+      - name: Set up Docker
+        uses: crazy-max/ghaction-setup-docker@v2
+
+      - name: build ksctl linux
+        if: ${{ matrix.os == 'ubuntu-latest' }}
         run: |
           make install_linux
+          ksctl version
+
+
+      - name: build ksctl macos
+        if: ${{ matrix.os == 'ubuntu-latest' }}
+        run: |
+          make install_macos
           ksctl version
 
       - name: civo create
