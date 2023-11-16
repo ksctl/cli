@@ -7,26 +7,26 @@ func verboseFlags() {
 	msgApproval := "approval to avoid showMsg"
 
 	//createClusterAws.Flags().BoolP("verbose", "v", true, "for verbose output")
-	createClusterAzure.Flags().BoolP("verbose", "v", true, msgVerbose)
-	createClusterCivo.Flags().BoolP("verbose", "v", true, msgVerbose)
-	createClusterLocal.Flags().BoolP("verbose", "v", true, msgVerbose)
-	createClusterHACivo.Flags().BoolP("verbose", "v", true, msgVerbose)
-	createClusterHAAzure.Flags().BoolP("verbose", "v", true, msgVerbose)
+	createClusterAzure.Flags().IntP("verbose", "v", 0, msgVerbose)
+	createClusterCivo.Flags().IntP("verbose", "v", 0, msgVerbose)
+	createClusterLocal.Flags().IntP("verbose", "v", 0, msgVerbose)
+	createClusterHACivo.Flags().IntP("verbose", "v", 0, msgVerbose)
+	createClusterHAAzure.Flags().IntP("verbose", "v", 0, msgVerbose)
 
-	deleteClusterAzure.Flags().BoolP("verbose", "v", true, msgVerbose)
-	deleteClusterCivo.Flags().BoolP("verbose", "v", true, msgVerbose)
-	deleteClusterHAAzure.Flags().BoolP("verbose", "v", true, msgVerbose)
-	deleteClusterHACivo.Flags().BoolP("verbose", "v", true, msgVerbose)
-	deleteClusterLocal.Flags().BoolP("verbose", "v", true, msgVerbose)
+	deleteClusterAzure.Flags().IntP("verbose", "v", 0, msgVerbose)
+	deleteClusterCivo.Flags().IntP("verbose", "v", 0, msgVerbose)
+	deleteClusterHAAzure.Flags().IntP("verbose", "v", 0, msgVerbose)
+	deleteClusterHACivo.Flags().IntP("verbose", "v", 0, msgVerbose)
+	deleteClusterLocal.Flags().IntP("verbose", "v", 0, msgVerbose)
 
-	addMoreWorkerNodesHAAzure.Flags().BoolP("verbose", "v", true, msgVerbose)
-	addMoreWorkerNodesHACivo.Flags().BoolP("verbose", "v", true, msgVerbose)
+	addMoreWorkerNodesHAAzure.Flags().IntP("verbose", "v", 0, msgVerbose)
+	addMoreWorkerNodesHACivo.Flags().IntP("verbose", "v", 0, msgVerbose)
 
-	deleteNodesHAAzure.Flags().BoolP("verbose", "v", true, msgVerbose)
-	deleteNodesHACivo.Flags().BoolP("verbose", "v", true, msgVerbose)
+	deleteNodesHAAzure.Flags().IntP("verbose", "v", 0, msgVerbose)
+	deleteNodesHACivo.Flags().IntP("verbose", "v", 0, msgVerbose)
 
-	getClusterCmd.Flags().BoolP("verbose", "v", true, msgVerbose)
-	switchCluster.Flags().BoolP("verbose", "v", true, msgVerbose)
+	getClusterCmd.Flags().IntP("verbose", "v", 0, msgVerbose)
+	switchCluster.Flags().IntP("verbose", "v", 0, msgVerbose)
 
 	createClusterAzure.Flags().BoolP("approve", "", true, msgApproval)
 	createClusterCivo.Flags().BoolP("approve", "", true, msgApproval)

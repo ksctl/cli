@@ -19,9 +19,9 @@ var addMoreWorkerNodesHACivo = &cobra.Command{
 ksctl create-cluster ha-civo add-nodes <arguments to civo cloud provider>
 `,
 	Run: func(cmd *cobra.Command, args []string) {
-		isSet := cmd.Flags().Lookup("verbose").Changed
-		if _, err := control_pkg.InitializeStorageFactory(&cli.Client, isSet); err != nil {
-			panic(err)
+		verbosity, _ := cmd.Flags().GetInt("verbose")
+		if err := control_pkg.InitializeStorageFactory(&cli.Client); err != nil {
+			log.Error("Inialize Storage Driver", "Reason", err)
 		}
 		SetRequiredFeatureFlags(cmd)
 		cli.Client.Metadata.Provider = consts.CloudCivo
@@ -35,17 +35,20 @@ ksctl create-cluster ha-civo add-nodes <arguments to civo cloud provider>
 
 		cli.Client.Metadata.IsHA = true
 
+		cli.Client.Metadata.LogVerbosity = verbosity
+		cli.Client.Metadata.LogWritter = os.Stdout
+
 		if err := createApproval(cmd.Flags().Lookup("approve").Changed); err != nil {
-			cli.Client.Storage.Logger().Err(err.Error())
+			log.Error(err.Error())
 			os.Exit(1)
 		}
 
-		stat, err := controller.AddWorkerPlaneNode(&cli.Client)
+		err := controller.AddWorkerPlaneNode(&cli.Client)
 		if err != nil {
-			cli.Client.Storage.Logger().Err(err.Error())
+			log.Error("Failed to scale up", "Reason", err)
 			os.Exit(1)
 		}
-		cli.Client.Storage.Logger().Success(stat)
+		log.Success("Scale up successful")
 	},
 }
 

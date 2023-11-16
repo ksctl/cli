@@ -38,10 +38,11 @@ var createClusterAzure = &cobra.Command{
 	ksctl create-cluster azure <arguments to civo cloud provider>
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
-		isSet := cmd.Flags().Lookup("verbose").Changed
-		if _, err := control_pkg.InitializeStorageFactory(&cli.Client, isSet); err != nil {
-			panic(err)
+		verbosity, _ := cmd.Flags().GetInt("verbose")
+		if err := control_pkg.InitializeStorageFactory(&cli.Client); err != nil {
+			log.Error("Inialize Storage Driver", "Reason", err)
 		}
+		cli.Client.Metadata.LogVerbosity = verbosity
 		SetRequiredFeatureFlags(cmd)
 		cli.Client.Metadata.Provider = consts.CloudAzure
 		SetDefaults(consts.CloudAzure, consts.ClusterTypeMang)
@@ -57,11 +58,12 @@ var createClusterCivo = &cobra.Command{
 ksctl create-cluster civo <arguments to civo cloud provider>
 `,
 	Run: func(cmd *cobra.Command, args []string) {
-		isSet := cmd.Flags().Lookup("verbose").Changed
-		if _, err := control_pkg.InitializeStorageFactory(&cli.Client, isSet); err != nil {
-			panic(err)
+		verbosity, _ := cmd.Flags().GetInt("verbose")
+		if err := control_pkg.InitializeStorageFactory(&cli.Client); err != nil {
+			log.Error("Inialize Storage Driver", "Reason", err)
 		}
 
+		cli.Client.Metadata.LogVerbosity = verbosity
 		SetRequiredFeatureFlags(cmd)
 		cli.Client.Metadata.Provider = consts.CloudCivo
 		SetDefaults(consts.CloudCivo, consts.ClusterTypeMang)
@@ -77,11 +79,12 @@ var createClusterLocal = &cobra.Command{
 ksctl create-cluster local <arguments to civo cloud provider>
 `,
 	Run: func(cmd *cobra.Command, args []string) {
-		isSet := cmd.Flags().Lookup("verbose").Changed
-		if _, err := control_pkg.InitializeStorageFactory(&cli.Client, isSet); err != nil {
-			panic(err)
+		verbosity, _ := cmd.Flags().GetInt("verbose")
+		if err := control_pkg.InitializeStorageFactory(&cli.Client); err != nil {
+			log.Error("Inialize Storage Driver", "Reason", err)
 		}
 
+		cli.Client.Metadata.LogVerbosity = verbosity
 		SetRequiredFeatureFlags(cmd)
 		cli.Client.Metadata.Provider = consts.CloudLocal
 		SetDefaults(consts.CloudLocal, consts.ClusterTypeMang)
@@ -97,12 +100,13 @@ var createClusterHACivo = &cobra.Command{
 ksctl create-cluster ha-civo <arguments to civo cloud provider>
 `,
 	Run: func(cmd *cobra.Command, args []string) {
-		isSet := cmd.Flags().Lookup("verbose").Changed
-		if _, err := control_pkg.InitializeStorageFactory(&cli.Client, isSet); err != nil {
-			panic(err)
+		verbosity, _ := cmd.Flags().GetInt("verbose")
+		if err := control_pkg.InitializeStorageFactory(&cli.Client); err != nil {
+			log.Error("Inialize Storage Driver", "Reason", err)
 		}
 		SetRequiredFeatureFlags(cmd)
 
+		cli.Client.Metadata.LogVerbosity = verbosity
 		cli.Client.Metadata.Provider = consts.CloudCivo
 		SetDefaults(consts.CloudCivo, consts.ClusterTypeHa)
 		createHA(cmd.Flags().Lookup("approve").Changed)
@@ -117,11 +121,12 @@ var createClusterHAAzure = &cobra.Command{
 	ksctl create-cluster ha-azure <arguments to civo cloud provider>
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
-		isSet := cmd.Flags().Lookup("verbose").Changed
-		if _, err := control_pkg.InitializeStorageFactory(&cli.Client, isSet); err != nil {
-			panic(err)
+		verbosity, _ := cmd.Flags().GetInt("verbose")
+		if err := control_pkg.InitializeStorageFactory(&cli.Client); err != nil {
+			log.Error("Inialize Storage Driver", "Reason", err)
 		}
 		SetRequiredFeatureFlags(cmd)
+		cli.Client.Metadata.LogVerbosity = verbosity
 		cli.Client.Metadata.Provider = consts.CloudAzure
 		SetDefaults(consts.CloudAzure, consts.ClusterTypeHa)
 		createHA(cmd.Flags().Lookup("approve").Changed)
