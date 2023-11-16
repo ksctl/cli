@@ -38,7 +38,7 @@ jobs:
       - name: build ksctl
         run: |
           cd .\scripts
-          .\install.ps1
+          .\builder.ps1
           cd C:\Users\runneradmin\AppData\Local\ksctl
           .\ksctl.exe version
 
@@ -120,7 +120,10 @@ jobs:
       - name: uninstall
         run: |
           cd .\scripts
-          .\uninstallbuilder.ps1
+          .\uninstall.ps1
+          cd C:\Users\runneradmin\AppData\Local\ksctl
+          .\ksctl.exe version
+
 
   ksctl-cli-unix:
     strategy:
