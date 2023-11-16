@@ -2,7 +2,7 @@ package cmd
 
 /*
 Kubesimplify
-@maintainer: 	Dipankar Das <dipankardas0115@gmail.com>
+authors Dipankar <dipankar@dipankar-das.com>
 				Anurag Kumar <contact.anurag7@gmail.com>
 */
 

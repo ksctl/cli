@@ -1,6 +1,6 @@
 package cmd
 
-// maintainer: 	Dipankar Das <dipankardas0115@gmail.com>
+// authors 	Dipankar Das <dipankardas0115@gmail.com>
 
 import (
 	control_pkg "github.com/kubesimplify/ksctl/pkg/controllers"
