@@ -4,10 +4,10 @@ package cmd
 
 import (
 	"context"
-	"github.com/ksctl/ksctl/pkg/helpers"
 	"os"
 
-	control_pkg "github.com/ksctl/ksctl/pkg/controllers"
+	"github.com/ksctl/ksctl/pkg/helpers"
+
 	"github.com/ksctl/ksctl/pkg/helpers/consts"
 	"github.com/spf13/cobra"
 )
@@ -21,21 +21,24 @@ ksctl delete-cluster ha-azure delete-nodes <arguments to civo cloud provider>
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		verbosity, _ := cmd.Flags().GetInt("verbose")
+		SetRequiredFeatureFlags(cmd)
+
 		cli.Client.Metadata.LogVerbosity = verbosity
 		cli.Client.Metadata.LogWritter = os.Stdout
-
-		if err := control_pkg.InitializeStorageFactory(context.WithValue(context.Background(), "USERID", helpers.GetUserName()), &cli.Client); err != nil {
-			log.Error("Inialize Storage Driver", "Reason", err)
-		}
-		SetRequiredFeatureFlags(cmd)
 		cli.Client.Metadata.Provider = consts.CloudAzure
 		cli.Client.Metadata.IsHA = true
 
 		SetDefaults(consts.CloudAzure, consts.ClusterTypeHa)
+
 		cli.Client.Metadata.NoWP = noWP
 		cli.Client.Metadata.ClusterName = clusterName
 		cli.Client.Metadata.Region = region
 		cli.Client.Metadata.K8sDistro = consts.KsctlKubernetes(distro)
+
+		if err := safeInitializeStorageLoggerFactory(context.WithValue(context.Background(), "USERID", helpers.GetUserName())); err != nil {
+			log.Error("Failed Inialize Storage Driver", "Reason", err)
+			os.Exit(1)
+		}
 
 		if err := deleteApproval(cmd.Flags().Lookup("approve").Changed); err != nil {
 			log.Error(err.Error())
@@ -58,6 +61,7 @@ func init() {
 	noOfWPFlag(deleteNodesHAAzure)
 	regionFlag(deleteNodesHAAzure)
 	distroFlag(deleteNodesHAAzure)
+	storageFlag(deleteNodesHAAzure)
 
 	deleteNodesHAAzure.MarkFlagRequired("name")
 	deleteNodesHAAzure.MarkFlagRequired("region")

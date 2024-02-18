@@ -8,12 +8,12 @@ authors Dipankar <dipankar@dipankar-das.com>
 
 import (
 	"context"
-	"github.com/ksctl/ksctl/pkg/helpers"
 	"os"
+
+	"github.com/ksctl/ksctl/pkg/helpers"
 
 	"github.com/ksctl/ksctl/pkg/helpers/consts"
 
-	control_pkg "github.com/ksctl/ksctl/pkg/controllers"
 	"github.com/spf13/cobra"
 )
 
@@ -35,9 +35,13 @@ ksctl get-clusters `,
 		verbosity, _ := cmd.Flags().GetInt("verbose")
 		cli.Client.Metadata.LogVerbosity = verbosity
 		cli.Client.Metadata.LogWritter = os.Stdout
+		if len(storage) == 0 {
+			storage = string(consts.StoreLocal)
+		}
 
-		if err := control_pkg.InitializeStorageFactory(context.WithValue(context.Background(), "USERID", helpers.GetUserName()), &cli.Client); err != nil {
-			log.Error("Inialize Storage Driver", "Reason", err)
+		if err := safeInitializeStorageLoggerFactory(context.WithValue(context.Background(), "USERID", helpers.GetUserName())); err != nil {
+			log.Error("Failed Inialize Storage Driver", "Reason", err)
+			os.Exit(1)
 		}
 
 		if len(provider) == 0 {
@@ -57,5 +61,7 @@ ksctl get-clusters `,
 
 func init() {
 	rootCmd.AddCommand(getClusterCmd)
+	storageFlag(getClusterCmd)
+
 	getClusterCmd.Flags().StringVarP(&provider, "provider", "p", "", "Provider")
 }

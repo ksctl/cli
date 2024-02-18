@@ -4,10 +4,10 @@ package cmd
 
 import (
 	"context"
-	"github.com/ksctl/ksctl/pkg/helpers"
 	"os"
 
-	control_pkg "github.com/ksctl/ksctl/pkg/controllers"
+	"github.com/ksctl/ksctl/pkg/helpers"
+
 	"github.com/ksctl/ksctl/pkg/helpers/consts"
 	"github.com/spf13/cobra"
 )
@@ -24,11 +24,16 @@ ksctl switch-context -p <civo,local,civo-ha,azure-ha,azure>  -n <clustername> -r
 		verbosity, _ := cmd.Flags().GetInt("verbose")
 		cli.Client.Metadata.LogVerbosity = verbosity
 		cli.Client.Metadata.LogWritter = os.Stdout
+		if len(storage) == 0 {
+			storage = string(consts.StoreLocal)
+		}
 
-		if err := control_pkg.InitializeStorageFactory(context.WithValue(context.Background(), "USERID", helpers.GetUserName()), &cli.Client); err != nil {
-			log.Error("Inialize Storage Driver", "Reason", err)
+		if err := safeInitializeStorageLoggerFactory(context.WithValue(context.Background(), "USERID", helpers.GetUserName())); err != nil {
+			log.Error("Failed Inialize Storage Driver", "Reason", err)
+			os.Exit(1)
 		}
 		SetRequiredFeatureFlags(cmd)
+
 		cli.Client.Metadata.ClusterName = clusterName
 		cli.Client.Metadata.Region = region
 
@@ -65,6 +70,7 @@ func init() {
 	rootCmd.AddCommand(switchCluster)
 	clusterNameFlag(switchCluster)
 	regionFlag(switchCluster)
+	storageFlag(switchCluster)
 
 	switchCluster.Flags().StringVarP(&provider, "provider", "p", "", "Provider")
 	switchCluster.MarkFlagRequired("name")

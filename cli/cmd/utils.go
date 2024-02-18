@@ -2,11 +2,13 @@ package cmd
 
 // authors Dipankar <dipankar@dipankar-das.com>
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"os"
 	"strings"
 
+	control_pkg "github.com/ksctl/ksctl/pkg/controllers"
 	"github.com/ksctl/ksctl/pkg/helpers/consts"
 )
 
@@ -177,6 +179,9 @@ func SetDefaults(provider consts.KsctlCloud, clusterType consts.KsctlClusterType
 		if len(k8sVer) == 0 {
 			k8sVer = "1.27.1"
 		}
+		if len(storage) == 0 {
+			storage = string(consts.StoreLocal)
+		}
 
 	case string(consts.CloudAzure) + string(consts.ClusterTypeMang):
 		if len(nodeSizeMP) == 0 {
@@ -191,6 +196,9 @@ func SetDefaults(provider consts.KsctlCloud, clusterType consts.KsctlClusterType
 		if len(k8sVer) == 0 {
 			k8sVer = "1.27"
 		}
+		if len(storage) == 0 {
+			storage = string(consts.StoreLocal)
+		}
 
 	case string(consts.CloudCivo) + string(consts.ClusterTypeMang):
 		if len(nodeSizeMP) == 0 {
@@ -204,6 +212,9 @@ func SetDefaults(provider consts.KsctlCloud, clusterType consts.KsctlClusterType
 		}
 		if len(k8sVer) == 0 {
 			k8sVer = "1.27.1"
+		}
+		if len(storage) == 0 {
+			storage = string(consts.StoreLocal)
 		}
 
 	case string(consts.CloudAzure) + string(consts.ClusterTypeHa):
@@ -237,6 +248,9 @@ func SetDefaults(provider consts.KsctlCloud, clusterType consts.KsctlClusterType
 		if len(distro) == 0 {
 			distro = string(consts.K8sK3s)
 		}
+		if len(storage) == 0 {
+			storage = string(consts.StoreLocal)
+		}
 
 	case string(consts.CloudCivo) + string(consts.ClusterTypeHa):
 		if len(nodeSizeCP) == 0 {
@@ -266,10 +280,30 @@ func SetDefaults(provider consts.KsctlCloud, clusterType consts.KsctlClusterType
 		if len(k8sVer) == 0 {
 			k8sVer = "1.27.1"
 		}
+		if len(storage) == 0 {
+			storage = string(consts.StoreLocal)
+		}
 		if len(distro) == 0 {
 			distro = string(consts.K8sK3s)
 		}
 	}
+}
+
+func safeInitializeStorageLoggerFactory(ctx context.Context) error {
+	defer func() {
+		if r := recover(); r != nil {
+			log.Error("Recovered in safeInitializeStorageLoggerFactory", r)
+		}
+	}()
+
+	switch storage {
+	case string(consts.StoreExtMongo), string(consts.StoreLocal):
+		cli.Client.Metadata.StateLocation = consts.KsctlStore(storage)
+	default:
+		return log.NewError("not a valid storage option. Valid Options %v\n", [...]string{"external-mongo", "local"})
+	}
+
+	return control_pkg.InitializeStorageFactory(ctx, &cli.Client)
 }
 
 func argsFlags() {
@@ -282,6 +316,7 @@ func argsFlags() {
 	distroFlag(createClusterAzure)
 	appsFlag(createClusterAzure)
 	cniFlag(createClusterAzure)
+	storageFlag(createClusterAzure)
 
 	// Managed Civo
 	clusterNameFlag(createClusterCivo)
@@ -292,6 +327,7 @@ func argsFlags() {
 	noOfMPFlag(createClusterCivo)
 	distroFlag(createClusterCivo)
 	k8sVerFlag(createClusterCivo)
+	storageFlag(createClusterCivo)
 
 	// Managed Local
 	clusterNameFlag(createClusterLocal)
@@ -300,6 +336,7 @@ func argsFlags() {
 	noOfMPFlag(createClusterLocal)
 	distroFlag(createClusterLocal)
 	k8sVerFlag(createClusterLocal)
+	storageFlag(createClusterLocal)
 
 	// HA Civo
 	clusterNameFlag(createClusterHACivo)
@@ -315,6 +352,7 @@ func argsFlags() {
 	noOfDSFlag(createClusterHACivo)
 	distroFlag(createClusterHACivo)
 	k8sVerFlag(createClusterHACivo)
+	storageFlag(createClusterHACivo)
 
 	// HA Azure
 	clusterNameFlag(createClusterHAAzure)
@@ -330,26 +368,32 @@ func argsFlags() {
 	noOfDSFlag(createClusterHAAzure)
 	distroFlag(createClusterHAAzure)
 	k8sVerFlag(createClusterHAAzure)
+	storageFlag(createClusterHAAzure)
 
 	// Delete commands
 	// Managed Local
 	clusterNameFlag(deleteClusterLocal)
+	storageFlag(deleteClusterLocal)
 
 	// managed Azure
 	clusterNameFlag(deleteClusterAzure)
 	regionFlag(deleteClusterAzure)
+	storageFlag(deleteClusterAzure)
 
 	// Managed Civo
 	clusterNameFlag(deleteClusterCivo)
 	regionFlag(deleteClusterCivo)
+	storageFlag(deleteClusterCivo)
 
 	// HA Civo
 	clusterNameFlag(deleteClusterHACivo)
 	regionFlag(deleteClusterHACivo)
+	storageFlag(deleteClusterHACivo)
 
 	// HA Azure
 	clusterNameFlag(deleteClusterHAAzure)
 	regionFlag(deleteClusterHAAzure)
+	storageFlag(deleteClusterHAAzure)
 
 	AllFeatures()
 }
