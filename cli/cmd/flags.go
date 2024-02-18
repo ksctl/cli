@@ -45,6 +45,10 @@ func verboseFlags() {
 	deleteNodesHACivo.Flags().BoolP("approve", "", true, msgApproval)
 }
 
+func storageFlag(f *cobra.Command) {
+	f.Flags().StringVarP(&storage, "storage", "s", "", "storage provider")
+}
+
 func clusterNameFlag(f *cobra.Command) {
 	f.Flags().StringVarP(&clusterName, "name", "n", "demo", "Cluster Name") // keep it same for all
 }

@@ -4,9 +4,9 @@ package cmd
 
 import (
 	"context"
-	control_pkg "github.com/ksctl/ksctl/pkg/controllers"
-	"github.com/ksctl/ksctl/pkg/helpers"
 	"os"
+
+	"github.com/ksctl/ksctl/pkg/helpers"
 
 	"github.com/ksctl/ksctl/pkg/helpers/consts"
 	"github.com/spf13/cobra"
@@ -42,16 +42,19 @@ var createClusterAzure = &cobra.Command{
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
 		verbosity, _ := cmd.Flags().GetInt("verbose")
+		SetRequiredFeatureFlags(cmd)
+
 		cli.Client.Metadata.LogVerbosity = verbosity
 		cli.Client.Metadata.LogWritter = os.Stdout
+		cli.Client.Metadata.Provider = consts.CloudAzure
 
-		if err := control_pkg.InitializeStorageFactory(context.WithValue(context.Background(), "USERID", helpers.GetUserName()), &cli.Client); err != nil {
-			log.Error("Inialize Storage Driver", "Reason", err)
+		SetDefaults(consts.CloudAzure, consts.ClusterTypeMang)
+
+		if err := safeInitializeStorageLoggerFactory(context.WithValue(context.Background(), "USERID", helpers.GetUserName())); err != nil {
+			log.Error("Failed Inialize Storage Driver", "Reason", err)
+			os.Exit(1)
 		}
 
-		SetRequiredFeatureFlags(cmd)
-		cli.Client.Metadata.Provider = consts.CloudAzure
-		SetDefaults(consts.CloudAzure, consts.ClusterTypeMang)
 		createManaged(cmd.Flags().Lookup("approve").Changed)
 	},
 }
@@ -65,16 +68,19 @@ ksctl create-cluster civo <arguments to civo cloud provider>
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		verbosity, _ := cmd.Flags().GetInt("verbose")
+		SetRequiredFeatureFlags(cmd)
+
 		cli.Client.Metadata.LogVerbosity = verbosity
 		cli.Client.Metadata.LogWritter = os.Stdout
+		cli.Client.Metadata.Provider = consts.CloudCivo
 
-		if err := control_pkg.InitializeStorageFactory(context.WithValue(context.Background(), "USERID", helpers.GetUserName()), &cli.Client); err != nil {
-			log.Error("Inialize Storage Driver", "Reason", err)
+		SetDefaults(consts.CloudCivo, consts.ClusterTypeMang)
+
+		if err := safeInitializeStorageLoggerFactory(context.WithValue(context.Background(), "USERID", helpers.GetUserName())); err != nil {
+			log.Error("Failed Inialize Storage Driver", "Reason", err)
+			os.Exit(1)
 		}
 
-		SetRequiredFeatureFlags(cmd)
-		cli.Client.Metadata.Provider = consts.CloudCivo
-		SetDefaults(consts.CloudCivo, consts.ClusterTypeMang)
 		createManaged(cmd.Flags().Lookup("approve").Changed)
 	},
 }
@@ -88,16 +94,19 @@ ksctl create-cluster local <arguments to civo cloud provider>
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		verbosity, _ := cmd.Flags().GetInt("verbose")
+		SetRequiredFeatureFlags(cmd)
+
 		cli.Client.Metadata.LogVerbosity = verbosity
 		cli.Client.Metadata.LogWritter = os.Stdout
+		cli.Client.Metadata.Provider = consts.CloudLocal
 
-		if err := control_pkg.InitializeStorageFactory(context.WithValue(context.Background(), "USERID", helpers.GetUserName()), &cli.Client); err != nil {
-			log.Error("Inialize Storage Driver", "Reason", err)
+		SetDefaults(consts.CloudLocal, consts.ClusterTypeMang)
+
+		if err := safeInitializeStorageLoggerFactory(context.WithValue(context.Background(), "USERID", helpers.GetUserName())); err != nil {
+			log.Error("Failed Inialize Storage Driver", "Reason", err)
+			os.Exit(1)
 		}
 
-		SetRequiredFeatureFlags(cmd)
-		cli.Client.Metadata.Provider = consts.CloudLocal
-		SetDefaults(consts.CloudLocal, consts.ClusterTypeMang)
 		createManaged(cmd.Flags().Lookup("approve").Changed)
 	},
 }
@@ -111,16 +120,18 @@ ksctl create-cluster ha-civo <arguments to civo cloud provider>
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		verbosity, _ := cmd.Flags().GetInt("verbose")
-		cli.Client.Metadata.LogVerbosity = verbosity
-		cli.Client.Metadata.LogWritter = os.Stdout
-
-		if err := control_pkg.InitializeStorageFactory(context.WithValue(context.Background(), "USERID", helpers.GetUserName()), &cli.Client); err != nil {
-			log.Error("Inialize Storage Driver", "Reason", err)
-		}
 		SetRequiredFeatureFlags(cmd)
 
+		cli.Client.Metadata.LogVerbosity = verbosity
+		cli.Client.Metadata.LogWritter = os.Stdout
 		cli.Client.Metadata.Provider = consts.CloudCivo
+
 		SetDefaults(consts.CloudCivo, consts.ClusterTypeHa)
+
+		if err := safeInitializeStorageLoggerFactory(context.WithValue(context.Background(), "USERID", helpers.GetUserName())); err != nil {
+			log.Error("Failed Inialize Storage Driver", "Reason", err)
+			os.Exit(1)
+		}
 		createHA(cmd.Flags().Lookup("approve").Changed)
 	},
 }
@@ -134,15 +145,18 @@ var createClusterHAAzure = &cobra.Command{
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
 		verbosity, _ := cmd.Flags().GetInt("verbose")
+		SetRequiredFeatureFlags(cmd)
+
 		cli.Client.Metadata.LogVerbosity = verbosity
 		cli.Client.Metadata.LogWritter = os.Stdout
-
-		if err := control_pkg.InitializeStorageFactory(context.WithValue(context.Background(), "USERID", helpers.GetUserName()), &cli.Client); err != nil {
-			log.Error("Inialize Storage Driver", "Reason", err)
-		}
-		SetRequiredFeatureFlags(cmd)
 		cli.Client.Metadata.Provider = consts.CloudAzure
+
 		SetDefaults(consts.CloudAzure, consts.ClusterTypeHa)
+
+		if err := safeInitializeStorageLoggerFactory(context.WithValue(context.Background(), "USERID", helpers.GetUserName())); err != nil {
+			log.Error("Failed Inialize Storage Driver", "Reason", err)
+			os.Exit(1)
+		}
 		createHA(cmd.Flags().Lookup("approve").Changed)
 	},
 }

@@ -4,10 +4,10 @@ package cmd
 
 import (
 	"context"
-	"github.com/ksctl/ksctl/pkg/helpers"
 	"os"
 
-	control_pkg "github.com/ksctl/ksctl/pkg/controllers"
+	"github.com/ksctl/ksctl/pkg/helpers"
+
 	"github.com/spf13/cobra"
 
 	"github.com/ksctl/ksctl/pkg/helpers/consts"
@@ -22,15 +22,14 @@ ksctl create-cluster ha-azure add-nodes <arguments to civo cloud provider>
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		verbosity, _ := cmd.Flags().GetInt("verbose")
+		SetRequiredFeatureFlags(cmd)
+
 		cli.Client.Metadata.LogVerbosity = verbosity
 		cli.Client.Metadata.LogWritter = os.Stdout
-
-		if err := control_pkg.InitializeStorageFactory(context.WithValue(context.Background(), "USERID", helpers.GetUserName()), &cli.Client); err != nil {
-			log.Error("Inialize Storage Driver", "Reason", err)
-		}
-		SetRequiredFeatureFlags(cmd)
 		cli.Client.Metadata.Provider = consts.CloudAzure
+
 		SetDefaults(consts.CloudAzure, consts.ClusterTypeHa)
+
 		cli.Client.Metadata.NoWP = noWP
 		cli.Client.Metadata.WorkerPlaneNodeType = nodeSizeWP
 		cli.Client.Metadata.ClusterName = clusterName
@@ -38,6 +37,11 @@ ksctl create-cluster ha-azure add-nodes <arguments to civo cloud provider>
 		cli.Client.Metadata.IsHA = true
 		cli.Client.Metadata.K8sDistro = consts.KsctlKubernetes(distro)
 		cli.Client.Metadata.K8sVersion = k8sVer
+
+		if err := safeInitializeStorageLoggerFactory(context.WithValue(context.Background(), "USERID", helpers.GetUserName())); err != nil {
+			log.Error("Failed Inialize Storage Driver", "Reason", err)
+			os.Exit(1)
+		}
 
 		if err := createApproval(cmd.Flags().Lookup("approve").Changed); err != nil {
 			log.Error(err.Error())
@@ -61,6 +65,7 @@ func init() {
 	regionFlag(addMoreWorkerNodesHAAzure)
 	k8sVerFlag(addMoreWorkerNodesHAAzure)
 	distroFlag(addMoreWorkerNodesHAAzure)
+	storageFlag(addMoreWorkerNodesHAAzure)
 
 	addMoreWorkerNodesHAAzure.MarkFlagRequired("name")
 	addMoreWorkerNodesHAAzure.MarkFlagRequired("region")

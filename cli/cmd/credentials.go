@@ -4,10 +4,10 @@ package cmd
 import (
 	"context"
 	"fmt"
-	"github.com/ksctl/ksctl/pkg/helpers"
 	"os"
 
-	control_pkg "github.com/ksctl/ksctl/pkg/controllers"
+	"github.com/ksctl/ksctl/pkg/helpers"
+
 	"github.com/ksctl/ksctl/pkg/helpers/consts"
 	"github.com/spf13/cobra"
 )
@@ -22,9 +22,13 @@ var credCmd = &cobra.Command{
 		verbosity, _ := cmd.Flags().GetInt("verbose")
 		cli.Client.Metadata.LogVerbosity = verbosity
 		cli.Client.Metadata.LogWritter = os.Stdout
+		if len(storage) == 0 {
+			storage = string(consts.StoreLocal)
+		}
 
-		if err := control_pkg.InitializeStorageFactory(context.WithValue(context.Background(), "USERID", helpers.GetUserName()), &cli.Client); err != nil {
-			log.Error("Inialize Storage Driver", "Reason", err)
+		if err := safeInitializeStorageLoggerFactory(context.WithValue(context.Background(), "USERID", helpers.GetUserName())); err != nil {
+			log.Error("Failed Inialize Storage Driver", "Reason", err)
+			os.Exit(1)
 		}
 		SetRequiredFeatureFlags(cmd)
 
@@ -56,6 +60,8 @@ var credCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(credCmd)
+	storageFlag(credCmd)
+
 	credCmd.Flags().BoolP("verbose", "v", true, "for verbose output")
 
 }

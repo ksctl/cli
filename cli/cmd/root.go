@@ -8,9 +8,10 @@ authors			Dipankar <dipankar@dipankar-das.com>
 package cmd
 
 import (
-	"github.com/ksctl/ksctl/pkg/resources/controllers"
 	"os"
 	"time"
+
+	"github.com/ksctl/ksctl/pkg/resources/controllers"
 
 	controlPkg "github.com/ksctl/ksctl/pkg/controllers"
 	"github.com/ksctl/ksctl/pkg/helpers/consts"
@@ -35,10 +36,10 @@ var (
 	apps        string
 	cni         string
 	provider    string
-	//storage     string  // Currently only local storage is present
-	distro string
-	k8sVer string
-	cloud  map[int]string
+	storage     string
+	distro      string
+	k8sVer      string
+	cloud       map[int]string
 )
 
 type CobraCmd struct {
@@ -80,7 +81,6 @@ func Execute() {
 		3: string(consts.CloudCivo),
 		4: string(consts.CloudLocal),
 	}
-	cli.Client.Metadata.StateLocation = consts.StoreLocal
 
 	timer := time.Now()
 	err := rootCmd.Execute()

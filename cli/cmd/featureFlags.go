@@ -15,7 +15,6 @@ const (
 
 func featureFlag(f *cobra.Command) {
 	f.Flags().StringP("feature-flags", "", "", `Experimental Features: Supported values with comma seperated: [autoscale]`)
-	// f.Flags().StringArrayP("feature-flags", "", nil, `Supported values: [autoscale]`)
 }
 
 func SetRequiredFeatureFlags(cmd *cobra.Command) {
