@@ -21,7 +21,6 @@ func createManaged(approval bool) {
 
 	cli.Client.Metadata.CNIPlugin = cni
 	cli.Client.Metadata.Applications = apps
-	cli.Client.Metadata.LogWritter = os.Stdout
 	if err := createApproval(approval); err != nil {
 		log.Error(err.Error())
 		os.Exit(1)
@@ -55,7 +54,6 @@ func createHA(approval bool) {
 	cli.Client.Metadata.CNIPlugin = cni
 	cli.Client.Metadata.Applications = apps
 
-	cli.Client.Metadata.LogWritter = os.Stdout
 	if err := createApproval(approval); err != nil {
 		log.Error(err.Error())
 		os.Exit(1)
@@ -74,7 +72,6 @@ func deleteManaged(approval bool) {
 	cli.Client.Metadata.K8sDistro = consts.KsctlKubernetes(distro)
 	cli.Client.Metadata.Region = region
 
-	cli.Client.Metadata.LogWritter = os.Stdout
 	if err := deleteApproval(approval); err != nil {
 		log.Error(err.Error())
 		os.Exit(1)
@@ -95,7 +92,6 @@ func deleteHA(approval bool) {
 	cli.Client.Metadata.K8sDistro = consts.KsctlKubernetes(distro)
 	cli.Client.Metadata.Region = region
 
-	cli.Client.Metadata.LogWritter = os.Stdout
 	if err := deleteApproval(approval); err != nil {
 		log.Error(err.Error())
 		os.Exit(1)

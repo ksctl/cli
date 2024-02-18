@@ -20,6 +20,9 @@ var credCmd = &cobra.Command{
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		verbosity, _ := cmd.Flags().GetInt("verbose")
+		cli.Client.Metadata.LogVerbosity = verbosity
+		cli.Client.Metadata.LogWritter = os.Stdout
+
 		if err := control_pkg.InitializeStorageFactory(context.WithValue(context.Background(), "USERID", helpers.GetUserName()), &cli.Client); err != nil {
 			log.Error("Inialize Storage Driver", "Reason", err)
 		}
@@ -42,8 +45,6 @@ var credCmd = &cobra.Command{
 		} else {
 			log.Error("invalid provider")
 		}
-		cli.Client.Metadata.LogVerbosity = verbosity
-		cli.Client.Metadata.LogWritter = os.Stdout
 
 		if err := controller.Credentials(&cli.Client); err != nil {
 			log.Error("Failed to added the credential", "Reason", err)

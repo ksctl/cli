@@ -22,6 +22,9 @@ ksctl create-cluster ha-civo add-nodes <arguments to civo cloud provider>
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		verbosity, _ := cmd.Flags().GetInt("verbose")
+		cli.Client.Metadata.LogVerbosity = verbosity
+		cli.Client.Metadata.LogWritter = os.Stdout
+
 		if err := control_pkg.InitializeStorageFactory(context.WithValue(context.Background(), "USERID", helpers.GetUserName()), &cli.Client); err != nil {
 			log.Error("Inialize Storage Driver", "Reason", err)
 		}
@@ -36,9 +39,6 @@ ksctl create-cluster ha-civo add-nodes <arguments to civo cloud provider>
 		cli.Client.Metadata.K8sVersion = k8sVer
 
 		cli.Client.Metadata.IsHA = true
-
-		cli.Client.Metadata.LogVerbosity = verbosity
-		cli.Client.Metadata.LogWritter = os.Stdout
 
 		if err := createApproval(cmd.Flags().Lookup("approve").Changed); err != nil {
 			log.Error(err.Error())

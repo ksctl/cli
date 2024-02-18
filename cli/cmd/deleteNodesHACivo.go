@@ -21,6 +21,9 @@ ksctl delete-cluster ha-civo delete-nodes <arguments to civo cloud provider>
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		verbosity, _ := cmd.Flags().GetInt("verbose")
+		cli.Client.Metadata.LogVerbosity = verbosity
+		cli.Client.Metadata.LogWritter = os.Stdout
+
 		if err := control_pkg.InitializeStorageFactory(context.WithValue(context.Background(), "USERID", helpers.GetUserName()), &cli.Client); err != nil {
 			log.Error("Inialize Storage Driver", "Reason", err)
 		}
@@ -33,9 +36,6 @@ ksctl delete-cluster ha-civo delete-nodes <arguments to civo cloud provider>
 		cli.Client.Metadata.ClusterName = clusterName
 		cli.Client.Metadata.Region = region
 		cli.Client.Metadata.K8sDistro = consts.KsctlKubernetes(distro)
-
-		cli.Client.Metadata.LogVerbosity = verbosity
-		cli.Client.Metadata.LogWritter = os.Stdout
 
 		if err := deleteApproval(cmd.Flags().Lookup("approve").Changed); err != nil {
 			log.Error(err.Error())

@@ -8,6 +8,7 @@ authors			Dipankar <dipankar@dipankar-das.com>
 package cmd
 
 import (
+	"github.com/ksctl/ksctl/pkg/resources/controllers"
 	"os"
 	"time"
 
@@ -15,7 +16,6 @@ import (
 	"github.com/ksctl/ksctl/pkg/helpers/consts"
 	"github.com/ksctl/ksctl/pkg/logger"
 	"github.com/ksctl/ksctl/pkg/resources"
-	"github.com/ksctl/ksctl/pkg/resources/controllers"
 
 	"github.com/spf13/cobra"
 )
