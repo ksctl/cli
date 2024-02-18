@@ -10,12 +10,11 @@ import (
 )
 
 const (
-	ksctl_feature_auto_scale   consts.KsctlSpecialFlags = "autoscale"
-	ksctl_feature_applications consts.KsctlSpecialFlags = "application"
+	ksctl_feature_auto_scale consts.KsctlSpecialFlags = "autoscale"
 )
 
 func featureFlag(f *cobra.Command) {
-	f.Flags().StringP("feature-flags", "", "", `Experimental Features: Supported values with comma seperated: [autoscale,application]`)
+	f.Flags().StringP("feature-flags", "", "", `Experimental Features: Supported values with comma seperated: [autoscale]`)
 	// f.Flags().StringArrayP("feature-flags", "", nil, `Supported values: [autoscale]`)
 }
 
@@ -33,11 +32,6 @@ func SetRequiredFeatureFlags(cmd *cobra.Command) {
 		case ksctl_feature_auto_scale:
 			if err := os.Setenv(string(consts.KsctlFeatureFlagHaAutoscale), "true"); err != nil {
 				log.Error("Unable to set the ha autoscale feature")
-			}
-
-		case ksctl_feature_applications:
-			if err := os.Setenv(string(consts.KsctlFeatureFlagApplications), "true"); err != nil {
-				log.Error("Unable to set applications feature")
 			}
 		}
 	}
