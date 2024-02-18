@@ -2,7 +2,7 @@ package main
 
 // authors Dipankar Das <dipankardas0115@gmail.com>
 
-import "github.com/kubesimplify/ksctl-cli/cli/cmd"
+import "github.com/ksctl/cli/cli/cmd"
 
 func main() {
 	cmd.Execute()

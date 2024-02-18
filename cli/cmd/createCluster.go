@@ -3,9 +3,12 @@ package cmd
 // authors 	Dipankar Das <dipankardas0115@gmail.com>
 
 import (
-	control_pkg "github.com/kubesimplify/ksctl/pkg/controllers"
+	"context"
+	control_pkg "github.com/ksctl/ksctl/pkg/controllers"
+	"github.com/ksctl/ksctl/pkg/helpers"
+	"os"
 
-	"github.com/kubesimplify/ksctl/pkg/utils/consts"
+	"github.com/ksctl/ksctl/pkg/helpers/consts"
 	"github.com/spf13/cobra"
 )
 
@@ -39,10 +42,13 @@ var createClusterAzure = &cobra.Command{
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
 		verbosity, _ := cmd.Flags().GetInt("verbose")
-		if err := control_pkg.InitializeStorageFactory(&cli.Client); err != nil {
+		cli.Client.Metadata.LogVerbosity = verbosity
+		cli.Client.Metadata.LogWritter = os.Stdout
+
+		if err := control_pkg.InitializeStorageFactory(context.WithValue(context.Background(), "USERID", helpers.GetUserName()), &cli.Client); err != nil {
 			log.Error("Inialize Storage Driver", "Reason", err)
 		}
-		cli.Client.Metadata.LogVerbosity = verbosity
+
 		SetRequiredFeatureFlags(cmd)
 		cli.Client.Metadata.Provider = consts.CloudAzure
 		SetDefaults(consts.CloudAzure, consts.ClusterTypeMang)
@@ -59,11 +65,13 @@ ksctl create-cluster civo <arguments to civo cloud provider>
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		verbosity, _ := cmd.Flags().GetInt("verbose")
-		if err := control_pkg.InitializeStorageFactory(&cli.Client); err != nil {
+		cli.Client.Metadata.LogVerbosity = verbosity
+		cli.Client.Metadata.LogWritter = os.Stdout
+
+		if err := control_pkg.InitializeStorageFactory(context.WithValue(context.Background(), "USERID", helpers.GetUserName()), &cli.Client); err != nil {
 			log.Error("Inialize Storage Driver", "Reason", err)
 		}
 
-		cli.Client.Metadata.LogVerbosity = verbosity
 		SetRequiredFeatureFlags(cmd)
 		cli.Client.Metadata.Provider = consts.CloudCivo
 		SetDefaults(consts.CloudCivo, consts.ClusterTypeMang)
@@ -80,11 +88,13 @@ ksctl create-cluster local <arguments to civo cloud provider>
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		verbosity, _ := cmd.Flags().GetInt("verbose")
-		if err := control_pkg.InitializeStorageFactory(&cli.Client); err != nil {
+		cli.Client.Metadata.LogVerbosity = verbosity
+		cli.Client.Metadata.LogWritter = os.Stdout
+
+		if err := control_pkg.InitializeStorageFactory(context.WithValue(context.Background(), "USERID", helpers.GetUserName()), &cli.Client); err != nil {
 			log.Error("Inialize Storage Driver", "Reason", err)
 		}
 
-		cli.Client.Metadata.LogVerbosity = verbosity
 		SetRequiredFeatureFlags(cmd)
 		cli.Client.Metadata.Provider = consts.CloudLocal
 		SetDefaults(consts.CloudLocal, consts.ClusterTypeMang)
@@ -101,12 +111,14 @@ ksctl create-cluster ha-civo <arguments to civo cloud provider>
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		verbosity, _ := cmd.Flags().GetInt("verbose")
-		if err := control_pkg.InitializeStorageFactory(&cli.Client); err != nil {
+		cli.Client.Metadata.LogVerbosity = verbosity
+		cli.Client.Metadata.LogWritter = os.Stdout
+
+		if err := control_pkg.InitializeStorageFactory(context.WithValue(context.Background(), "USERID", helpers.GetUserName()), &cli.Client); err != nil {
 			log.Error("Inialize Storage Driver", "Reason", err)
 		}
 		SetRequiredFeatureFlags(cmd)
 
-		cli.Client.Metadata.LogVerbosity = verbosity
 		cli.Client.Metadata.Provider = consts.CloudCivo
 		SetDefaults(consts.CloudCivo, consts.ClusterTypeHa)
 		createHA(cmd.Flags().Lookup("approve").Changed)
@@ -122,11 +134,13 @@ var createClusterHAAzure = &cobra.Command{
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
 		verbosity, _ := cmd.Flags().GetInt("verbose")
-		if err := control_pkg.InitializeStorageFactory(&cli.Client); err != nil {
+		cli.Client.Metadata.LogVerbosity = verbosity
+		cli.Client.Metadata.LogWritter = os.Stdout
+
+		if err := control_pkg.InitializeStorageFactory(context.WithValue(context.Background(), "USERID", helpers.GetUserName()), &cli.Client); err != nil {
 			log.Error("Inialize Storage Driver", "Reason", err)
 		}
 		SetRequiredFeatureFlags(cmd)
-		cli.Client.Metadata.LogVerbosity = verbosity
 		cli.Client.Metadata.Provider = consts.CloudAzure
 		SetDefaults(consts.CloudAzure, consts.ClusterTypeHa)
 		createHA(cmd.Flags().Lookup("approve").Changed)

@@ -3,12 +3,14 @@ package cmd
 // authors Dipankar <dipankar@dipankar-das.com>
 
 import (
+	"context"
+	"github.com/ksctl/ksctl/pkg/helpers"
 	"os"
 
-	control_pkg "github.com/kubesimplify/ksctl/pkg/controllers"
+	control_pkg "github.com/ksctl/ksctl/pkg/controllers"
 	"github.com/spf13/cobra"
 
-	"github.com/kubesimplify/ksctl/pkg/utils/consts"
+	"github.com/ksctl/ksctl/pkg/helpers/consts"
 )
 
 var addMoreWorkerNodesHAAzure = &cobra.Command{
@@ -20,7 +22,10 @@ ksctl create-cluster ha-azure add-nodes <arguments to civo cloud provider>
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		verbosity, _ := cmd.Flags().GetInt("verbose")
-		if err := control_pkg.InitializeStorageFactory(&cli.Client); err != nil {
+		cli.Client.Metadata.LogVerbosity = verbosity
+		cli.Client.Metadata.LogWritter = os.Stdout
+
+		if err := control_pkg.InitializeStorageFactory(context.WithValue(context.Background(), "USERID", helpers.GetUserName()), &cli.Client); err != nil {
 			log.Error("Inialize Storage Driver", "Reason", err)
 		}
 		SetRequiredFeatureFlags(cmd)
@@ -33,8 +38,6 @@ ksctl create-cluster ha-azure add-nodes <arguments to civo cloud provider>
 		cli.Client.Metadata.IsHA = true
 		cli.Client.Metadata.K8sDistro = consts.KsctlKubernetes(distro)
 		cli.Client.Metadata.K8sVersion = k8sVer
-		cli.Client.Metadata.LogVerbosity = verbosity
-		cli.Client.Metadata.LogWritter = os.Stdout
 
 		if err := createApproval(cmd.Flags().Lookup("approve").Changed); err != nil {
 			log.Error(err.Error())
