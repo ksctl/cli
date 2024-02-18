@@ -2,11 +2,13 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
+	"github.com/ksctl/ksctl/pkg/helpers"
 	"os"
 
-	control_pkg "github.com/kubesimplify/ksctl/pkg/controllers"
-	"github.com/kubesimplify/ksctl/pkg/utils/consts"
+	control_pkg "github.com/ksctl/ksctl/pkg/controllers"
+	"github.com/ksctl/ksctl/pkg/helpers/consts"
 	"github.com/spf13/cobra"
 )
 
@@ -18,7 +20,7 @@ var credCmd = &cobra.Command{
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		verbosity, _ := cmd.Flags().GetInt("verbose")
-		if err := control_pkg.InitializeStorageFactory(&cli.Client); err != nil {
+		if err := control_pkg.InitializeStorageFactory(context.WithValue(context.Background(), "USERID", helpers.GetUserName()), &cli.Client); err != nil {
 			log.Error("Inialize Storage Driver", "Reason", err)
 		}
 		SetRequiredFeatureFlags(cmd)

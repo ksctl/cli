@@ -3,8 +3,10 @@ package cmd
 // authors 	Dipankar Das <dipankardas0115@gmail.com>
 
 import (
-	control_pkg "github.com/kubesimplify/ksctl/pkg/controllers"
-	"github.com/kubesimplify/ksctl/pkg/utils/consts"
+	"context"
+	control_pkg "github.com/ksctl/ksctl/pkg/controllers"
+	"github.com/ksctl/ksctl/pkg/helpers"
+	"github.com/ksctl/ksctl/pkg/helpers/consts"
 	"github.com/spf13/cobra"
 )
 
@@ -28,7 +30,7 @@ ksctl create-cluster azure <arguments to civo cloud provider>
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		verbosity, _ := cmd.Flags().GetInt("verbose")
-		if err := control_pkg.InitializeStorageFactory(&cli.Client); err != nil {
+		if err := control_pkg.InitializeStorageFactory(context.WithValue(context.Background(), "USERID", helpers.GetUserName()), &cli.Client); err != nil {
 			log.Error("Inialize Storage Driver", "Reason", err)
 		}
 
@@ -50,7 +52,7 @@ ksctl delete-cluster civo
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		verbosity, _ := cmd.Flags().GetInt("verbose")
-		if err := control_pkg.InitializeStorageFactory(&cli.Client); err != nil {
+		if err := control_pkg.InitializeStorageFactory(context.WithValue(context.Background(), "USERID", helpers.GetUserName()), &cli.Client); err != nil {
 			log.Error("Inialize Storage Driver", "Reason", err)
 		}
 
@@ -73,7 +75,7 @@ var deleteClusterHAAzure = &cobra.Command{
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
 		verbosity, _ := cmd.Flags().GetInt("verbose")
-		if err := control_pkg.InitializeStorageFactory(&cli.Client); err != nil {
+		if err := control_pkg.InitializeStorageFactory(context.WithValue(context.Background(), "USERID", helpers.GetUserName()), &cli.Client); err != nil {
 			log.Error("Inialize Storage Driver", "Reason", err)
 		}
 
@@ -95,7 +97,7 @@ ksctl delete-cluster ha-civo <arguments to civo cloud provider>
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		verbosity, _ := cmd.Flags().GetInt("verbose")
-		if err := control_pkg.InitializeStorageFactory(&cli.Client); err != nil {
+		if err := control_pkg.InitializeStorageFactory(context.WithValue(context.Background(), "USERID", helpers.GetUserName()), &cli.Client); err != nil {
 			log.Error("Inialize Storage Driver", "Reason", err)
 		}
 
@@ -117,7 +119,7 @@ ksctl delete-cluster local <arguments to local/Docker provider>
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		verbosity, _ := cmd.Flags().GetInt("verbose")
-		if err := control_pkg.InitializeStorageFactory(&cli.Client); err != nil {
+		if err := control_pkg.InitializeStorageFactory(context.WithValue(context.Background(), "USERID", helpers.GetUserName()), &cli.Client); err != nil {
 			log.Error("Inialize Storage Driver", "Reason", err)
 		}
 

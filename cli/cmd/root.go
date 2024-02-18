@@ -11,11 +11,11 @@ import (
 	"os"
 	"time"
 
-	controlPkg "github.com/kubesimplify/ksctl/pkg/controllers"
-	"github.com/kubesimplify/ksctl/pkg/logger"
-	"github.com/kubesimplify/ksctl/pkg/resources"
-	"github.com/kubesimplify/ksctl/pkg/resources/controllers"
-	"github.com/kubesimplify/ksctl/pkg/utils/consts"
+	controlPkg "github.com/ksctl/ksctl/pkg/controllers"
+	"github.com/ksctl/ksctl/pkg/helpers/consts"
+	"github.com/ksctl/ksctl/pkg/logger"
+	"github.com/ksctl/ksctl/pkg/resources"
+	"github.com/ksctl/ksctl/pkg/resources/controllers"
 
 	"github.com/spf13/cobra"
 )
