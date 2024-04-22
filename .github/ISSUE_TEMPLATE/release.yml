@@ -1,0 +1,57 @@
+name: New Release
+description: Suggest an enhancement for an existing feature or propose a new functionality
+title: "[New Release]: "
+labels: ["triage-accepted"]
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Thank you for creating new-release proposal.** Please fill in as much of the template below as you're able. Your proposal will help us understand your ideas better and improve the project.
+
+  - type: input
+    id: release-title
+    attributes:
+      label: Release Title
+      description: Provide a concise title for your New Release.
+      placeholder: Short and descriptive title
+    validations:
+      required: true
+    
+  - type: input
+    id: release-url
+    attributes:
+      label: Release URL
+      description: Provide a concise release url for your New Release.
+      placeholder: Short and descriptive release url
+    validations:
+      required: true
+
+  - type: textarea
+    id: release-summary
+    attributes:
+      label: Summary of the Release
+      description: A brief summary of the Release you're proposing.
+      placeholder: What Release are you proposing and why?
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: updates
+    attributes:
+      label: Scope of changes
+      description: what all subprojects will be affected?
+      options:
+        - label: UI
+        - label: Docs
+
+  - type: checkboxes
+    id: agreement
+    attributes:
+      label: Agreement
+      description: By submitting this feature proposal, you agree to engage in constructive discussion and follow our [Contribution Guidelines](https://docs.ksctl.com/docs/contribution-guidelines/)
+      options:
+        - label: I agree to engage in constructive discussion and follow the Contribution Guidelines.
+          required: true
+
+
