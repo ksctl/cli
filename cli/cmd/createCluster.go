@@ -28,7 +28,7 @@ var createClusterHAAws = &cobra.Command{
 	Short: "Use to create a EKS cluster in AWS",
 	Long: `It is used to create cluster with the given name from user. For example:
 
-ksctl create-cluster aws <arguments to civo cloud provider>
+ksctl create-cluster ha-aws <arguments to cloud provider>
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		verbosity, _ := cmd.Flags().GetInt("verbose")
@@ -53,7 +53,7 @@ var createClusterAzure = &cobra.Command{
 	Short: "Use to create a AKS cluster in Azure",
 	Long: `It is used to create cluster with the given name from user. For example:
 
-	ksctl create-cluster azure <arguments to civo cloud provider>
+	ksctl create-cluster azure <arguments to cloud provider>
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
 		verbosity, _ := cmd.Flags().GetInt("verbose")
@@ -79,7 +79,7 @@ var createClusterCivo = &cobra.Command{
 	Short: "Use to create a CIVO k3s cluster",
 	Long: `It is used to create cluster with the given name from user. For example:
 
-ksctl create-cluster civo <arguments to civo cloud provider>
+ksctl create-cluster civo <arguments to cloud provider>
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		verbosity, _ := cmd.Flags().GetInt("verbose")
@@ -105,7 +105,7 @@ var createClusterLocal = &cobra.Command{
 	Short: "Use to create a LOCAL cluster in Docker",
 	Long: `It is used to create cluster with the given name from user. For example:
 
-ksctl create-cluster local <arguments to civo cloud provider>
+ksctl create-cluster local <arguments to cloud provider>
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		verbosity, _ := cmd.Flags().GetInt("verbose")
@@ -131,7 +131,7 @@ var createClusterHACivo = &cobra.Command{
 	Short: "Use to create a HA CIVO k3s cluster",
 	Long: `It is used to create cluster with the given name from user. For example:
 
-ksctl create-cluster ha-civo <arguments to civo cloud provider>
+ksctl create-cluster ha-civo <arguments to cloud provider>
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		verbosity, _ := cmd.Flags().GetInt("verbose")
@@ -156,7 +156,7 @@ var createClusterHAAzure = &cobra.Command{
 	Short: "Use to create a HA k3s cluster in Azure",
 	Long: `It is used to create cluster with the given name from user. For example:
 
-	ksctl create-cluster ha-azure <arguments to civo cloud provider>
+	ksctl create-cluster ha-azure <arguments to cloud provider>
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
 		verbosity, _ := cmd.Flags().GetInt("verbose")

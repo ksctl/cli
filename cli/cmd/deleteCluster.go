@@ -18,7 +18,7 @@ var deleteClusterCmd = &cobra.Command{
 	Aliases: []string{"delete"},
 	Long: `It is used to delete cluster of given provider. For example:
 
-ksctl delete-cluster ["azure", "ha-<provider>", "civo", "local"]
+ksctl delete-cluster ["aws","azure", "ha-<provider>", "civo", "local"]
 `,
 }
 
@@ -80,7 +80,7 @@ var deleteClusterHAAws = &cobra.Command{
 	Short: "Use to delete a HA k3s cluster in Azure",
 	Long: `It is used to delete cluster with the given name from user. For example:
 
-	ksctl delete-cluster ha-azure <arguments to civo cloud provider>
+	ksctl delete-cluster ha-aws <arguments to cloud provider>
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
 		verbosity, _ := cmd.Flags().GetInt("verbose")
@@ -106,7 +106,7 @@ var deleteClusterHAAzure = &cobra.Command{
 	Short: "Use to delete a HA k3s cluster in Azure",
 	Long: `It is used to delete cluster with the given name from user. For example:
 
-	ksctl delete-cluster ha-azure <arguments to civo cloud provider>
+	ksctl delete-cluster ha-azure <arguments to cloud provider>
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
 		verbosity, _ := cmd.Flags().GetInt("verbose")
@@ -132,7 +132,7 @@ var deleteClusterHACivo = &cobra.Command{
 	Short: "Use to delete a HA CIVO k3s cluster",
 	Long: `It is used to delete cluster with the given name from user. For example:
 
-ksctl delete-cluster ha-civo <arguments to civo cloud provider>
+ksctl delete-cluster ha-civo <arguments to cloud provider>
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		verbosity, _ := cmd.Flags().GetInt("verbose")

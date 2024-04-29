@@ -219,10 +219,18 @@ func SetDefaults(provider consts.KsctlCloud, clusterType consts.KsctlClusterType
 
 	case string(consts.CloudAzure) + string(consts.ClusterTypeHa):
 		if len(nodeSizeCP) == 0 {
-			nodeSizeCP = "Standard_F2s"
+			if distro == string(consts.K8sKubeadm) {
+				nodeSizeCP = "Standard_F2s"
+			} else {
+				nodeSizeCP = "Standard_F2s"
+			}
 		}
 		if len(nodeSizeWP) == 0 {
-			nodeSizeWP = "Standard_F2s"
+			if distro == string(consts.K8sKubeadm) {
+				nodeSizeWP = "Standard_F4s"
+			} else {
+				nodeSizeWP = "Standard_F2s"
+			}
 		}
 		if len(nodeSizeDS) == 0 {
 			nodeSizeDS = "Standard_F2s"
@@ -234,7 +242,11 @@ func SetDefaults(provider consts.KsctlCloud, clusterType consts.KsctlClusterType
 			region = "eastus"
 		}
 		if noWP == -1 {
-			noWP = 1
+			if distro == string(consts.K8sKubeadm) {
+				noWP = 2
+			} else {
+				noWP = 1
+			}
 		}
 		if noCP == -1 {
 			noCP = 3
@@ -243,7 +255,11 @@ func SetDefaults(provider consts.KsctlCloud, clusterType consts.KsctlClusterType
 			noDS = 3
 		}
 		if len(k8sVer) == 0 {
-			k8sVer = "1.27.1"
+			if distro == string(consts.K8sKubeadm) {
+				k8sVer = "1.30"
+			} else {
+				k8sVer = "1.29.4"
+			}
 		}
 		if len(distro) == 0 {
 			distro = string(consts.K8sK3s)
@@ -254,10 +270,18 @@ func SetDefaults(provider consts.KsctlCloud, clusterType consts.KsctlClusterType
 
 	case string(consts.CloudAws) + string(consts.ClusterTypeHa):
 		if len(nodeSizeCP) == 0 {
-			nodeSizeCP = "t2.micro"
+			if distro == string(consts.K8sKubeadm) {
+				nodeSizeCP = "t2.medium"
+			} else {
+				nodeSizeCP = "t2.micro"
+			}
 		}
 		if len(nodeSizeWP) == 0 {
-			nodeSizeWP = "t2.micro"
+			if distro == string(consts.K8sKubeadm) {
+				nodeSizeWP = "t2.medium"
+			} else {
+				nodeSizeWP = "t2.micro"
+			}
 		}
 		if len(nodeSizeDS) == 0 {
 			nodeSizeDS = "t2.micro"
@@ -269,7 +293,11 @@ func SetDefaults(provider consts.KsctlCloud, clusterType consts.KsctlClusterType
 			region = "us-east-1"
 		}
 		if noWP == -1 {
-			noWP = 1
+			if distro == string(consts.K8sKubeadm) {
+				noWP = 2
+			} else {
+				noWP = 1
+			}
 		}
 		if noCP == -1 {
 			noCP = 3
@@ -278,7 +306,11 @@ func SetDefaults(provider consts.KsctlCloud, clusterType consts.KsctlClusterType
 			noDS = 3
 		}
 		if len(k8sVer) == 0 {
-			k8sVer = "1.27.1"
+			if distro == string(consts.K8sKubeadm) {
+				k8sVer = "1.30"
+			} else {
+				k8sVer = "1.29.4"
+			}
 		}
 		if len(distro) == 0 {
 			distro = string(consts.K8sK3s)
@@ -286,13 +318,23 @@ func SetDefaults(provider consts.KsctlCloud, clusterType consts.KsctlClusterType
 		if len(storage) == 0 {
 			storage = string(consts.StoreLocal)
 		}
+		// also check for the cni plugin as in the future relase it will be required
+	// for installing ksctl agents into the cluster
 
 	case string(consts.CloudCivo) + string(consts.ClusterTypeHa):
 		if len(nodeSizeCP) == 0 {
-			nodeSizeCP = "g3.small"
+			if distro == string(consts.K8sKubeadm) {
+				nodeSizeCP = "g3.large"
+			} else {
+				nodeSizeCP = "g3.medium"
+			}
 		}
 		if len(nodeSizeWP) == 0 {
-			nodeSizeWP = "g3.large"
+			if distro == string(consts.K8sKubeadm) {
+				nodeSizeWP = "g3.large"
+			} else {
+				nodeSizeWP = "g3.medium"
+			}
 		}
 		if len(nodeSizeDS) == 0 {
 			nodeSizeDS = "g3.small"
@@ -304,7 +346,11 @@ func SetDefaults(provider consts.KsctlCloud, clusterType consts.KsctlClusterType
 			region = "LON1s"
 		}
 		if noWP == -1 {
-			noWP = 1
+			if distro == string(consts.K8sKubeadm) {
+				noWP = 2
+			} else {
+				noWP = 1
+			}
 		}
 		if noCP == -1 {
 			noCP = 3
@@ -313,7 +359,11 @@ func SetDefaults(provider consts.KsctlCloud, clusterType consts.KsctlClusterType
 			noDS = 3
 		}
 		if len(k8sVer) == 0 {
-			k8sVer = "1.27.1"
+			if distro == string(consts.K8sKubeadm) {
+				k8sVer = "1.30"
+			} else {
+				k8sVer = "1.29.4"
+			}
 		}
 		if len(storage) == 0 {
 			storage = string(consts.StoreLocal)
