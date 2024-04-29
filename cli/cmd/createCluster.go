@@ -24,7 +24,7 @@ ksctl create-cluster ["azure", "gcp", "aws", "local"]
 }
 
 var createClusterHAAws = &cobra.Command{
-	Use:   "aws",
+	Use:   "ha-aws",
 	Short: "Use to create a EKS cluster in AWS",
 	Long: `It is used to create cluster with the given name from user. For example:
 
