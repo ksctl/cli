@@ -42,25 +42,25 @@ jobs:
       - name: civo create
         working-directory: 'C:\Users\runneradmin\AppData\Local\ksctl'
         run: |
-          .\ksctl.exe create civo -n demo -r LON1 --nodeSizeMP "g4s.kube.small" --verbose -1 -s local --approve
-          .\ksctl.exe create ha-civo -n ha-demo --nodeSizeDS "fake.small" --nodeSizeLB "fake.small" --nodeSizeCP "fake.small" --nodeSizeWP "fake.small" -s local -r LON1 --verbose -1 --approve
+          .\ksctl.exe create civo -n demo -r LON1 --nodeSizeMP "g4s.kube.small" --version 1.27.1 --verbose -1 -s local --approve
+          .\ksctl.exe create ha-civo -n ha-demo --nodeSizeDS "fake.small" --version 1.27.1--nodeSizeLB "fake.small" --nodeSizeCP "fake.small" --nodeSizeWP "fake.small" -s local -r LON1 --verbose -1 --approve
 
       - name: azure create
         working-directory: 'C:\Users\runneradmin\AppData\Local\ksctl'
         run: |
-          .\ksctl.exe create azure -n demo -r fake --nodeSizeMP "fake" -s local --verbose -1 --approve
-          .\ksctl.exe create ha-azure -n ha-demo --nodeSizeDS "fake" --nodeSizeLB "fake" --nodeSizeCP "fake" --nodeSizeWP "fake" -r fake --verbose -1 -s local --approve
+          .\ksctl.exe create azure -n demo -r fake --nodeSizeMP "fake" -s local --version 1.27.1 --verbose -1 --approve
+          .\ksctl.exe create ha-azure -n ha-demo --nodeSizeDS "fake"  --version 1.27.1 --nodeSizeLB "fake" --nodeSizeCP "fake" --nodeSizeWP "fake" -r fake --verbose -1 -s local --approve
 
       - name: aws create
         working-directory: 'C:\Users\runneradmin\AppData\Local\ksctl'
         run: |
-          # .\ksctl.exe create aws -n demo -r fake --nodeSizeMP "fake" -s local --verbose -1 --approve
-          .\ksctl.exe create ha-aws -n ha-demo --nodeSizeDS "fake" --nodeSizeLB "fake" --nodeSizeCP "fake" --nodeSizeWP "fake" -r fake --verbose -1 -s local --approve
+          # .\ksctl.exe create aws -n demo -r fake --nodeSizeMP "fake" --version 1.27.1 -s local --verbose -1 --approve
+          .\ksctl.exe create ha-aws -n ha-demo --nodeSizeDS "fake"  --version 1.27.1 --nodeSizeLB "fake" --nodeSizeCP "fake" --nodeSizeWP "fake" -r fake --verbose -1 -s local --approve
 
       - name: local create
         working-directory: 'C:\Users\runneradmin\AppData\Local\ksctl'
         run: |
-          .\ksctl.exe create local -n demolocal --verbose -1 -s local --approve
+          .\ksctl.exe create local -n demolocal  --version 1.27.1 --verbose -1 -s local --approve
 
       - name: civo get
         working-directory: 'C:\Users\runneradmin\AppData\Local\ksctl'
@@ -174,18 +174,18 @@ jobs:
 
       - name: civo create
         run: |
-          ksctl create civo -n demo -r LON1 --nodeSizeMP "g4s.kube.small" -s local --verbose -1 --approve
-          ksctl create ha-civo -n ha-demo --nodeSizeDS "fake.small" -s local --nodeSizeLB "fake.small" --nodeSizeCP "fake.small" --nodeSizeWP "fake.small" -r LON1 --verbose -1 --approve
+          ksctl create civo -n demo -r LON1 --nodeSizeMP "g4s.kube.small"  --version 1.27.1 -s local --verbose -1 --approve
+          ksctl create ha-civo -n ha-demo --nodeSizeDS "fake.small" -s local  --version 1.27.1 --nodeSizeLB "fake.small" --nodeSizeCP "fake.small" --nodeSizeWP "fake.small" -r LON1 --verbose -1 --approve
 
       - name: azure create
         run: |
-          ksctl create azure -n demo -r fake --nodeSizeMP "fake" -s local --verbose -1 --approve
-          ksctl create ha-azure -n ha-demo --nodeSizeDS "fake" -s local --nodeSizeLB "fake" --nodeSizeCP "fake" --nodeSizeWP "fake" -r fake --verbose -1 --approve
+          ksctl create azure -n demo -r fake --nodeSizeMP "fake" -s local  --version 1.27.1 --verbose -1 --approve
+          ksctl create ha-azure -n ha-demo --nodeSizeDS "fake" -s local --nodeSizeLB "fake"  --version 1.27.1 --nodeSizeCP "fake" --nodeSizeWP "fake" -r fake --verbose -1 --approve
 
       - name: aws create
         run: |
-          # ksctl create aws -n demo -r fake --nodeSizeMP "fake" -s local --verbose -1 --approve
-          ksctl create ha-aws -n ha-demo --nodeSizeDS "fake" -s local --nodeSizeLB "fake" --nodeSizeCP "fake" --nodeSizeWP "fake" -r fake --verbose -1 --approve
+          # ksctl create aws -n demo -r fake --nodeSizeMP "fake" -s local  --version 1.27.1 --verbose -1 --approve
+          ksctl create ha-aws -n ha-demo --nodeSizeDS "fake" -s local --nodeSizeLB "fake" --version 1.27.1  --nodeSizeCP "fake" --nodeSizeWP "fake" -r fake --verbose -1 --approve
 
       - name: local create
         run: |
