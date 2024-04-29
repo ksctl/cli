@@ -7,7 +7,7 @@ on:
       - 'scripts/**'
       - 'go.mod'
       - 'go.sum'
-    types: [ labeled ]
+    types: [ labeled, opened, synchronize, reopened ]
     branches: [ main ]
   push:
     paths:
@@ -19,7 +19,14 @@ on:
     branches: [ main ]
 jobs:
   ksctl-cli-windows:
-    if: ${{ github.event.label.name == 'pr/lgtm' || (github.event_name == 'push' && github.ref == 'refs/heads/main') }}
+    if: |
+      (
+        github.event.label.name == 'pr/lgtm' ||
+        contains(github.event.pull_request.labels.*.name, 'pr/lgtm')
+      ) || (
+        github.event_name == 'push' && 
+        github.ref == 'refs/heads/main'
+      )
     runs-on: windows-latest
     env:
       KSCTL_FAKE_FLAG_ENABLED: "1"
@@ -42,19 +49,25 @@ jobs:
       - name: civo create
         working-directory: 'C:\Users\runneradmin\AppData\Local\ksctl'
         run: |
-          .\ksctl.exe create civo -n demo -r LON1 --nodeSizeMP "g4s.kube.small" --verbose -1 -s local --approve
-          .\ksctl.exe create ha-civo -n ha-demo --nodeSizeDS "fake.small" --nodeSizeLB "fake.small" --nodeSizeCP "fake.small" --nodeSizeWP "fake.small" -s local -r LON1 --verbose -1 --approve
+          .\ksctl.exe create civo -n demo -r LON1 --nodeSizeMP "g4s.kube.small" --version 1.27.1 --verbose -1 -s local --approve
+          .\ksctl.exe create ha-civo -n ha-demo --nodeSizeDS "fake.small" --version 1.27.1 --nodeSizeLB "fake.small" --nodeSizeCP "fake.small" --nodeSizeWP "fake.small" -s local -r LON1 --verbose -1 --approve
 
       - name: azure create
         working-directory: 'C:\Users\runneradmin\AppData\Local\ksctl'
         run: |
-          .\ksctl.exe create azure -n demo -r fake --nodeSizeMP "fake" -s local --verbose -1 --approve
-          .\ksctl.exe create ha-azure -n ha-demo --nodeSizeDS "fake" --nodeSizeLB "fake" --nodeSizeCP "fake" --nodeSizeWP "fake" -r fake --verbose -1 -s local --approve
+          .\ksctl.exe create azure -n demo -r fake --nodeSizeMP "fake" -s local --version 1.27.1 --verbose -1 --approve
+          .\ksctl.exe create ha-azure -n ha-demo --nodeSizeDS "fake"  --version 1.27.1 --nodeSizeLB "fake" --nodeSizeCP "fake" --nodeSizeWP "fake" -r fake --verbose -1 -s local --approve
+
+      - name: aws create
+        working-directory: 'C:\Users\runneradmin\AppData\Local\ksctl'
+        run: |
+          # .\ksctl.exe create aws -n demo -r fake --nodeSizeMP "fake" --version 1.27.1 -s local --verbose -1 --approve
+          .\ksctl.exe create ha-aws -n ha-demo --nodeSizeDS "fake"  --version 1.27.1 --nodeSizeLB "fake" --nodeSizeCP "fake" --nodeSizeWP "fake" -r fake --verbose -1 -s local --approve
 
       - name: local create
         working-directory: 'C:\Users\runneradmin\AppData\Local\ksctl'
         run: |
-          .\ksctl.exe create local -n demolocal --verbose -1 -s local --approve
+          .\ksctl.exe create local -n demolocal  --version 1.27.1 --verbose -1 -s local --approve
 
       - name: civo get
         working-directory: 'C:\Users\runneradmin\AppData\Local\ksctl'
@@ -65,6 +78,11 @@ jobs:
         working-directory: 'C:\Users\runneradmin\AppData\Local\ksctl'
         run: |
           .\ksctl.exe get -s local -p azure
+
+      - name: aws get
+        working-directory: 'C:\Users\runneradmin\AppData\Local\ksctl'
+        run: |
+          .\ksctl.exe get -s local -p aws
 
       - name: get all
         working-directory: 'C:\Users\runneradmin\AppData\Local\ksctl'
@@ -77,24 +95,35 @@ jobs:
           .\ksctl.exe switch -p civo -n demo -s local -r LON1
           .\ksctl.exe switch -p ha-civo -n ha-demo -s local -r LON1
 
+      - name: aws switch
+        working-directory: 'C:\Users\runneradmin\AppData\Local\ksctl'
+        run: |
+          # .\ksctl.exe switch -p aws -n demo -s local -r fake
+          .\ksctl.exe switch -p ha-aws -n ha-demo -s local -r fake
+
       - name: azure switch
         working-directory: 'C:\Users\runneradmin\AppData\Local\ksctl'
         run: |
           .\ksctl.exe switch -p azure -n demo -s local -r fake
           .\ksctl.exe switch -p ha-azure -n ha-demo -s local -r fake
 
-
       - name: civo scale up and down
         working-directory: 'C:\Users\runneradmin\AppData\Local\ksctl'
         run: |
-          .\ksctl.exe delete ha-civo delete-nodes -n ha-demo --noWP 0 -r LON1 -s local --approve -v -1
-          .\ksctl.exe create ha-civo add-nodes -n ha-demo --noWP 1 --nodeSizeWP "fake.small" -s local -r LON1 -v -1 --approve
+          .\ksctl.exe delete ha-civo del-nodes -n ha-demo --noWP 0 -r LON1 -s local --approve -v -1
+          .\ksctl.exe create ha-civo add-nodes -n ha-demo --noWP 1  --version 1.27.1 --nodeSizeWP "fake.small" -s local -r LON1 -v -1 --approve
 
       - name: azure scale up and down
         working-directory: 'C:\Users\runneradmin\AppData\Local\ksctl'
         run: |
-          .\ksctl.exe delete ha-azure delete-nodes -n ha-demo --noWP 0 -r fake -s local --approve -v -1
-          .\ksctl.exe create ha-azure add-nodes -n ha-demo --noWP 1 --nodeSizeWP "fake" -s local -r fake -v -1 --approve
+          .\ksctl.exe delete ha-azure del-nodes -n ha-demo --noWP 0 -r fake -s local --approve -v -1
+          .\ksctl.exe create ha-azure add-nodes -n ha-demo --noWP 1  --version 1.27.1 --nodeSizeWP "fake" -s local -r fake -v -1 --approve
+
+      - name: aws scale up and down
+        working-directory: 'C:\Users\runneradmin\AppData\Local\ksctl'
+        run: |
+          .\ksctl.exe delete ha-aws del-nodes -n ha-demo --noWP 0 -r fake -s local --approve -v -1
+          .\ksctl.exe create ha-aws add-nodes -n ha-demo --noWP 1  --version 1.27.1 --nodeSizeWP "fake" -s local -r fake -v -1 --approve
 
       - name: civo delete
         working-directory: 'C:\Users\runneradmin\AppData\Local\ksctl'
@@ -109,6 +138,12 @@ jobs:
           .\ksctl.exe delete azure -n demo -r fake -s local -v -1 --approve
           .\ksctl.exe delete ha-azure -n ha-demo -r fake -s local -v -1 --approve
 
+      - name: aws delete
+        working-directory: 'C:\Users\runneradmin\AppData\Local\ksctl'
+        run: |
+          # .\ksctl.exe delete aws -n demo -r fake -s local -v -1 --approve
+          .\ksctl.exe delete ha-aws -n ha-demo -r fake -s local -v -1 --approve
+
       - name: local delete
         working-directory: 'C:\Users\runneradmin\AppData\Local\ksctl'
         run: |
@@ -119,10 +154,18 @@ jobs:
       matrix:
         os: [macos-latest, ubuntu-latest]
 
-    if: ${{ github.event.label.name == 'pr/lgtm' || (github.event_name == 'push' && github.ref == 'refs/heads/main') }}
+    if: |
+      (
+        github.event.label.name == 'pr/lgtm' ||
+        contains(github.event.pull_request.labels.*.name, 'pr/lgtm')
+      ) || (
+        github.event_name == 'push' && 
+        github.ref == 'refs/heads/main'
+      )
     runs-on: ${{ matrix.os }}
     env:
       KSCTL_FAKE_FLAG_ENABLED: "1"
+      PS4: '+\[\033[0;33m\](\[\033[0;36m\]${BASH_SOURCE##*/}:${LINENO}\[\033[0;33m\])\[\033[0m\] '
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -135,76 +178,122 @@ jobs:
       - name: build ksctl linux
         if: ${{ matrix.os == 'ubuntu-latest' }}
         run: |
+          set -xe
           make install_linux
           ksctl version
 
       - name: build ksctl macos
         if: ${{ matrix.os == 'macos-latest' }}
         run: |
+          set -xe
           make install_macos_intel
           ksctl version
 
       - name: civo create
         run: |
-          ksctl create civo -n demo -r LON1 --nodeSizeMP "g4s.kube.small" -s local --verbose -1 --approve
-          ksctl create ha-civo -n ha-demo --nodeSizeDS "fake.small" -s local --nodeSizeLB "fake.small" --nodeSizeCP "fake.small" --nodeSizeWP "fake.small" -r LON1 --verbose -1 --approve
+          set -xe
+          ksctl create civo -n demo -r LON1 --nodeSizeMP "g4s.kube.small"  --version 1.27.1 -s local --verbose -1 --approve
+          ksctl create ha-civo -n ha-demo --nodeSizeDS "fake.small" -s local  --version 1.27.1 --nodeSizeLB "fake.small" --nodeSizeCP "fake.small" --nodeSizeWP "fake.small" -r LON1 --verbose -1 --approve
+
       - name: azure create
         run: |
-          ksctl create azure -n demo -r fake --nodeSizeMP "fake" -s local --verbose -1 --approve
-          ksctl create ha-azure -n ha-demo --nodeSizeDS "fake" -s local --nodeSizeLB "fake" --nodeSizeCP "fake" --nodeSizeWP "fake" -r fake --verbose -1 --approve
+          set -xe
+          ksctl create azure -n demo -r fake --nodeSizeMP "fake" -s local  --version 1.27.1 --verbose -1 --approve
+          ksctl create ha-azure -n ha-demo --nodeSizeDS "fake" -s local --nodeSizeLB "fake"  --version 1.27.1 --nodeSizeCP "fake" --nodeSizeWP "fake" -r fake --verbose -1 --approve
+
+      - name: aws create
+        run: |
+          set -xe
+          # ksctl create aws -n demo -r fake --nodeSizeMP "fake" -s local  --version 1.27.1 --verbose -1 --approve
+          ksctl create ha-aws -n ha-demo --nodeSizeDS "fake" -s local --nodeSizeLB "fake" --version 1.27.1  --nodeSizeCP "fake" --nodeSizeWP "fake" -r fake --verbose -1 --approve
 
       - name: local create
         run: |
+          set -xe
           ksctl create local -n demolocal -s local --verbose -1 --approve
 
       - name: civo get
         run: |
+          set -xe
           ksctl get -p civo -s local
+
       - name: azure get
         run: |
+          set -xe
           ksctl get -p azure -s local
+
+      - name: aws get
+        run: |
+          set -xe
+          ksctl get -p aws -s local
+
       - name: all
         run: |
+          set -xe
           ksctl get -s local
 
       - name: civo switch
         run: |
+          set -xe
           ksctl switch -p civo -n demo -s local -r LON1
           ksctl switch -p ha-civo -n ha-demo -s local -r LON1
 
       - name: azure switch
         run: |
+          set -xe
           ksctl switch -p azure -n demo -s local -r fake
           ksctl switch -p ha-azure -n ha-demo -s local -r fake
 
+      - name: aws switch
+        run: |
+          set -xe
+          # ksctl switch -p aws -n demo -s local -r fake
+          ksctl switch -p ha-aws -n ha-demo -s local -r fake
 
       - name: civo scale up and down
         run: |
-          ksctl delete ha-civo delete-nodes -n ha-demo --noWP 0 -r LON1 -s local --approve -v -1
-          ksctl create ha-civo add-nodes -n ha-demo --noWP 1 --nodeSizeWP "fake.small" -s local -r LON1 -v -1 --approve
+          set -xe
+          ksctl delete ha-civo del-nodes -n ha-demo --noWP 0 -r LON1 -s local --approve -v -1
+          ksctl create ha-civo add-nodes -n ha-demo --noWP 1  --version 1.27.1 --nodeSizeWP "fake.small" -s local -r LON1 -v -1 --approve
 
       - name: azure scale up and down
         run: |
-          ksctl delete ha-azure delete-nodes -n ha-demo --noWP 0 -s local -r fake --approve -v -1
-          ksctl create ha-azure add-nodes -n ha-demo --noWP 1 --nodeSizeWP "fake" -s local -r fake -v -1 --approve
+          set -xe
+          ksctl delete ha-azure del-nodes -n ha-demo --noWP 0 -s local -r fake --approve -v -1
+          ksctl create ha-azure add-nodes -n ha-demo --noWP 1  --version 1.27.1 --nodeSizeWP "fake" -s local -r fake -v -1 --approve
+
+      - name: aws scale up and down
+        run: |
+          set -xe
+          ksctl delete ha-aws del-nodes -n ha-demo --noWP 0 -s local -r fake --approve -v -1
+          ksctl create ha-aws add-nodes -n ha-demo --noWP 1  --version 1.27.1 --nodeSizeWP "fake" -s local -r fake -v -1 --approve
 
       - name: civo delete
         run: |
+          set -xe
           ksctl delete civo -n demo -r LON1 -s local -v -1 --approve
           ksctl delete ha-civo -n ha-demo -r LON1 -s local -v -1 --approve
 
-
       - name: azure delete
         run: |
+          set -xe
           ksctl delete azure -n demo -r fake -s local -v -1 --approve
           ksctl delete ha-azure -n ha-demo -r fake -s local -v -1 --approve
 
+      - name: aws delete
+        run: |
+          set -xe
+          # ksctl delete aws -n demo -r fake -s local -v -1 --approve
+          ksctl delete ha-aws -n ha-demo -r fake -s local -v -1 --approve
+
       - name: local delete
         run: |
+          set -xe
           ksctl delete local -n demolocal -v -1 -s local --approve
 
       - name: storage provider
         run: |
+          set -xe
           ksctl create local -n demolocal -s local -v -1 --approve
           ksctl create local -n demolocal -s external-mongo -v -1 --approve || echo "Expected to fail :) due to missing env vars"
           ksctl create local -n demolocal -s local123 -v -1 --approve || echo "Expected to fail :) due to invalid provider name"

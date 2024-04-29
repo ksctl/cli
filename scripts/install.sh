@@ -94,15 +94,5 @@ fi
 sudo tar -xvf ksctl-cli_${RELEASE_VERSION}_${OS}_${ARCH}.tar.gz
 
 sudo mv -v ksctl /usr/local/bin/ksctl
-# Setup the configurations dir
-mkdir -p ${HOME}/.ksctl/cred
-
-mkdir -p ${HOME}/.ksctl/config/civo/ha
-mkdir -p ${HOME}/.ksctl/config/civo/managed
-mkdir -p ${HOME}/.ksctl/config/azure/ha
-mkdir -p ${HOME}/.ksctl/config/azure/managed
-mkdir -p ${HOME}/.ksctl/config/aws/managed
-mkdir -p ${HOME}/.ksctl/config/aws/ha
-mkdir -p ${HOME}/.ksctl/config/local/managed
 
 echo -e "${Green}INSTALL COMPLETE${NoColor}"

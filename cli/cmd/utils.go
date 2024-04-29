@@ -211,7 +211,7 @@ func SetDefaults(provider consts.KsctlCloud, clusterType consts.KsctlClusterType
 			region = "LON1"
 		}
 		if len(k8sVer) == 0 {
-			k8sVer = "1.27.1"
+			k8sVer = "1.28.7"
 		}
 		if len(storage) == 0 {
 			storage = string(consts.StoreLocal)
@@ -219,10 +219,18 @@ func SetDefaults(provider consts.KsctlCloud, clusterType consts.KsctlClusterType
 
 	case string(consts.CloudAzure) + string(consts.ClusterTypeHa):
 		if len(nodeSizeCP) == 0 {
-			nodeSizeCP = "Standard_F2s"
+			if distro == string(consts.K8sKubeadm) {
+				nodeSizeCP = "Standard_F2s"
+			} else {
+				nodeSizeCP = "Standard_F2s"
+			}
 		}
 		if len(nodeSizeWP) == 0 {
-			nodeSizeWP = "Standard_F2s"
+			if distro == string(consts.K8sKubeadm) {
+				nodeSizeWP = "Standard_F4s"
+			} else {
+				nodeSizeWP = "Standard_F2s"
+			}
 		}
 		if len(nodeSizeDS) == 0 {
 			nodeSizeDS = "Standard_F2s"
@@ -234,16 +242,24 @@ func SetDefaults(provider consts.KsctlCloud, clusterType consts.KsctlClusterType
 			region = "eastus"
 		}
 		if noWP == -1 {
-			noWP = 1
+			if distro == string(consts.K8sKubeadm) {
+				noWP = 2
+			} else {
+				noWP = 1
+			}
 		}
 		if noCP == -1 {
 			noCP = 3
 		}
 		if noDS == -1 {
-			noDS = 1
+			noDS = 3
 		}
 		if len(k8sVer) == 0 {
-			k8sVer = "1.27.1"
+			if distro == string(consts.K8sKubeadm) {
+				k8sVer = "1.29"
+			} else {
+				k8sVer = "1.29.4"
+			}
 		}
 		if len(distro) == 0 {
 			distro = string(consts.K8sK3s)
@@ -252,12 +268,73 @@ func SetDefaults(provider consts.KsctlCloud, clusterType consts.KsctlClusterType
 			storage = string(consts.StoreLocal)
 		}
 
-	case string(consts.CloudCivo) + string(consts.ClusterTypeHa):
+	case string(consts.CloudAws) + string(consts.ClusterTypeHa):
 		if len(nodeSizeCP) == 0 {
-			nodeSizeCP = "g3.small"
+			if distro == string(consts.K8sKubeadm) {
+				nodeSizeCP = "t2.medium"
+			} else {
+				nodeSizeCP = "t2.micro"
+			}
 		}
 		if len(nodeSizeWP) == 0 {
-			nodeSizeWP = "g3.large"
+			if distro == string(consts.K8sKubeadm) {
+				nodeSizeWP = "t2.medium"
+			} else {
+				nodeSizeWP = "t2.micro"
+			}
+		}
+		if len(nodeSizeDS) == 0 {
+			nodeSizeDS = "t2.micro"
+		}
+		if len(nodeSizeLB) == 0 {
+			nodeSizeLB = "t2.micro"
+		}
+		if len(region) == 0 {
+			region = "us-east-1"
+		}
+		if noWP == -1 {
+			if distro == string(consts.K8sKubeadm) {
+				noWP = 2
+			} else {
+				noWP = 1
+			}
+		}
+		if noCP == -1 {
+			noCP = 3
+		}
+		if noDS == -1 {
+			noDS = 3
+		}
+		if len(k8sVer) == 0 {
+			if distro == string(consts.K8sKubeadm) {
+				k8sVer = "1.29"
+			} else {
+				k8sVer = "1.29.4"
+			}
+		}
+		if len(distro) == 0 {
+			distro = string(consts.K8sK3s)
+		}
+		if len(storage) == 0 {
+			storage = string(consts.StoreLocal)
+		}
+		// also check for the cni plugin as in the future relase it will be required
+	// for installing ksctl agents into the cluster
+
+	case string(consts.CloudCivo) + string(consts.ClusterTypeHa):
+		if len(nodeSizeCP) == 0 {
+			if distro == string(consts.K8sKubeadm) {
+				nodeSizeCP = "g3.large"
+			} else {
+				nodeSizeCP = "g3.medium"
+			}
+		}
+		if len(nodeSizeWP) == 0 {
+			if distro == string(consts.K8sKubeadm) {
+				nodeSizeWP = "g3.large"
+			} else {
+				nodeSizeWP = "g3.medium"
+			}
 		}
 		if len(nodeSizeDS) == 0 {
 			nodeSizeDS = "g3.small"
@@ -269,16 +346,24 @@ func SetDefaults(provider consts.KsctlCloud, clusterType consts.KsctlClusterType
 			region = "LON1s"
 		}
 		if noWP == -1 {
-			noWP = 1
+			if distro == string(consts.K8sKubeadm) {
+				noWP = 2
+			} else {
+				noWP = 1
+			}
 		}
 		if noCP == -1 {
 			noCP = 3
 		}
 		if noDS == -1 {
-			noDS = 1
+			noDS = 3
 		}
 		if len(k8sVer) == 0 {
-			k8sVer = "1.27.1"
+			if distro == string(consts.K8sKubeadm) {
+				k8sVer = "1.29"
+			} else {
+				k8sVer = "1.29.4"
+			}
 		}
 		if len(storage) == 0 {
 			storage = string(consts.StoreLocal)
@@ -354,6 +439,22 @@ func argsFlags() {
 	k8sVerFlag(createClusterHACivo)
 	storageFlag(createClusterHACivo)
 
+	// HA Aws
+	clusterNameFlag(createClusterHAAws)
+	nodeSizeCPFlag(createClusterHAAws)
+	nodeSizeDSFlag(createClusterHAAws)
+	nodeSizeWPFlag(createClusterHAAws)
+	nodeSizeLBFlag(createClusterHAAws)
+	regionFlag(createClusterHAAws)
+	appsFlag(createClusterHAAws)
+	cniFlag(createClusterHAAws)
+	noOfWPFlag(createClusterHAAws)
+	noOfCPFlag(createClusterHAAws)
+	noOfDSFlag(createClusterHAAws)
+	distroFlag(createClusterHAAws)
+	k8sVerFlag(createClusterHAAws)
+	storageFlag(createClusterHAAws)
+
 	// HA Azure
 	clusterNameFlag(createClusterHAAzure)
 	nodeSizeCPFlag(createClusterHAAzure)
@@ -386,6 +487,11 @@ func argsFlags() {
 	storageFlag(deleteClusterCivo)
 
 	// HA Civo
+	clusterNameFlag(deleteClusterHAAws)
+	regionFlag(deleteClusterHAAws)
+	storageFlag(deleteClusterHAAws)
+
+	// HA Aws
 	clusterNameFlag(deleteClusterHACivo)
 	regionFlag(deleteClusterHACivo)
 	storageFlag(deleteClusterHACivo)
@@ -405,12 +511,14 @@ func AllFeatures() {
 	featureFlag(createClusterCivo)
 	featureFlag(createClusterHACivo)
 	featureFlag(createClusterLocal)
+	featureFlag(createClusterHAAws)
 
 	featureFlag(deleteClusterAzure)
 	featureFlag(deleteClusterHAAzure)
 	featureFlag(deleteClusterCivo)
 	featureFlag(deleteClusterHACivo)
 	featureFlag(deleteClusterLocal)
+	featureFlag(deleteClusterHAAws)
 
 	featureFlag(addMoreWorkerNodesHACivo)
 	featureFlag(addMoreWorkerNodesHAAzure)

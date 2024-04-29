@@ -3,24 +3,12 @@
 $erroractionpreference = 'stop' # quit if anything goes wrong
 
 if (($PSVersionTable.PSVersion.Major) -lt 5) {
-    Write-Output "PowerShell 5 or later is required to run Datree."
+    Write-Output "PowerShell 5 or later is required to run Ksctl."
     Write-Output "Upgrade PowerShell: https://docs.microsoft.com/en-us/powershell/scripting/setup/installing-windows-powershell"
     break
 }
 
 Write-Host "Welcome to Installation" -ForegroundColor DarkGreen
-
-mkdir -Force $env:USERPROFILE\.ksctl\cred
-mkdir -Force $env:USERPROFILE\.ksctl\config\civo
-mkdir -Force $env:USERPROFILE\.ksctl\config\civo\ha
-mkdir -Force $env:USERPROFILE\.ksctl\config\civo\managed
-mkdir -Force $env:USERPROFILE\.ksctl\config\azure
-mkdir -Force $env:USERPROFILE\.ksctl\config\azure\ha
-mkdir -Force $env:USERPROFILE\.ksctl\config\azure\managed
-mkdir -Force $env:USERPROFILE\.ksctl\config\aws\ha
-mkdir -Force $env:USERPROFILE\.ksctl\config\aws\managed
-mkdir -Force $env:USERPROFILE\.ksctl\config\local
-mkdir -Force $env:USERPROFILE\.ksctl\config\local\managed
 
 $env:GOOS = 'windows'
 $env:GOARCH = 'amd64'

@@ -13,11 +13,11 @@ import (
 )
 
 var deleteNodesHACivo = &cobra.Command{
-	Use:   "delete-nodes",
+	Use:   "del-nodes",
 	Short: "Use to delete a HA CIVO k3s cluster",
 	Long: `It is used to delete cluster with the given name from user. For example:
 
-ksctl delete-cluster ha-civo delete-nodes <arguments to civo cloud provider>
+ksctl delete-cluster ha-civo delete-nodes <arguments to cloud provider>
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		verbosity, _ := cmd.Flags().GetInt("verbose")

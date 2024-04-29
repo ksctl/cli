@@ -23,14 +23,29 @@ ksctl create-cluster ["azure", "gcp", "aws", "local"]
 `,
 }
 
-var createClusterAws = &cobra.Command{
-	Use:   "aws",
+var createClusterHAAws = &cobra.Command{
+	Use:   "ha-aws",
 	Short: "Use to create a EKS cluster in AWS",
 	Long: `It is used to create cluster with the given name from user. For example:
 
-ksctl create-cluster aws <arguments to civo cloud provider>
+ksctl create-cluster ha-aws <arguments to cloud provider>
 `,
-	Run: func(cmd *cobra.Command, args []string) {},
+	Run: func(cmd *cobra.Command, args []string) {
+		verbosity, _ := cmd.Flags().GetInt("verbose")
+		SetRequiredFeatureFlags(cmd)
+
+		cli.Client.Metadata.LogVerbosity = verbosity
+		cli.Client.Metadata.LogWritter = os.Stdout
+		cli.Client.Metadata.Provider = consts.CloudAws
+
+		SetDefaults(consts.CloudAws, consts.ClusterTypeHa)
+
+		if err := safeInitializeStorageLoggerFactory(context.WithValue(context.Background(), "USERID", helpers.GetUserName())); err != nil {
+			log.Error("Failed Initialize Storage Driver", "Reason", err)
+			os.Exit(1)
+		}
+		createHA(cmd.Flags().Lookup("approve").Changed)
+	},
 }
 
 var createClusterAzure = &cobra.Command{
@@ -38,7 +53,7 @@ var createClusterAzure = &cobra.Command{
 	Short: "Use to create a AKS cluster in Azure",
 	Long: `It is used to create cluster with the given name from user. For example:
 
-	ksctl create-cluster azure <arguments to civo cloud provider>
+	ksctl create-cluster azure <arguments to cloud provider>
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
 		verbosity, _ := cmd.Flags().GetInt("verbose")
@@ -51,7 +66,7 @@ var createClusterAzure = &cobra.Command{
 		SetDefaults(consts.CloudAzure, consts.ClusterTypeMang)
 
 		if err := safeInitializeStorageLoggerFactory(context.WithValue(context.Background(), "USERID", helpers.GetUserName())); err != nil {
-			log.Error("Failed Inialize Storage Driver", "Reason", err)
+			log.Error("Failed Initialize Storage Driver", "Reason", err)
 			os.Exit(1)
 		}
 
@@ -64,7 +79,7 @@ var createClusterCivo = &cobra.Command{
 	Short: "Use to create a CIVO k3s cluster",
 	Long: `It is used to create cluster with the given name from user. For example:
 
-ksctl create-cluster civo <arguments to civo cloud provider>
+ksctl create-cluster civo <arguments to cloud provider>
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		verbosity, _ := cmd.Flags().GetInt("verbose")
@@ -77,7 +92,7 @@ ksctl create-cluster civo <arguments to civo cloud provider>
 		SetDefaults(consts.CloudCivo, consts.ClusterTypeMang)
 
 		if err := safeInitializeStorageLoggerFactory(context.WithValue(context.Background(), "USERID", helpers.GetUserName())); err != nil {
-			log.Error("Failed Inialize Storage Driver", "Reason", err)
+			log.Error("Failed Initialize Storage Driver", "Reason", err)
 			os.Exit(1)
 		}
 
@@ -90,7 +105,7 @@ var createClusterLocal = &cobra.Command{
 	Short: "Use to create a LOCAL cluster in Docker",
 	Long: `It is used to create cluster with the given name from user. For example:
 
-ksctl create-cluster local <arguments to civo cloud provider>
+ksctl create-cluster local <arguments to cloud provider>
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		verbosity, _ := cmd.Flags().GetInt("verbose")
@@ -103,7 +118,7 @@ ksctl create-cluster local <arguments to civo cloud provider>
 		SetDefaults(consts.CloudLocal, consts.ClusterTypeMang)
 
 		if err := safeInitializeStorageLoggerFactory(context.WithValue(context.Background(), "USERID", helpers.GetUserName())); err != nil {
-			log.Error("Failed Inialize Storage Driver", "Reason", err)
+			log.Error("Failed Initialize Storage Driver", "Reason", err)
 			os.Exit(1)
 		}
 
@@ -116,7 +131,7 @@ var createClusterHACivo = &cobra.Command{
 	Short: "Use to create a HA CIVO k3s cluster",
 	Long: `It is used to create cluster with the given name from user. For example:
 
-ksctl create-cluster ha-civo <arguments to civo cloud provider>
+ksctl create-cluster ha-civo <arguments to cloud provider>
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		verbosity, _ := cmd.Flags().GetInt("verbose")
@@ -141,7 +156,7 @@ var createClusterHAAzure = &cobra.Command{
 	Short: "Use to create a HA k3s cluster in Azure",
 	Long: `It is used to create cluster with the given name from user. For example:
 
-	ksctl create-cluster ha-azure <arguments to civo cloud provider>
+	ksctl create-cluster ha-azure <arguments to cloud provider>
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
 		verbosity, _ := cmd.Flags().GetInt("verbose")
@@ -154,7 +169,7 @@ var createClusterHAAzure = &cobra.Command{
 		SetDefaults(consts.CloudAzure, consts.ClusterTypeHa)
 
 		if err := safeInitializeStorageLoggerFactory(context.WithValue(context.Background(), "USERID", helpers.GetUserName())); err != nil {
-			log.Error("Failed Inialize Storage Driver", "Reason", err)
+			log.Error("Failed Initialize Storage Driver", "Reason", err)
 			os.Exit(1)
 		}
 		createHA(cmd.Flags().Lookup("approve").Changed)
@@ -164,12 +179,12 @@ var createClusterHAAzure = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(createClusterCmd)
 
-	createClusterCmd.AddCommand(createClusterAws)
 	createClusterCmd.AddCommand(createClusterAzure)
 	createClusterCmd.AddCommand(createClusterCivo)
 	createClusterCmd.AddCommand(createClusterLocal)
 	createClusterCmd.AddCommand(createClusterHACivo)
 	createClusterCmd.AddCommand(createClusterHAAzure)
+	createClusterCmd.AddCommand(createClusterHAAws)
 
 	createClusterAzure.MarkFlagRequired("name")
 	createClusterCivo.MarkFlagRequired("name")
@@ -177,4 +192,5 @@ func init() {
 	createClusterLocal.MarkFlagRequired("name")
 	createClusterHAAzure.MarkFlagRequired("name")
 	createClusterHACivo.MarkFlagRequired("name")
+	createClusterHAAws.MarkFlagRequired("name")
 }

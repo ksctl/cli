@@ -12,12 +12,12 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var deleteNodesHAAzure = &cobra.Command{
+var deleteNodesHAAws = &cobra.Command{
 	Use:   "del-nodes",
-	Short: "Use to delete a HA azure k3s cluster",
+	Short: "Use to delete a HA aws k3s cluster",
 	Long: `It is used to delete cluster with the given name from user. For example:
 
-ksctl delete-cluster ha-azure delete-nodes <arguments to cloud provider>
+ksctl delete-cluster ha-aws delete-nodes <arguments to cloud provider>
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		verbosity, _ := cmd.Flags().GetInt("verbose")
@@ -25,10 +25,10 @@ ksctl delete-cluster ha-azure delete-nodes <arguments to cloud provider>
 
 		cli.Client.Metadata.LogVerbosity = verbosity
 		cli.Client.Metadata.LogWritter = os.Stdout
-		cli.Client.Metadata.Provider = consts.CloudAzure
+		cli.Client.Metadata.Provider = consts.CloudAws
 		cli.Client.Metadata.IsHA = true
 
-		SetDefaults(consts.CloudAzure, consts.ClusterTypeHa)
+		SetDefaults(consts.CloudAws, consts.ClusterTypeHa)
 
 		cli.Client.Metadata.NoWP = noWP
 		cli.Client.Metadata.ClusterName = clusterName
@@ -36,7 +36,7 @@ ksctl delete-cluster ha-azure delete-nodes <arguments to cloud provider>
 		cli.Client.Metadata.K8sDistro = consts.KsctlKubernetes(distro)
 
 		if err := safeInitializeStorageLoggerFactory(context.WithValue(context.Background(), "USERID", helpers.GetUserName())); err != nil {
-			log.Error("Failed Inialize Storage Driver", "Reason", err)
+			log.Error("Failed Initialize Storage Driver", "Reason", err)
 			os.Exit(1)
 		}
 
@@ -55,14 +55,14 @@ ksctl delete-cluster ha-azure delete-nodes <arguments to cloud provider>
 }
 
 func init() {
-	deleteClusterHAAzure.AddCommand(deleteNodesHAAzure)
+	deleteClusterHAAws.AddCommand(deleteNodesHAAws)
 
-	clusterNameFlag(deleteNodesHAAzure)
-	noOfWPFlag(deleteNodesHAAzure)
-	regionFlag(deleteNodesHAAzure)
-	distroFlag(deleteNodesHAAzure)
-	storageFlag(deleteNodesHAAzure)
+	clusterNameFlag(deleteNodesHAAws)
+	noOfWPFlag(deleteNodesHAAws)
+	regionFlag(deleteNodesHAAws)
+	distroFlag(deleteNodesHAAws)
+	storageFlag(deleteNodesHAAws)
 
-	deleteNodesHAAzure.MarkFlagRequired("name")
-	deleteNodesHAAzure.MarkFlagRequired("region")
+	deleteNodesHAAws.MarkFlagRequired("name")
+	deleteNodesHAAws.MarkFlagRequired("region")
 }
