@@ -7,7 +7,7 @@ on:
       - 'scripts/**'
       - 'go.mod'
       - 'go.sum'
-    types: [ labeled ]
+    types: [ labeled, opened, synchronize, reopened ]
     branches: [ main ]
   push:
     paths:
@@ -19,7 +19,14 @@ on:
     branches: [ main ]
 jobs:
   ksctl-cli-windows:
-    if: ${{ github.event.label.name == 'pr/lgtm' || (github.event_name == 'push' && github.ref == 'refs/heads/main') }}
+    if: |
+      (
+        github.event.label.name == 'pr/lgtm' ||
+        contains(github.event.pull_request.labels.*.name, 'pr/lgtm')
+      ) || (
+        github.event_name == 'push' && 
+        github.ref == 'refs/heads/main'
+      )
     runs-on: windows-latest
     env:
       KSCTL_FAKE_FLAG_ENABLED: "1"
@@ -103,19 +110,19 @@ jobs:
       - name: civo scale up and down
         working-directory: 'C:\Users\runneradmin\AppData\Local\ksctl'
         run: |
-          .\ksctl.exe delete ha-civo delete-nodes -n ha-demo --noWP 0 -r LON1 -s local --approve -v -1
+          .\ksctl.exe delete ha-civo del-nodes -n ha-demo --noWP 0 -r LON1 -s local --approve -v -1
           .\ksctl.exe create ha-civo add-nodes -n ha-demo --noWP 1 --nodeSizeWP "fake.small" -s local -r LON1 -v -1 --approve
 
       - name: azure scale up and down
         working-directory: 'C:\Users\runneradmin\AppData\Local\ksctl'
         run: |
-          .\ksctl.exe delete ha-azure delete-nodes -n ha-demo --noWP 0 -r fake -s local --approve -v -1
+          .\ksctl.exe delete ha-azure del-nodes -n ha-demo --noWP 0 -r fake -s local --approve -v -1
           .\ksctl.exe create ha-azure add-nodes -n ha-demo --noWP 1 --nodeSizeWP "fake" -s local -r fake -v -1 --approve
 
       - name: aws scale up and down
         working-directory: 'C:\Users\runneradmin\AppData\Local\ksctl'
         run: |
-          .\ksctl.exe delete ha-aws delete-nodes -n ha-demo --noWP 0 -r fake -s local --approve -v -1
+          .\ksctl.exe delete ha-aws del-nodes -n ha-demo --noWP 0 -r fake -s local --approve -v -1
           .\ksctl.exe create ha-aws add-nodes -n ha-demo --noWP 1 --nodeSizeWP "fake" -s local -r fake -v -1 --approve
 
       - name: civo delete
@@ -224,17 +231,17 @@ jobs:
 
       - name: civo scale up and down
         run: |
-          ksctl delete ha-civo delete-nodes -n ha-demo --noWP 0 -r LON1 -s local --approve -v -1
+          ksctl delete ha-civo del-nodes -n ha-demo --noWP 0 -r LON1 -s local --approve -v -1
           ksctl create ha-civo add-nodes -n ha-demo --noWP 1 --nodeSizeWP "fake.small" -s local -r LON1 -v -1 --approve
 
       - name: azure scale up and down
         run: |
-          ksctl delete ha-azure delete-nodes -n ha-demo --noWP 0 -s local -r fake --approve -v -1
+          ksctl delete ha-azure del-nodes -n ha-demo --noWP 0 -s local -r fake --approve -v -1
           ksctl create ha-azure add-nodes -n ha-demo --noWP 1 --nodeSizeWP "fake" -s local -r fake -v -1 --approve
 
       - name: aws scale up and down
         run: |
-          ksctl delete ha-aws delete-nodes -n ha-demo --noWP 0 -s local -r fake --approve -v -1
+          ksctl delete ha-aws del-nodes -n ha-demo --noWP 0 -s local -r fake --approve -v -1
           ksctl create ha-aws add-nodes -n ha-demo --noWP 1 --nodeSizeWP "fake" -s local -r fake -v -1 --approve
 
       - name: civo delete
