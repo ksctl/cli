@@ -256,7 +256,7 @@ func SetDefaults(provider consts.KsctlCloud, clusterType consts.KsctlClusterType
 		}
 		if len(k8sVer) == 0 {
 			if distro == string(consts.K8sKubeadm) {
-				k8sVer = "1.30"
+				k8sVer = "1.29"
 			} else {
 				k8sVer = "1.29.4"
 			}
@@ -307,7 +307,7 @@ func SetDefaults(provider consts.KsctlCloud, clusterType consts.KsctlClusterType
 		}
 		if len(k8sVer) == 0 {
 			if distro == string(consts.K8sKubeadm) {
-				k8sVer = "1.30"
+				k8sVer = "1.29"
 			} else {
 				k8sVer = "1.29.4"
 			}
@@ -360,7 +360,7 @@ func SetDefaults(provider consts.KsctlCloud, clusterType consts.KsctlClusterType
 		}
 		if len(k8sVer) == 0 {
 			if distro == string(consts.K8sKubeadm) {
-				k8sVer = "1.30"
+				k8sVer = "1.29"
 			} else {
 				k8sVer = "1.29.4"
 			}
