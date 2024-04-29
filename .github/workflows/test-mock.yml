@@ -154,7 +154,14 @@ jobs:
       matrix:
         os: [macos-latest, ubuntu-latest]
 
-    if: ${{ github.event.label.name == 'pr/lgtm' || (github.event_name == 'push' && github.ref == 'refs/heads/main') }}
+    if: |
+      (
+        github.event.label.name == 'pr/lgtm' ||
+        contains(github.event.pull_request.labels.*.name, 'pr/lgtm')
+      ) || (
+        github.event_name == 'push' && 
+        github.ref == 'refs/heads/main'
+      )
     runs-on: ${{ matrix.os }}
     env:
       KSCTL_FAKE_FLAG_ENABLED: "1"
