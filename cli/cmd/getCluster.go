@@ -40,7 +40,7 @@ ksctl get-clusters `,
 		}
 
 		if err := safeInitializeStorageLoggerFactory(context.WithValue(context.Background(), "USERID", helpers.GetUserName())); err != nil {
-			log.Error("Failed Inialize Storage Driver", "Reason", err)
+			log.Error("Failed Initialize Storage Driver", "Reason", err)
 			os.Exit(1)
 		}
 

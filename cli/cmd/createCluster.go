@@ -23,14 +23,29 @@ ksctl create-cluster ["azure", "gcp", "aws", "local"]
 `,
 }
 
-var createClusterAws = &cobra.Command{
+var createClusterHAAws = &cobra.Command{
 	Use:   "aws",
 	Short: "Use to create a EKS cluster in AWS",
 	Long: `It is used to create cluster with the given name from user. For example:
 
 ksctl create-cluster aws <arguments to civo cloud provider>
 `,
-	Run: func(cmd *cobra.Command, args []string) {},
+	Run: func(cmd *cobra.Command, args []string) {
+		verbosity, _ := cmd.Flags().GetInt("verbose")
+		SetRequiredFeatureFlags(cmd)
+
+		cli.Client.Metadata.LogVerbosity = verbosity
+		cli.Client.Metadata.LogWritter = os.Stdout
+		cli.Client.Metadata.Provider = consts.CloudAws
+
+		SetDefaults(consts.CloudAws, consts.ClusterTypeHa)
+
+		if err := safeInitializeStorageLoggerFactory(context.WithValue(context.Background(), "USERID", helpers.GetUserName())); err != nil {
+			log.Error("Failed Initialize Storage Driver", "Reason", err)
+			os.Exit(1)
+		}
+		createHA(cmd.Flags().Lookup("approve").Changed)
+	},
 }
 
 var createClusterAzure = &cobra.Command{
@@ -51,7 +66,7 @@ var createClusterAzure = &cobra.Command{
 		SetDefaults(consts.CloudAzure, consts.ClusterTypeMang)
 
 		if err := safeInitializeStorageLoggerFactory(context.WithValue(context.Background(), "USERID", helpers.GetUserName())); err != nil {
-			log.Error("Failed Inialize Storage Driver", "Reason", err)
+			log.Error("Failed Initialize Storage Driver", "Reason", err)
 			os.Exit(1)
 		}
 
@@ -77,7 +92,7 @@ ksctl create-cluster civo <arguments to civo cloud provider>
 		SetDefaults(consts.CloudCivo, consts.ClusterTypeMang)
 
 		if err := safeInitializeStorageLoggerFactory(context.WithValue(context.Background(), "USERID", helpers.GetUserName())); err != nil {
-			log.Error("Failed Inialize Storage Driver", "Reason", err)
+			log.Error("Failed Initialize Storage Driver", "Reason", err)
 			os.Exit(1)
 		}
 
@@ -103,7 +118,7 @@ ksctl create-cluster local <arguments to civo cloud provider>
 		SetDefaults(consts.CloudLocal, consts.ClusterTypeMang)
 
 		if err := safeInitializeStorageLoggerFactory(context.WithValue(context.Background(), "USERID", helpers.GetUserName())); err != nil {
-			log.Error("Failed Inialize Storage Driver", "Reason", err)
+			log.Error("Failed Initialize Storage Driver", "Reason", err)
 			os.Exit(1)
 		}
 
@@ -154,7 +169,7 @@ var createClusterHAAzure = &cobra.Command{
 		SetDefaults(consts.CloudAzure, consts.ClusterTypeHa)
 
 		if err := safeInitializeStorageLoggerFactory(context.WithValue(context.Background(), "USERID", helpers.GetUserName())); err != nil {
-			log.Error("Failed Inialize Storage Driver", "Reason", err)
+			log.Error("Failed Initialize Storage Driver", "Reason", err)
 			os.Exit(1)
 		}
 		createHA(cmd.Flags().Lookup("approve").Changed)
@@ -164,12 +179,12 @@ var createClusterHAAzure = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(createClusterCmd)
 
-	createClusterCmd.AddCommand(createClusterAws)
 	createClusterCmd.AddCommand(createClusterAzure)
 	createClusterCmd.AddCommand(createClusterCivo)
 	createClusterCmd.AddCommand(createClusterLocal)
 	createClusterCmd.AddCommand(createClusterHACivo)
 	createClusterCmd.AddCommand(createClusterHAAzure)
+	createClusterCmd.AddCommand(createClusterHAAws)
 
 	createClusterAzure.MarkFlagRequired("name")
 	createClusterCivo.MarkFlagRequired("name")
@@ -177,4 +192,5 @@ func init() {
 	createClusterLocal.MarkFlagRequired("name")
 	createClusterHAAzure.MarkFlagRequired("name")
 	createClusterHACivo.MarkFlagRequired("name")
+	createClusterHAAws.MarkFlagRequired("name")
 }

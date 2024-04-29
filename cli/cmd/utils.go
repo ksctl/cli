@@ -211,7 +211,7 @@ func SetDefaults(provider consts.KsctlCloud, clusterType consts.KsctlClusterType
 			region = "LON1"
 		}
 		if len(k8sVer) == 0 {
-			k8sVer = "1.27.1"
+			k8sVer = "1.28.7"
 		}
 		if len(storage) == 0 {
 			storage = string(consts.StoreLocal)
@@ -240,7 +240,42 @@ func SetDefaults(provider consts.KsctlCloud, clusterType consts.KsctlClusterType
 			noCP = 3
 		}
 		if noDS == -1 {
-			noDS = 1
+			noDS = 3
+		}
+		if len(k8sVer) == 0 {
+			k8sVer = "1.27.1"
+		}
+		if len(distro) == 0 {
+			distro = string(consts.K8sK3s)
+		}
+		if len(storage) == 0 {
+			storage = string(consts.StoreLocal)
+		}
+
+	case string(consts.CloudAws) + string(consts.ClusterTypeHa):
+		if len(nodeSizeCP) == 0 {
+			nodeSizeCP = "t2.micro"
+		}
+		if len(nodeSizeWP) == 0 {
+			nodeSizeWP = "t2.micro"
+		}
+		if len(nodeSizeDS) == 0 {
+			nodeSizeDS = "t2.micro"
+		}
+		if len(nodeSizeLB) == 0 {
+			nodeSizeLB = "t2.micro"
+		}
+		if len(region) == 0 {
+			region = "us-east-1"
+		}
+		if noWP == -1 {
+			noWP = 1
+		}
+		if noCP == -1 {
+			noCP = 3
+		}
+		if noDS == -1 {
+			noDS = 3
 		}
 		if len(k8sVer) == 0 {
 			k8sVer = "1.27.1"
@@ -275,7 +310,7 @@ func SetDefaults(provider consts.KsctlCloud, clusterType consts.KsctlClusterType
 			noCP = 3
 		}
 		if noDS == -1 {
-			noDS = 1
+			noDS = 3
 		}
 		if len(k8sVer) == 0 {
 			k8sVer = "1.27.1"
@@ -354,6 +389,22 @@ func argsFlags() {
 	k8sVerFlag(createClusterHACivo)
 	storageFlag(createClusterHACivo)
 
+	// HA Aws
+	clusterNameFlag(createClusterHAAws)
+	nodeSizeCPFlag(createClusterHAAws)
+	nodeSizeDSFlag(createClusterHAAws)
+	nodeSizeWPFlag(createClusterHAAws)
+	nodeSizeLBFlag(createClusterHAAws)
+	regionFlag(createClusterHAAws)
+	appsFlag(createClusterHAAws)
+	cniFlag(createClusterHAAws)
+	noOfWPFlag(createClusterHAAws)
+	noOfCPFlag(createClusterHAAws)
+	noOfDSFlag(createClusterHAAws)
+	distroFlag(createClusterHAAws)
+	k8sVerFlag(createClusterHAAws)
+	storageFlag(createClusterHAAws)
+
 	// HA Azure
 	clusterNameFlag(createClusterHAAzure)
 	nodeSizeCPFlag(createClusterHAAzure)
@@ -386,6 +437,11 @@ func argsFlags() {
 	storageFlag(deleteClusterCivo)
 
 	// HA Civo
+	clusterNameFlag(deleteClusterHAAws)
+	regionFlag(deleteClusterHAAws)
+	storageFlag(deleteClusterHAAws)
+
+	// HA Aws
 	clusterNameFlag(deleteClusterHACivo)
 	regionFlag(deleteClusterHACivo)
 	storageFlag(deleteClusterHACivo)
@@ -405,12 +461,14 @@ func AllFeatures() {
 	featureFlag(createClusterCivo)
 	featureFlag(createClusterHACivo)
 	featureFlag(createClusterLocal)
+	featureFlag(createClusterHAAws)
 
 	featureFlag(deleteClusterAzure)
 	featureFlag(deleteClusterHAAzure)
 	featureFlag(deleteClusterCivo)
 	featureFlag(deleteClusterHACivo)
 	featureFlag(deleteClusterLocal)
+	featureFlag(deleteClusterHAAws)
 
 	featureFlag(addMoreWorkerNodesHACivo)
 	featureFlag(addMoreWorkerNodesHAAzure)

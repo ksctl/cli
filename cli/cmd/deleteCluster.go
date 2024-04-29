@@ -75,6 +75,32 @@ ksctl delete-cluster civo
 	},
 }
 
+var deleteClusterHAAws = &cobra.Command{
+	Use:   "ha-aws",
+	Short: "Use to delete a HA k3s cluster in Azure",
+	Long: `It is used to delete cluster with the given name from user. For example:
+
+	ksctl delete-cluster ha-azure <arguments to civo cloud provider>
+	`,
+	Run: func(cmd *cobra.Command, args []string) {
+		verbosity, _ := cmd.Flags().GetInt("verbose")
+		SetRequiredFeatureFlags(cmd)
+
+		cli.Client.Metadata.LogVerbosity = verbosity
+		cli.Client.Metadata.LogWritter = os.Stdout
+		cli.Client.Metadata.Provider = consts.CloudAws
+
+		SetDefaults(consts.CloudAws, consts.ClusterTypeHa)
+
+		if err := safeInitializeStorageLoggerFactory(context.WithValue(context.Background(), "USERID", helpers.GetUserName())); err != nil {
+			log.Error("Failed Inialize Storage Driver", "Reason", err)
+			os.Exit(1)
+		}
+
+		deleteHA(cmd.Flags().Lookup("approve").Changed)
+	},
+}
+
 var deleteClusterHAAzure = &cobra.Command{
 	Use:   "ha-azure",
 	Short: "Use to delete a HA k3s cluster in Azure",
@@ -161,6 +187,7 @@ func init() {
 	deleteClusterCmd.AddCommand(deleteClusterHAAzure)
 	deleteClusterCmd.AddCommand(deleteClusterAzure)
 	deleteClusterCmd.AddCommand(deleteClusterLocal)
+	deleteClusterCmd.AddCommand(deleteClusterHAAws)
 
 	deleteClusterAzure.MarkFlagRequired("name")
 	deleteClusterAzure.MarkFlagRequired("region")
@@ -170,4 +197,5 @@ func init() {
 	deleteClusterHAAzure.MarkFlagRequired("region")
 	deleteClusterHACivo.MarkFlagRequired("name")
 	deleteClusterLocal.MarkFlagRequired("name")
+	deleteClusterHAAws.MarkFlagRequired("name")
 }

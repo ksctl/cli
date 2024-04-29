@@ -7,24 +7,27 @@ func verboseFlags() {
 	msgVerbose := "for verbose output"
 	msgApproval := "approval to avoid showMsg"
 
-	//createClusterAws.Flags().BoolP("verbose", "v", true, "for verbose output")
 	createClusterAzure.Flags().IntP("verbose", "v", 0, msgVerbose)
 	createClusterCivo.Flags().IntP("verbose", "v", 0, msgVerbose)
 	createClusterLocal.Flags().IntP("verbose", "v", 0, msgVerbose)
 	createClusterHACivo.Flags().IntP("verbose", "v", 0, msgVerbose)
 	createClusterHAAzure.Flags().IntP("verbose", "v", 0, msgVerbose)
+	createClusterHAAws.Flags().IntP("verbose", "v", 0, msgVerbose)
 
 	deleteClusterAzure.Flags().IntP("verbose", "v", 0, msgVerbose)
 	deleteClusterCivo.Flags().IntP("verbose", "v", 0, msgVerbose)
 	deleteClusterHAAzure.Flags().IntP("verbose", "v", 0, msgVerbose)
 	deleteClusterHACivo.Flags().IntP("verbose", "v", 0, msgVerbose)
+	deleteClusterHAAws.Flags().IntP("verbose", "v", 0, msgVerbose)
 	deleteClusterLocal.Flags().IntP("verbose", "v", 0, msgVerbose)
 
 	addMoreWorkerNodesHAAzure.Flags().IntP("verbose", "v", 0, msgVerbose)
 	addMoreWorkerNodesHACivo.Flags().IntP("verbose", "v", 0, msgVerbose)
+	addMoreWorkerNodesHAAws.Flags().IntP("verbose", "v", 0, msgVerbose)
 
 	deleteNodesHAAzure.Flags().IntP("verbose", "v", 0, msgVerbose)
 	deleteNodesHACivo.Flags().IntP("verbose", "v", 0, msgVerbose)
+	deleteNodesHAAws.Flags().IntP("verbose", "v", 0, msgVerbose)
 
 	getClusterCmd.Flags().IntP("verbose", "v", 0, msgVerbose)
 	switchCluster.Flags().IntP("verbose", "v", 0, msgVerbose)
@@ -34,15 +37,22 @@ func verboseFlags() {
 	createClusterLocal.Flags().BoolP("approve", "", true, msgApproval)
 	createClusterHACivo.Flags().BoolP("approve", "", true, msgApproval)
 	createClusterHAAzure.Flags().BoolP("approve", "", true, msgApproval)
+	createClusterHAAws.Flags().BoolP("approve", "", true, msgApproval)
+
+	deleteClusterLocal.Flags().BoolP("approve", "", true, msgApproval)
 	deleteClusterAzure.Flags().BoolP("approve", "", true, msgApproval)
 	deleteClusterCivo.Flags().BoolP("approve", "", true, msgApproval)
 	deleteClusterHAAzure.Flags().BoolP("approve", "", true, msgApproval)
 	deleteClusterHACivo.Flags().BoolP("approve", "", true, msgApproval)
-	deleteClusterLocal.Flags().BoolP("approve", "", true, msgApproval)
+	deleteClusterHAAws.Flags().BoolP("approve", "", true, msgApproval)
+
 	addMoreWorkerNodesHAAzure.Flags().BoolP("approve", "", true, msgApproval)
 	addMoreWorkerNodesHACivo.Flags().BoolP("approve", "", true, msgApproval)
+	addMoreWorkerNodesHAAws.Flags().BoolP("approve", "", true, msgApproval)
+
 	deleteNodesHAAzure.Flags().BoolP("approve", "", true, msgApproval)
 	deleteNodesHACivo.Flags().BoolP("approve", "", true, msgApproval)
+	deleteNodesHAAws.Flags().BoolP("approve", "", true, msgApproval)
 }
 
 func storageFlag(f *cobra.Command) {
