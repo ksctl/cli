@@ -21,6 +21,7 @@ func createManaged(ctx context.Context, log types.LoggerFactory, approval bool) 
 	cli.Client.Metadata.K8sDistro = consts.KsctlKubernetes(distro)
 	cli.Client.Metadata.K8sVersion = k8sVer
 	cli.Client.Metadata.Region = region
+	cli.Client.Metadata.StateLocation = consts.KsctlStore(storage)
 
 	cli.Client.Metadata.CNIPlugin = cni
 	cli.Client.Metadata.Applications = strings.Split(apps, ",")
@@ -57,6 +58,7 @@ func createHA(ctx context.Context, log types.LoggerFactory, approval bool) {
 	cli.Client.Metadata.NoCP = noCP
 	cli.Client.Metadata.NoWP = noWP
 	cli.Client.Metadata.NoDS = noDS
+	cli.Client.Metadata.StateLocation = consts.KsctlStore(storage)
 
 	cli.Client.Metadata.LoadBalancerNodeType = nodeSizeLB
 	cli.Client.Metadata.ControlPlaneNodeType = nodeSizeCP
@@ -93,6 +95,7 @@ func deleteManaged(ctx context.Context, log types.LoggerFactory, approval bool) 
 	cli.Client.Metadata.ClusterName = clusterName
 	cli.Client.Metadata.K8sDistro = consts.KsctlKubernetes(distro)
 	cli.Client.Metadata.Region = region
+	cli.Client.Metadata.StateLocation = consts.KsctlStore(storage)
 
 	if err := deleteApproval(ctx, log, approval); err != nil {
 		log.Error(ctx, "deleteApproval", "Reason", err)
@@ -123,6 +126,7 @@ func deleteHA(ctx context.Context, log types.LoggerFactory, approval bool) {
 	cli.Client.Metadata.ClusterName = clusterName
 	cli.Client.Metadata.K8sDistro = consts.KsctlKubernetes(distro)
 	cli.Client.Metadata.Region = region
+	cli.Client.Metadata.StateLocation = consts.KsctlStore(storage)
 
 	if err := deleteApproval(ctx, log, approval); err != nil {
 		log.Error(ctx, "deleteApproval", "Reason", err)
