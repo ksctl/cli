@@ -32,6 +32,7 @@ ksctl switch-context -p <civo,local,ha-civo,ha-azure,ha-aws,azure>  -n <clustern
 
 		cli.Client.Metadata.ClusterName = clusterName
 		cli.Client.Metadata.Region = region
+		cli.Client.Metadata.StateLocation = consts.KsctlStore(storage)
 
 		switch provider {
 		case string(consts.CloudLocal):
@@ -61,7 +62,10 @@ ksctl switch-context -p <civo,local,ha-civo,ha-azure,ha-aws,azure>  -n <clustern
 			log,
 			&cli.Client,
 		)
-
+		if err != nil {
+			log.Error(ctx, "failed to init", "Reason", err)
+			os.Exit(1)
+		}
 		kubeconfig, err := m.SwitchCluster()
 		if err != nil {
 			log.Error(ctx, "Switch cluster failed", "Reason", err)

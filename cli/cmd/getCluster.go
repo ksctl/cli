@@ -45,12 +45,17 @@ ksctl get-clusters `,
 		}
 		SetRequiredFeatureFlags(ctx, log, cmd)
 		cli.Client.Metadata.Provider = consts.KsctlCloud(provider)
+		cli.Client.Metadata.StateLocation = consts.KsctlStore(storage)
 
 		m, err := controllers.NewManagerClusterKsctl(
 			ctx,
 			log,
 			&cli.Client,
 		)
+		if err != nil {
+			log.Error(ctx, "failed to init", "Reason", err)
+			os.Exit(1)
+		}
 
 		err = m.GetCluster()
 		if err != nil {
