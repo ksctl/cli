@@ -1,30 +1,33 @@
 package cmd
 
-// authors Dipankar <dipankar@dipankar-das.com>
+// authors Dipankar <dipankar.das@ksctl.com>
 
 import (
-	"context"
+	"github.com/fatih/color"
 	"os"
 
-	"github.com/ksctl/ksctl/pkg/helpers"
+	"github.com/ksctl/ksctl/pkg/controllers"
+	"github.com/ksctl/ksctl/pkg/logger"
+	"github.com/ksctl/ksctl/pkg/types"
 
 	"github.com/ksctl/ksctl/pkg/helpers/consts"
 	"github.com/spf13/cobra"
 )
 
 var addMoreWorkerNodesHACivo = &cobra.Command{
-	Use:   "add-nodes",
-	Short: "Use to add more worker nodes in HA CIVO k3s cluster",
+	Deprecated: color.HiYellowString("This will be removed in future releases once autoscaling is stable"),
+	Use:        "add-nodes",
+	Short:      "Use to add more worker nodes in HA CIVO k3s cluster",
 	Long: `It is used to add nodes to worker nodes in cluster with the given name from user. For example:
 
 ksctl create-cluster ha-civo add-nodes <arguments to civo cloud provider>
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		verbosity, _ := cmd.Flags().GetInt("verbose")
-		SetRequiredFeatureFlags(cmd)
 
-		cli.Client.Metadata.LogVerbosity = verbosity
-		cli.Client.Metadata.LogWritter = os.Stdout
+		var log types.LoggerFactory = logger.NewGeneralLogger(verbosity, os.Stdout)
+		SetRequiredFeatureFlags(ctx, log, cmd)
+
 		cli.Client.Metadata.Provider = consts.CloudCivo
 
 		SetDefaults(consts.CloudCivo, consts.ClusterTypeHa)
@@ -37,22 +40,27 @@ ksctl create-cluster ha-civo add-nodes <arguments to civo cloud provider>
 		cli.Client.Metadata.K8sVersion = k8sVer
 		cli.Client.Metadata.IsHA = true
 
-		if err := safeInitializeStorageLoggerFactory(context.WithValue(context.Background(), "USERID", helpers.GetUserName())); err != nil {
-			log.Error("Failed Inialize Storage Driver", "Reason", err)
+		if err := createApproval(ctx, log, cmd.Flags().Lookup("approve").Changed); err != nil {
+			log.Error(ctx, "createApproval", "Reason", err)
 			os.Exit(1)
 		}
 
-		if err := createApproval(cmd.Flags().Lookup("approve").Changed); err != nil {
-			log.Error(err.Error())
-			os.Exit(1)
-		}
-
-		err := controller.AddWorkerPlaneNode(&cli.Client)
+		m, err := controllers.NewManagerClusterSelfManaged(
+			ctx,
+			log,
+			&cli.Client,
+		)
 		if err != nil {
-			log.Error("Failed to scale up", "Reason", err)
+			log.Error(ctx, "Failed to init manager", "Reason", err)
 			os.Exit(1)
 		}
-		log.Success("Scale up successful")
+
+		err = m.AddWorkerPlaneNodes()
+		if err != nil {
+			log.Error(ctx, "Failed to scale up", "Reason", err)
+			os.Exit(1)
+		}
+		log.Success(ctx, "Scale up successful")
 	},
 }
 

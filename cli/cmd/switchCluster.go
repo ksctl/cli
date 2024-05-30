@@ -3,10 +3,11 @@ package cmd
 // authors Dipankar <dipankar@dipankar-das.com>
 
 import (
-	"context"
 	"os"
 
-	"github.com/ksctl/ksctl/pkg/helpers"
+	"github.com/ksctl/ksctl/pkg/controllers"
+	"github.com/ksctl/ksctl/pkg/logger"
+	"github.com/ksctl/ksctl/pkg/types"
 
 	"github.com/ksctl/ksctl/pkg/helpers/consts"
 	"github.com/spf13/cobra"
@@ -22,17 +23,12 @@ ksctl switch-context -p <civo,local,ha-civo,ha-azure,ha-aws,azure>  -n <clustern
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		verbosity, _ := cmd.Flags().GetInt("verbose")
-		cli.Client.Metadata.LogVerbosity = verbosity
-		cli.Client.Metadata.LogWritter = os.Stdout
+		var log types.LoggerFactory = logger.NewGeneralLogger(verbosity, os.Stdout)
+
 		if len(storage) == 0 {
 			storage = string(consts.StoreLocal)
 		}
-
-		if err := safeInitializeStorageLoggerFactory(context.WithValue(context.Background(), "USERID", helpers.GetUserName())); err != nil {
-			log.Error("Failed Inialize Storage Driver", "Reason", err)
-			os.Exit(1)
-		}
-		SetRequiredFeatureFlags(cmd)
+		SetRequiredFeatureFlags(ctx, log, cmd)
 
 		cli.Client.Metadata.ClusterName = clusterName
 		cli.Client.Metadata.Region = region
@@ -60,13 +56,19 @@ ksctl switch-context -p <civo,local,ha-civo,ha-azure,ha-aws,azure>  -n <clustern
 			cli.Client.Metadata.Provider = consts.CloudAzure
 		}
 
-		kubeconfig, err := controller.SwitchCluster(&cli.Client)
+		m, err := controllers.NewManagerClusterKsctl(
+			ctx,
+			log,
+			&cli.Client,
+		)
+
+		kubeconfig, err := m.SwitchCluster()
 		if err != nil {
-			log.Error("Switch cluster failed", "Reason", err)
+			log.Error(ctx, "Switch cluster failed", "Reason", err)
 			os.Exit(1)
 		}
-		log.Debug("kubeconfig output as string", "kubeconfig", kubeconfig)
-		log.Success("Switch cluster Successful")
+		log.Debug(ctx, "kubeconfig output as string", "kubeconfig", kubeconfig)
+		log.Success(ctx, "Switch cluster Successful")
 	},
 }
 

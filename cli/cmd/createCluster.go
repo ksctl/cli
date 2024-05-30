@@ -3,12 +3,11 @@ package cmd
 // authors 	Dipankar Das <dipankardas0115@gmail.com>
 
 import (
-	"context"
 	"os"
 
-	"github.com/ksctl/ksctl/pkg/helpers"
-
 	"github.com/ksctl/ksctl/pkg/helpers/consts"
+	"github.com/ksctl/ksctl/pkg/logger"
+	"github.com/ksctl/ksctl/pkg/types"
 	"github.com/spf13/cobra"
 )
 
@@ -32,19 +31,14 @@ ksctl create-cluster ha-aws <arguments to cloud provider>
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		verbosity, _ := cmd.Flags().GetInt("verbose")
-		SetRequiredFeatureFlags(cmd)
+		var log types.LoggerFactory = logger.NewGeneralLogger(verbosity, os.Stdout)
+		SetRequiredFeatureFlags(ctx, log, cmd)
 
-		cli.Client.Metadata.LogVerbosity = verbosity
-		cli.Client.Metadata.LogWritter = os.Stdout
 		cli.Client.Metadata.Provider = consts.CloudAws
 
 		SetDefaults(consts.CloudAws, consts.ClusterTypeHa)
 
-		if err := safeInitializeStorageLoggerFactory(context.WithValue(context.Background(), "USERID", helpers.GetUserName())); err != nil {
-			log.Error("Failed Initialize Storage Driver", "Reason", err)
-			os.Exit(1)
-		}
-		createHA(cmd.Flags().Lookup("approve").Changed)
+		createHA(ctx, log, cmd.Flags().Lookup("approve").Changed)
 	},
 }
 
@@ -57,20 +51,14 @@ var createClusterAzure = &cobra.Command{
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
 		verbosity, _ := cmd.Flags().GetInt("verbose")
-		SetRequiredFeatureFlags(cmd)
+		var log types.LoggerFactory = logger.NewGeneralLogger(verbosity, os.Stdout)
+		SetRequiredFeatureFlags(ctx, log, cmd)
 
-		cli.Client.Metadata.LogVerbosity = verbosity
-		cli.Client.Metadata.LogWritter = os.Stdout
 		cli.Client.Metadata.Provider = consts.CloudAzure
 
 		SetDefaults(consts.CloudAzure, consts.ClusterTypeMang)
 
-		if err := safeInitializeStorageLoggerFactory(context.WithValue(context.Background(), "USERID", helpers.GetUserName())); err != nil {
-			log.Error("Failed Initialize Storage Driver", "Reason", err)
-			os.Exit(1)
-		}
-
-		createManaged(cmd.Flags().Lookup("approve").Changed)
+		createManaged(ctx, log, cmd.Flags().Lookup("approve").Changed)
 	},
 }
 
@@ -83,20 +71,14 @@ ksctl create-cluster civo <arguments to cloud provider>
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		verbosity, _ := cmd.Flags().GetInt("verbose")
-		SetRequiredFeatureFlags(cmd)
+		var log types.LoggerFactory = logger.NewGeneralLogger(verbosity, os.Stdout)
+		SetRequiredFeatureFlags(ctx, log, cmd)
 
-		cli.Client.Metadata.LogVerbosity = verbosity
-		cli.Client.Metadata.LogWritter = os.Stdout
 		cli.Client.Metadata.Provider = consts.CloudCivo
 
 		SetDefaults(consts.CloudCivo, consts.ClusterTypeMang)
 
-		if err := safeInitializeStorageLoggerFactory(context.WithValue(context.Background(), "USERID", helpers.GetUserName())); err != nil {
-			log.Error("Failed Initialize Storage Driver", "Reason", err)
-			os.Exit(1)
-		}
-
-		createManaged(cmd.Flags().Lookup("approve").Changed)
+		createManaged(ctx, log, cmd.Flags().Lookup("approve").Changed)
 	},
 }
 
@@ -109,20 +91,14 @@ ksctl create-cluster local <arguments to cloud provider>
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		verbosity, _ := cmd.Flags().GetInt("verbose")
-		SetRequiredFeatureFlags(cmd)
+		var log types.LoggerFactory = logger.NewGeneralLogger(verbosity, os.Stdout)
+		SetRequiredFeatureFlags(ctx, log, cmd)
 
-		cli.Client.Metadata.LogVerbosity = verbosity
-		cli.Client.Metadata.LogWritter = os.Stdout
 		cli.Client.Metadata.Provider = consts.CloudLocal
 
 		SetDefaults(consts.CloudLocal, consts.ClusterTypeMang)
 
-		if err := safeInitializeStorageLoggerFactory(context.WithValue(context.Background(), "USERID", helpers.GetUserName())); err != nil {
-			log.Error("Failed Initialize Storage Driver", "Reason", err)
-			os.Exit(1)
-		}
-
-		createManaged(cmd.Flags().Lookup("approve").Changed)
+		createManaged(ctx, log, cmd.Flags().Lookup("approve").Changed)
 	},
 }
 
@@ -135,19 +111,14 @@ ksctl create-cluster ha-civo <arguments to cloud provider>
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		verbosity, _ := cmd.Flags().GetInt("verbose")
-		SetRequiredFeatureFlags(cmd)
+		var log types.LoggerFactory = logger.NewGeneralLogger(verbosity, os.Stdout)
+		SetRequiredFeatureFlags(ctx, log, cmd)
 
-		cli.Client.Metadata.LogVerbosity = verbosity
-		cli.Client.Metadata.LogWritter = os.Stdout
 		cli.Client.Metadata.Provider = consts.CloudCivo
 
 		SetDefaults(consts.CloudCivo, consts.ClusterTypeHa)
 
-		if err := safeInitializeStorageLoggerFactory(context.WithValue(context.Background(), "USERID", helpers.GetUserName())); err != nil {
-			log.Error("Failed Inialize Storage Driver", "Reason", err)
-			os.Exit(1)
-		}
-		createHA(cmd.Flags().Lookup("approve").Changed)
+		createHA(ctx, log, cmd.Flags().Lookup("approve").Changed)
 	},
 }
 
@@ -160,19 +131,14 @@ var createClusterHAAzure = &cobra.Command{
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
 		verbosity, _ := cmd.Flags().GetInt("verbose")
-		SetRequiredFeatureFlags(cmd)
+		var log types.LoggerFactory = logger.NewGeneralLogger(verbosity, os.Stdout)
+		SetRequiredFeatureFlags(ctx, log, cmd)
 
-		cli.Client.Metadata.LogVerbosity = verbosity
-		cli.Client.Metadata.LogWritter = os.Stdout
 		cli.Client.Metadata.Provider = consts.CloudAzure
 
 		SetDefaults(consts.CloudAzure, consts.ClusterTypeHa)
 
-		if err := safeInitializeStorageLoggerFactory(context.WithValue(context.Background(), "USERID", helpers.GetUserName())); err != nil {
-			log.Error("Failed Initialize Storage Driver", "Reason", err)
-			os.Exit(1)
-		}
-		createHA(cmd.Flags().Lookup("approve").Changed)
+		createHA(ctx, log, cmd.Flags().Lookup("approve").Changed)
 	},
 }
 

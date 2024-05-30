@@ -2,11 +2,12 @@
 package cmd
 
 import (
-	"context"
 	"fmt"
 	"os"
 
-	"github.com/ksctl/ksctl/pkg/helpers"
+	"github.com/ksctl/ksctl/pkg/controllers"
+	"github.com/ksctl/ksctl/pkg/logger"
+	"github.com/ksctl/ksctl/pkg/types"
 
 	"github.com/ksctl/ksctl/pkg/helpers/consts"
 	"github.com/spf13/cobra"
@@ -20,19 +21,15 @@ var credCmd = &cobra.Command{
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		verbosity, _ := cmd.Flags().GetInt("verbose")
-		cli.Client.Metadata.LogVerbosity = verbosity
-		cli.Client.Metadata.LogWritter = os.Stdout
+		var log types.LoggerFactory = logger.NewGeneralLogger(verbosity, os.Stdout)
+
 		if len(storage) == 0 {
 			storage = string(consts.StoreLocal)
 		}
 
-		if err := safeInitializeStorageLoggerFactory(context.WithValue(context.Background(), "USERID", helpers.GetUserName())); err != nil {
-			log.Error("Failed Inialize Storage Driver", "Reason", err)
-			os.Exit(1)
-		}
-		SetRequiredFeatureFlags(cmd)
+		SetRequiredFeatureFlags(ctx, log, cmd)
 
-		log.Print(`
+		log.Print(ctx, `
 1> AWS (EKS)
 2> Azure (AKS)
 3> Civo (K3s)
@@ -47,14 +44,19 @@ var credCmd = &cobra.Command{
 		if provider, ok := cloud[choice]; ok {
 			cli.Client.Metadata.Provider = consts.KsctlCloud(provider)
 		} else {
-			log.Error("invalid provider")
+			log.Error(ctx, "invalid provider")
 		}
+		m, err := controllers.NewManagerClusterKsctl(
+			ctx,
+			log,
+			&cli.Client,
+		)
 
-		if err := controller.Credentials(&cli.Client); err != nil {
-			log.Error("Failed to added the credential", "Reason", err)
+		if err := m.Credentials(); err != nil {
+			log.Error(ctx, "Failed to added the credential", "Reason", err)
 			os.Exit(1)
 		}
-		log.Success("Credentials added successfully")
+		log.Success(ctx, "Credentials added successfully")
 	},
 }
 

@@ -50,7 +50,7 @@ lint: golangci-lint ## Run golangci-lint linter & yamllint
 		$(GOLANGCI_LINT) run && echo -e "\n=========\n\033[91m✔ PASSED\033[0m\n=========\n" || echo -e "\n=========\n\033[91m✖ FAILED\033[0m\n=========\n"
 
 
-##@ Dependencies (Controller)
+##@ Dependencies
 
 ## Location to install dependencies to
 LOCALBIN ?= /tmp/bin
