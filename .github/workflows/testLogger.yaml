@@ -1,0 +1,29 @@
+name: Testing Logger
+on:
+  push:
+    paths:
+      - 'logger/**'
+      - 'go.mod'
+      - 'go.sum'
+    branches: [ main ]
+  pull_request:
+    paths:
+      - 'logger/**'
+      - 'go.mod'
+      - 'go.sum'
+    branches: [ main ]
+
+jobs:
+  unit-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: 1.21.0
+      - run: go version
+      - name: testing
+        working-directory: logger
+        run: |
+          go test -v ./...

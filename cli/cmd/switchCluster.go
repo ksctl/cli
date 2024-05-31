@@ -1,7 +1,5 @@
 package cmd
 
-// authors Dipankar <dipankar@dipankar-das.com>
-
 import (
 	"os"
 
@@ -16,17 +14,17 @@ import (
 var switchCluster = &cobra.Command{
 	Use: "switch-cluster",
 	Example: `
-ksctl switch-context -p civo -n <clustername> -r <region> <arguments to cloud provider>
-ksctl switch-context -p local -n <clustername> -r <region> <arguments to cloud provider>
-ksctl switch-context -p azure -n <clustername> -r <region> <arguments to cloud provider>
-ksctl switch-context -p ha-civo -n <clustername> -r <region> <arguments to cloud provider>
-ksctl switch-context -p ha-azure -n <clustername> -r <region> <arguments to cloud provider>
-ksctl switch-context -p ha-aws -n <clustername> -r <region> <arguments to cloud provider>
+ksctl switch-context --provider civo --name <clustername> --region <region>
+ksctl switch-context --provider local --name <clustername>
+ksctl switch-context --provider azure --name <clustername> --region <region>
+ksctl switch-context --provider ha-civo --name <clustername> --region <region>
+ksctl switch-context --provider ha-azure --name <clustername> --region <region>
+ksctl switch-context --provider ha-aws --name <clustername> --region <region>
 
 	For Storage specific
 
-ksctl switch-context -s store-local -p civo -n <clustername> -r <region> <arguments to cloud provider>
-ksctl switch-context -s external-store-mongodb -p civo -n <clustername> -r <region> <arguments to cloud provider>
+ksctl switch-context -s store-local -p civo -n <clustername> -r <region>
+ksctl switch-context -s external-store-mongodb -p civo -n <clustername> -r <region>
 `,
 	Aliases: []string{"switch"},
 	Short:   "Use to switch between clusters",

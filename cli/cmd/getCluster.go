@@ -1,11 +1,5 @@
 package cmd
 
-/*
-Kubesimplify
-authors Dipankar <dipankar@dipankar-das.com>
-				Anurag Kumar <contact.anurag7@gmail.com>
-*/
-
 import (
 	"os"
 
@@ -24,11 +18,13 @@ type printer struct {
 	Provider    string `json:"provider"`
 }
 
-// viewClusterCmd represents the viewCluster command
 var getClusterCmd = &cobra.Command{
 	Use:     "get-clusters",
-	Aliases: []string{"get"},
-	Short:   "Use to get clusters",
+	Aliases: []string{"get", "list"},
+	Example: `
+ksctl get --provider all --storage store-local
+`,
+	Short: "Use to get clusters",
 	Long: `It is used to view clusters. For example:
 
 ksctl get-clusters `,

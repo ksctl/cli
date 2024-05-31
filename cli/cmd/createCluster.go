@@ -1,7 +1,5 @@
 package cmd
 
-// authors 	Dipankar Das <dipankardas0115@gmail.com>
-
 import (
 	"os"
 
@@ -11,7 +9,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// createClusterCmd represents the createCluster command
 var createClusterCmd = &cobra.Command{
 	Use: "create-cluster",
 	Example: `
@@ -22,33 +19,13 @@ ksctl create --help
 	Long:    "It is used to create cluster with the given name from user",
 }
 
-var createClusterHAAws = &cobra.Command{
-	Use: "ha-aws",
-	Example: `
-ksctl create-cluster ha-aws -n demo -r us-east-1 --bootstrap k3s -s store-local --nodeSizeCP t2.medium --nodeSizeWP t2.medium --nodeSizeLB t2.micro --nodeSizeDS t2.small --noWP 1 --noCP 3 --noDS 3
-`,
-	Short: "Use to create a EKS cluster in AWS",
-	Long:  "It is used to create cluster with the given name from user.",
-	Run: func(cmd *cobra.Command, args []string) {
-		verbosity, _ := cmd.Flags().GetInt("verbose")
-		var log types.LoggerFactory = logger.NewLogger(verbosity, os.Stdout)
-		SetRequiredFeatureFlags(ctx, log, cmd)
-
-		cli.Client.Metadata.Provider = consts.CloudAws
-
-		SetDefaults(consts.CloudAws, consts.ClusterTypeHa)
-
-		createHA(ctx, log, cmd.Flags().Lookup("yes").Changed)
-	},
-}
-
 var createClusterAzure = &cobra.Command{
-	Use:   "azure",
+	Use: "azure",
+	Example: `
+ksctl create-cluster azure -n demo -r eastus -s store-local --nodeSizeMP Standard_DS2_v2 --noMP 3
+`,
 	Short: "Use to create a AKS cluster in Azure",
-	Long: `It is used to create cluster with the given name from user. For example:
-
-	ksctl create-cluster azure <arguments to cloud provider>
-	`,
+	Long:  "It is used to create cluster with the given name from user",
 	Run: func(cmd *cobra.Command, args []string) {
 		verbosity, _ := cmd.Flags().GetInt("verbose")
 		var log types.LoggerFactory = logger.NewLogger(verbosity, os.Stdout)
@@ -63,12 +40,12 @@ var createClusterAzure = &cobra.Command{
 }
 
 var createClusterCivo = &cobra.Command{
-	Use:   "civo",
-	Short: "Use to create a CIVO k3s cluster",
-	Long: `It is used to create cluster with the given name from user. For example:
-
-ksctl create-cluster civo <arguments to cloud provider>
+	Use: "civo",
+	Example: `
+ksctl create-cluster civo --name demo --region LON1 --storage store-local --nodeSizeMP g4s.kube.small --noMP 3
 `,
+	Short: "Use to create a Civo managed k3s cluster",
+	Long:  "It is used to create cluster with the given name from user",
 	Run: func(cmd *cobra.Command, args []string) {
 		verbosity, _ := cmd.Flags().GetInt("verbose")
 		var log types.LoggerFactory = logger.NewLogger(verbosity, os.Stdout)
@@ -83,12 +60,12 @@ ksctl create-cluster civo <arguments to cloud provider>
 }
 
 var createClusterLocal = &cobra.Command{
-	Use:   "local",
-	Short: "Use to create a LOCAL cluster in Docker",
-	Long: `It is used to create cluster with the given name from user. For example:
-
-ksctl create-cluster local <arguments to cloud provider>
+	Use: "local",
+	Example: `
+ksctl create-cluster local --name demo --storage store-local --noMP 3
 `,
+	Short: "Use to create a kind cluster",
+	Long:  "It is used to create cluster with the given name from user",
 	Run: func(cmd *cobra.Command, args []string) {
 		verbosity, _ := cmd.Flags().GetInt("verbose")
 		var log types.LoggerFactory = logger.NewLogger(verbosity, os.Stdout)
@@ -102,13 +79,34 @@ ksctl create-cluster local <arguments to cloud provider>
 	},
 }
 
-var createClusterHACivo = &cobra.Command{
-	Use:   "ha-civo",
-	Short: "Use to create a HA CIVO k3s cluster",
-	Long: `It is used to create cluster with the given name from user. For example:
-
-ksctl create-cluster ha-civo <arguments to cloud provider>
+var createClusterHAAws = &cobra.Command{
+	Use: "ha-aws",
+	Example: `
+ksctl create-cluster ha-aws -n demo -r us-east-1 --bootstrap k3s -s store-local --nodeSizeCP t2.medium --nodeSizeWP t2.medium --nodeSizeLB t2.micro --nodeSizeDS t2.small --noWP 1 --noCP 3 --noDS 3
 `,
+	Short: "Use to create a self-managed Highly Available cluster on AWS",
+	Long:  "It is used to create cluster with the given name from user.",
+	Run: func(cmd *cobra.Command, args []string) {
+		verbosity, _ := cmd.Flags().GetInt("verbose")
+		var log types.LoggerFactory = logger.NewLogger(verbosity, os.Stdout)
+		SetRequiredFeatureFlags(ctx, log, cmd)
+
+		cli.Client.Metadata.Provider = consts.CloudAws
+
+		SetDefaults(consts.CloudAws, consts.ClusterTypeHa)
+
+		createHA(ctx, log, cmd.Flags().Lookup("yes").Changed)
+	},
+}
+
+var createClusterHACivo = &cobra.Command{
+	Use: "ha-civo",
+	Example: `
+ksctl create-cluster ha-civo --name demo --region LON1 --bootstrap k3s --storage store-local --nodeSizeCP g3.small --nodeSizeWP g3.medium --nodeSizeLB g3.small --nodeSizeDS g3.small --noWP 1 --noCP 3 --noDS 3
+ksctl create-cluster ha-civo --name demo --region LON1 --bootstrap kubeadm --storage store-local --nodeSizeCP g3.medium --nodeSizeWP g3.large --nodeSizeLB g3.small --nodeSizeDS g3.small --noWP 1 --noCP 3 --noDS 3
+`,
+	Short: "Use to create a self-managed Highly Available cluster on Civo",
+	Long:  "It is used to create cluster with the given name from user",
 	Run: func(cmd *cobra.Command, args []string) {
 		verbosity, _ := cmd.Flags().GetInt("verbose")
 		var log types.LoggerFactory = logger.NewLogger(verbosity, os.Stdout)
@@ -123,12 +121,13 @@ ksctl create-cluster ha-civo <arguments to cloud provider>
 }
 
 var createClusterHAAzure = &cobra.Command{
-	Use:   "ha-azure",
-	Short: "Use to create a HA k3s cluster in Azure",
-	Long: `It is used to create cluster with the given name from user. For example:
-
-	ksctl create-cluster ha-azure <arguments to cloud provider>
-	`,
+	Use: "ha-azure",
+	Example: `
+ksctl create-cluster ha-azure --name demo --region eastus --bootstrap k3s --storage store-local --nodeSizeCP Standard_F2s --nodeSizeWP Standard_F2s --nodeSizeLB Standard_F2s --nodeSizeDS Standard_F2s --noWP 1 --noCP 3 --noDS 3
+ksctl create-cluster ha-azure --name demo --region eastus --bootstrap kubeadm --storage store-local --nodeSizeCP Standard_F2s --nodeSizeWP Standard_F4s --nodeSizeLB Standard_F2s --nodeSizeDS Standard_F2s --noWP 1 --noCP 3 --noDS 3
+`,
+	Short: "Use to create a self-managed Highly-Available cluster on Azure",
+	Long:  "It is used to create cluster with the given name from user",
 	Run: func(cmd *cobra.Command, args []string) {
 		verbosity, _ := cmd.Flags().GetInt("verbose")
 		var log types.LoggerFactory = logger.NewLogger(verbosity, os.Stdout)

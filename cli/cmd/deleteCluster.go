@@ -1,7 +1,5 @@
 package cmd
 
-// authors 	Dipankar Das <dipankardas0115@gmail.com>
-
 import (
 	"os"
 
@@ -11,24 +9,42 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// deleteClusterCmd represents the deleteCluster command
 var deleteClusterCmd = &cobra.Command{
-	Use:     "delete-cluster",
+	Use: "delete-cluster",
+	Example: `
+ksctl delete --help
+	`,
 	Short:   "Use to delete a cluster",
 	Aliases: []string{"delete"},
-	Long: `It is used to delete cluster of given provider. For example:
-
-ksctl delete-cluster ["aws","azure", "ha-<provider>", "civo", "local"]
-`,
+	Long:    "It is used to delete cluster of given provider",
 }
 
-var deleteClusterAzure = &cobra.Command{
-	Use:   "azure",
-	Short: "Use to create a azure managed cluster",
-	Long: `It is used to create cluster with the given name from user. For example:
-
-ksctl create-cluster azure <arguments to civo cloud provider>
+var deleteClusterLocal = &cobra.Command{
+	Use: "local",
+	Example: `
+ksctl delete local --name demo --storage store-local
 `,
+	Short: "Use to delete a kind cluster",
+	Long:  "It is used to delete cluster of given provider",
+	Run: func(cmd *cobra.Command, args []string) {
+		verbosity, _ := cmd.Flags().GetInt("verbose")
+		var log types.LoggerFactory = logger.NewLogger(verbosity, os.Stdout)
+		SetRequiredFeatureFlags(ctx, log, cmd)
+
+		cli.Client.Metadata.Provider = consts.CloudLocal
+
+		SetDefaults(consts.CloudLocal, consts.ClusterTypeMang)
+
+		deleteManaged(ctx, log, cmd.Flags().Lookup("yes").Changed)
+	},
+}
+var deleteClusterAzure = &cobra.Command{
+	Use: "azure",
+	Example: `
+ksctl delete azure --name demo --region eastus --storage store-local
+`,
+	Short: "Use to deletes a AKS cluster",
+	Long:  "It is used to delete cluster of given provider",
 	Run: func(cmd *cobra.Command, args []string) {
 		verbosity, _ := cmd.Flags().GetInt("verbose")
 		var log types.LoggerFactory = logger.NewLogger(verbosity, os.Stdout)
@@ -43,12 +59,12 @@ ksctl create-cluster azure <arguments to civo cloud provider>
 }
 
 var deleteClusterCivo = &cobra.Command{
-	Use:   "civo",
-	Short: "Use to delete a CIVO cluster",
-	Long: `It is used to delete cluster of given provider. For example:
-
-ksctl delete-cluster civo
+	Use: "civo",
+	Example: `
+ksctl delete civo --name demo --region LON1 --storage store-local
 `,
+	Short: "Use to delete a Civo managed k3s cluster",
+	Long:  "It is used to delete cluster of given provider",
 	Run: func(cmd *cobra.Command, args []string) {
 		verbosity, _ := cmd.Flags().GetInt("verbose")
 		var log types.LoggerFactory = logger.NewLogger(verbosity, os.Stdout)
@@ -59,17 +75,16 @@ ksctl delete-cluster civo
 		SetDefaults(consts.CloudCivo, consts.ClusterTypeMang)
 
 		deleteManaged(ctx, log, cmd.Flags().Lookup("yes").Changed)
-
 	},
 }
 
 var deleteClusterHAAws = &cobra.Command{
-	Use:   "ha-aws",
-	Short: "Use to delete a HA k3s cluster in Azure",
-	Long: `It is used to delete cluster with the given name from user. For example:
-
-	ksctl delete-cluster ha-aws <arguments to cloud provider>
-	`,
+	Use: "ha-aws",
+	Example: `
+ksctl delete ha-aws --name demo --region us-east-1 --storage store-local
+`,
+	Short: "Use to delete a self-managed Highly Available cluster on AWS",
+	Long:  "It is used to delete cluster of given provider",
 	Run: func(cmd *cobra.Command, args []string) {
 		verbosity, _ := cmd.Flags().GetInt("verbose")
 		var log types.LoggerFactory = logger.NewLogger(verbosity, os.Stdout)
@@ -84,12 +99,12 @@ var deleteClusterHAAws = &cobra.Command{
 }
 
 var deleteClusterHAAzure = &cobra.Command{
-	Use:   "ha-azure",
-	Short: "Use to delete a HA k3s cluster in Azure",
-	Long: `It is used to delete cluster with the given name from user. For example:
-
-	ksctl delete-cluster ha-azure <arguments to cloud provider>
-	`,
+	Use: "ha-azure",
+	Example: `
+ksctl delete ha-azure --name demo --region eastus --storage store-local
+`,
+	Short: "Use to delete a self-managed Highly Available cluster on Azure",
+	Long:  "It is used to delete cluster of given provider",
 	Run: func(cmd *cobra.Command, args []string) {
 		verbosity, _ := cmd.Flags().GetInt("verbose")
 		var log types.LoggerFactory = logger.NewLogger(verbosity, os.Stdout)
@@ -104,12 +119,12 @@ var deleteClusterHAAzure = &cobra.Command{
 }
 
 var deleteClusterHACivo = &cobra.Command{
-	Use:   "ha-civo",
-	Short: "Use to delete a HA CIVO k3s cluster",
-	Long: `It is used to delete cluster with the given name from user. For example:
-
-ksctl delete-cluster ha-civo <arguments to cloud provider>
+	Use: "ha-civo",
+	Example: `
+ksctl delete ha-civo --name demo --region LON1 --storage store-local
 `,
+	Short: "Use to delete a self-managed Highly Available cluster on Civo",
+	Long:  "It is used to delete cluster of given provider",
 	Run: func(cmd *cobra.Command, args []string) {
 		verbosity, _ := cmd.Flags().GetInt("verbose")
 		var log types.LoggerFactory = logger.NewLogger(verbosity, os.Stdout)
@@ -120,26 +135,6 @@ ksctl delete-cluster ha-civo <arguments to cloud provider>
 		SetDefaults(consts.CloudCivo, consts.ClusterTypeHa)
 
 		deleteHA(ctx, log, cmd.Flags().Lookup("yes").Changed)
-	},
-}
-
-var deleteClusterLocal = &cobra.Command{
-	Use:   "local",
-	Short: "Use to delete a LOCAL cluster",
-	Long: `It is used to delete cluster of given provider. For example:
-
-ksctl delete-cluster local <arguments to local/Docker provider>
-`,
-	Run: func(cmd *cobra.Command, args []string) {
-		verbosity, _ := cmd.Flags().GetInt("verbose")
-		var log types.LoggerFactory = logger.NewLogger(verbosity, os.Stdout)
-		SetRequiredFeatureFlags(ctx, log, cmd)
-
-		cli.Client.Metadata.Provider = consts.CloudLocal
-
-		SetDefaults(consts.CloudLocal, consts.ClusterTypeMang)
-
-		deleteManaged(ctx, log, cmd.Flags().Lookup("yes").Changed)
 	},
 }
 

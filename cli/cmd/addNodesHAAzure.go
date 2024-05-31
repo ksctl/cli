@@ -1,7 +1,5 @@
 package cmd
 
-// authors Dipankar <dipankar.das@ksctl.com>
-
 import (
 	"os"
 
@@ -22,7 +20,7 @@ var addMoreWorkerNodesHAAzure = &cobra.Command{
 ksctl create ha-azure add-nodes -n demo -r eastus -s store-local --noWP 3 --nodeSizeWP Standard_F2s --bootstrap kubeadm      # Here the noWP is the desired count of workernodes
 	`,
 	Use:   "add-nodes",
-	Short: "Use to add more worker nodes in HA azure k3s cluster",
+	Short: "Use to add more worker nodes in self-managed Highly-Available cluster on Azure",
 	Long:  "It is used to add nodes to worker nodes in cluster with the given name from user",
 	Run: func(cmd *cobra.Command, args []string) {
 		verbosity, _ := cmd.Flags().GetInt("verbose")

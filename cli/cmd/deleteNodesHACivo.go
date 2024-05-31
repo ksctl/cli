@@ -1,7 +1,5 @@
 package cmd
 
-// authors Dipankar <dipankar.das@ksctl.com>
-
 import (
 	"os"
 
@@ -17,11 +15,11 @@ import (
 var deleteNodesHACivo = &cobra.Command{
 	Deprecated: color.HiYellowString("This will be removed in future releases once autoscaling is stable"),
 	Use:        "del-nodes",
-	Short:      "Use to delete a HA CIVO k3s cluster",
-	Long: `It is used to delete cluster with the given name from user. For example:
-
-ksctl delete-cluster ha-civo delete-nodes <arguments to cloud provider>
-`,
+	Example: `
+ksctl delete ha-civo del-nodes -n demo -r LON1 -s store-local --noWP 1 --bootstrap kubeadm      # Here the noWP is the desired count of workernodes
+	`,
+	Short: "Use to remove worker nodes in self-managed Highly-Available cluster on Civo",
+	Long:  "It is used to delete cluster with the given name from user",
 	Run: func(cmd *cobra.Command, args []string) {
 		verbosity, _ := cmd.Flags().GetInt("verbose")
 		var log types.LoggerFactory = logger.NewLogger(verbosity, os.Stdout)

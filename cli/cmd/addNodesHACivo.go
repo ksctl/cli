@@ -1,7 +1,5 @@
 package cmd
 
-// authors Dipankar <dipankar.das@ksctl.com>
-
 import (
 	"os"
 
@@ -21,7 +19,7 @@ var addMoreWorkerNodesHACivo = &cobra.Command{
 ksctl create ha-civo add-nodes -n demo -r LON1 -s store-local --noWP 3 --nodeSizeWP g3.medium --bootstrap kubeadm      # Here the noWP is the desired count of workernodes
 	`,
 	Use:   "add-nodes",
-	Short: "Use to add more worker nodes in HA CIVO k3s cluster",
+	Short: "Use to add more worker nodes in self-managed Highly-Available cluster on Civo",
 	Long:  "It is used to add nodes to worker nodes in cluster with the given name from user.",
 	Run: func(cmd *cobra.Command, args []string) {
 		verbosity, _ := cmd.Flags().GetInt("verbose")

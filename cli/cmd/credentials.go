@@ -1,4 +1,3 @@
-// authors Dipankar <dipankar@dipankar-das.com>
 package cmd
 
 import (
@@ -13,12 +12,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// initCmd represents the init command
 var credCmd = &cobra.Command{
 	Use:   "cred",
 	Short: "Login to your Cloud-provider Credentials",
-	Long: `login to your cloud provider credentials
-`,
+	Long:  "login to your cloud provider credentials",
 	Run: func(cmd *cobra.Command, args []string) {
 		verbosity, _ := cmd.Flags().GetInt("verbose")
 		var log types.LoggerFactory = logger.NewLogger(verbosity, os.Stdout)

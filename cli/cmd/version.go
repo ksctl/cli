@@ -1,6 +1,5 @@
 package cmd
 
-// authors Dipankar <dipankar@dipankar-das.com>
 import (
 	"fmt"
 

@@ -16,8 +16,11 @@ func getPackageName(ctx context.Context) string {
 	}
 }
 
+const (
+	limitCol int = 80
+)
+
 func addLineTerminationForLongStrings(str string) string {
-	var limitCol int = 80
 
 	//arr with endline split
 	arrStr := strings.Split(str, "\n")
