@@ -251,6 +251,7 @@ jobs:
         run: |
           set -xe
           unset KSCTL_FAKE_FLAG_ENABLED
+          export MONGODB_URI="mongodb://root:1234@127.0.0.1:27017"
           ksctl get -p local -s external-store-mongodb
 
       - name: all
@@ -263,6 +264,7 @@ jobs:
         run: |
           set -xe
           unset KSCTL_FAKE_FLAG_ENABLED
+          export MONGODB_URI="mongodb://root:1234@127.0.0.1:27017"
           ksctl get -s external-store-mongodb
 
       - name: local switch
@@ -275,6 +277,7 @@ jobs:
         run: |
           set -xe
           unset KSCTL_FAKE_FLAG_ENABLED
+          export MONGODB_URI="mongodb://root:1234@127.0.0.1:27017"
           ksctl switch -p local -n demolocal-extmongo -s external-store-mongodb
 
       - name: civo switch
@@ -341,6 +344,7 @@ jobs:
         run: |
           set -xe
           unset KSCTL_FAKE_FLAG_ENABLED
+          export MONGODB_URI="mongodb://root:1234@127.0.0.1:27017"
           ksctl delete local -n demolocal-extmongo -v -1 -s external-store-mongodb --approve
 
       - name: storage provider

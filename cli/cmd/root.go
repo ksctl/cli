@@ -12,7 +12,6 @@ import (
 	"os"
 	"time"
 
-	"github.com/ksctl/ksctl/pkg/helpers"
 	"github.com/ksctl/ksctl/pkg/helpers/consts"
 	"github.com/ksctl/ksctl/pkg/logger"
 	"github.com/ksctl/ksctl/pkg/types"
@@ -80,7 +79,7 @@ func Execute() {
 		"cli",
 	)
 	ctx = context.WithValue(
-		ctx, "USERID", helpers.GetUserName(),
+		ctx, "USERID", "cli",
 	)
 	if _, ok := os.LookupEnv("KSCTL_FAKE_FLAG_ENABLED"); ok {
 		ctx = context.WithValue(
