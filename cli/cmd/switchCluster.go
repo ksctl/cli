@@ -1,41 +1,46 @@
 package cmd
 
-// authors Dipankar <dipankar@dipankar-das.com>
-
 import (
-	"context"
 	"os"
 
-	"github.com/ksctl/ksctl/pkg/helpers"
+	"github.com/ksctl/cli/logger"
+	"github.com/ksctl/ksctl/pkg/controllers"
+	"github.com/ksctl/ksctl/pkg/types"
 
 	"github.com/ksctl/ksctl/pkg/helpers/consts"
 	"github.com/spf13/cobra"
 )
 
 var switchCluster = &cobra.Command{
-	Use:     "switch-cluster",
+	Use: "switch-cluster",
+	Example: `
+ksctl switch-context --provider civo --name <clustername> --region <region>
+ksctl switch-context --provider local --name <clustername>
+ksctl switch-context --provider azure --name <clustername> --region <region>
+ksctl switch-context --provider ha-civo --name <clustername> --region <region>
+ksctl switch-context --provider ha-azure --name <clustername> --region <region>
+ksctl switch-context --provider ha-aws --name <clustername> --region <region>
+
+	For Storage specific
+
+ksctl switch-context -s store-local -p civo -n <clustername> -r <region>
+ksctl switch-context -s external-store-mongodb -p civo -n <clustername> -r <region>
+`,
 	Aliases: []string{"switch"},
 	Short:   "Use to switch between clusters",
-	Long: `It is used to switch cluster with the given ClusterName from user. For example:
-
-ksctl switch-context -p <civo,local,ha-civo,ha-azure,ha-aws,azure>  -n <clustername> -r <region> <arguments to cloud provider>
-`,
+	Long:    "It is used to switch cluster with the given ClusterName from user.",
 	Run: func(cmd *cobra.Command, args []string) {
 		verbosity, _ := cmd.Flags().GetInt("verbose")
-		cli.Client.Metadata.LogVerbosity = verbosity
-		cli.Client.Metadata.LogWritter = os.Stdout
+		var log types.LoggerFactory = logger.NewLogger(verbosity, os.Stdout)
+
 		if len(storage) == 0 {
 			storage = string(consts.StoreLocal)
 		}
-
-		if err := safeInitializeStorageLoggerFactory(context.WithValue(context.Background(), "USERID", helpers.GetUserName())); err != nil {
-			log.Error("Failed Inialize Storage Driver", "Reason", err)
-			os.Exit(1)
-		}
-		SetRequiredFeatureFlags(cmd)
+		SetRequiredFeatureFlags(ctx, log, cmd)
 
 		cli.Client.Metadata.ClusterName = clusterName
 		cli.Client.Metadata.Region = region
+		cli.Client.Metadata.StateLocation = consts.KsctlStore(storage)
 
 		switch provider {
 		case string(consts.CloudLocal):
@@ -60,13 +65,22 @@ ksctl switch-context -p <civo,local,ha-civo,ha-azure,ha-aws,azure>  -n <clustern
 			cli.Client.Metadata.Provider = consts.CloudAzure
 		}
 
-		kubeconfig, err := controller.SwitchCluster(&cli.Client)
+		m, err := controllers.NewManagerClusterKsctl(
+			ctx,
+			log,
+			&cli.Client,
+		)
 		if err != nil {
-			log.Error("Switch cluster failed", "Reason", err)
+			log.Error(ctx, "failed to init", "Reason", err)
 			os.Exit(1)
 		}
-		log.Debug("kubeconfig output as string", "kubeconfig", kubeconfig)
-		log.Success("Switch cluster Successful")
+		kubeconfig, err := m.SwitchCluster()
+		if err != nil {
+			log.Error(ctx, "Switch cluster failed", "Reason", err)
+			os.Exit(1)
+		}
+		log.Debug(ctx, "kubeconfig output as string", "kubeconfig", kubeconfig)
+		log.Success(ctx, "Switch cluster Successful")
 	},
 }
 

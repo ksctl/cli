@@ -1,6 +1,5 @@
 package cmd
 
-// authors Dipankar <dipankar@dipankar-das.com>
 import (
 	"context"
 	"encoding/json"
@@ -8,11 +7,12 @@ import (
 	"os"
 	"strings"
 
-	control_pkg "github.com/ksctl/ksctl/pkg/controllers"
+	"github.com/ksctl/ksctl/pkg/controllers"
 	"github.com/ksctl/ksctl/pkg/helpers/consts"
+	"github.com/ksctl/ksctl/pkg/types"
 )
 
-func createManaged(approval bool) {
+func createManaged(ctx context.Context, log types.LoggerFactory, approval bool) {
 	cli.Client.Metadata.ManagedNodeType = nodeSizeMP
 	cli.Client.Metadata.NoMP = noMP
 
@@ -20,23 +20,35 @@ func createManaged(approval bool) {
 	cli.Client.Metadata.K8sDistro = consts.KsctlKubernetes(distro)
 	cli.Client.Metadata.K8sVersion = k8sVer
 	cli.Client.Metadata.Region = region
+	cli.Client.Metadata.StateLocation = consts.KsctlStore(storage)
 
 	cli.Client.Metadata.CNIPlugin = cni
-	cli.Client.Metadata.Applications = apps
-	if err := createApproval(approval); err != nil {
-		log.Error(err.Error())
+	if len(apps) != 0 {
+		cli.Client.Metadata.Applications = strings.Split(apps, ",")
+	}
+	if err := createApproval(ctx, log, approval); err != nil {
+		log.Error(ctx, "createApproval", "Reason", err)
+		os.Exit(1)
+	}
+	m, err := controllers.NewManagerClusterManaged(
+		ctx,
+		log,
+		&cli.Client,
+	)
+	if err != nil {
+		log.Error(ctx, "Failed to create self-managed HA cluster", "Reason", err)
 		os.Exit(1)
 	}
 
-	err := controller.CreateManagedCluster(&cli.Client)
+	err = m.CreateCluster()
 	if err != nil {
-		log.Error("Failed to create managed cluster", "Reason", err)
+		log.Error(ctx, "Failed to create managed cluster", "Reason", err)
 		os.Exit(1)
 	}
-	log.Success("Created the managed cluster successfully")
+	log.Success(ctx, "Created the managed cluster successfully")
 }
 
-func createHA(approval bool) {
+func createHA(ctx context.Context, log types.LoggerFactory, approval bool) {
 	cli.Client.Metadata.IsHA = true
 
 	cli.Client.Metadata.ClusterName = clusterName
@@ -47,6 +59,7 @@ func createHA(approval bool) {
 	cli.Client.Metadata.NoCP = noCP
 	cli.Client.Metadata.NoWP = noWP
 	cli.Client.Metadata.NoDS = noDS
+	cli.Client.Metadata.StateLocation = consts.KsctlStore(storage)
 
 	cli.Client.Metadata.LoadBalancerNodeType = nodeSizeLB
 	cli.Client.Metadata.ControlPlaneNodeType = nodeSizeCP
@@ -54,56 +67,90 @@ func createHA(approval bool) {
 	cli.Client.Metadata.DataStoreNodeType = nodeSizeDS
 
 	cli.Client.Metadata.CNIPlugin = cni
-	cli.Client.Metadata.Applications = apps
+	if len(apps) != 0 {
+		cli.Client.Metadata.Applications = strings.Split(apps, ",")
+	}
 
-	if err := createApproval(approval); err != nil {
-		log.Error(err.Error())
+	if err := createApproval(ctx, log, approval); err != nil {
+		log.Error(ctx, "createApproval", "Reason", err)
 		os.Exit(1)
 	}
-	err := controller.CreateHACluster(&cli.Client)
+	m, err := controllers.NewManagerClusterSelfManaged(
+		ctx,
+		log,
+		&cli.Client,
+	)
 	if err != nil {
-		log.Error("Failed to create self-managed HA cluster", "Reason", err)
+		log.Error(ctx, "Failed to create self-managed HA cluster", "Reason", err)
 		os.Exit(1)
 	}
-	log.Success("Created the self-managed HA cluster successfully")
+
+	err = m.CreateCluster()
+	if err != nil {
+		log.Error(ctx, "Failed to create self-managed HA cluster", "Reason", err)
+		os.Exit(1)
+	}
+	log.Success(ctx, "Created the self-managed HA cluster successfully")
 }
 
-func deleteManaged(approval bool) {
+func deleteManaged(ctx context.Context, log types.LoggerFactory, approval bool) {
 
 	cli.Client.Metadata.ClusterName = clusterName
 	cli.Client.Metadata.K8sDistro = consts.KsctlKubernetes(distro)
 	cli.Client.Metadata.Region = region
+	cli.Client.Metadata.StateLocation = consts.KsctlStore(storage)
 
-	if err := deleteApproval(approval); err != nil {
-		log.Error(err.Error())
+	if err := deleteApproval(ctx, log, approval); err != nil {
+		log.Error(ctx, "deleteApproval", "Reason", err)
 		os.Exit(1)
 	}
-	err := controller.DeleteManagedCluster(&cli.Client)
+
+	m, err := controllers.NewManagerClusterManaged(
+		ctx,
+		log,
+		&cli.Client,
+	)
 	if err != nil {
-		log.Error("Failed to delete managed cluster", "Reason", err)
+		log.Error(ctx, "Failed to create self-managed HA cluster", "Reason", err)
 		os.Exit(1)
 	}
-	log.Success("Deleted the managed cluster successfully")
+	err = m.DeleteCluster()
+	if err != nil {
+		log.Error(ctx, "Failed to delete managed cluster", "Reason", err)
+		os.Exit(1)
+	}
+	log.Success(ctx, "Deleted the managed cluster successfully")
 }
 
-func deleteHA(approval bool) {
+func deleteHA(ctx context.Context, log types.LoggerFactory, approval bool) {
 
 	cli.Client.Metadata.IsHA = true
 
 	cli.Client.Metadata.ClusterName = clusterName
 	cli.Client.Metadata.K8sDistro = consts.KsctlKubernetes(distro)
 	cli.Client.Metadata.Region = region
+	cli.Client.Metadata.StateLocation = consts.KsctlStore(storage)
 
-	if err := deleteApproval(approval); err != nil {
-		log.Error(err.Error())
+	if err := deleteApproval(ctx, log, approval); err != nil {
+		log.Error(ctx, "deleteApproval", "Reason", err)
 		os.Exit(1)
 	}
-	err := controller.DeleteHACluster(&cli.Client)
+	m, err := controllers.NewManagerClusterSelfManaged(
+		ctx,
+		log,
+		&cli.Client,
+	)
 	if err != nil {
-		log.Error("Failed to delete self-managed HA cluster", "Reason", err)
+		log.Error(ctx, "Failed to create self-managed HA cluster", "Reason", err)
 		os.Exit(1)
 	}
-	log.Success("Deleted the self-managed HA cluster successfully")
+
+	err = m.DeleteCluster()
+	if err != nil {
+		log.Error(ctx, "Failed to delete self-managed HA cluster", "Reason", err)
+		os.Exit(1)
+	}
+	log.Success(ctx, "Deleted the self-managed HA cluster successfully")
 }
 
 func getRequestPayload() ([]byte, error) {
@@ -114,18 +161,18 @@ func getRequestPayload() ([]byte, error) {
 	return a, nil
 }
 
-func deleteApproval(showMsg bool) error {
+func deleteApproval(ctx context.Context, log types.LoggerFactory, showMsg bool) error {
 
 	a, err := getRequestPayload()
 	if err != nil {
 		return err
 	}
-	log.Box("Input in Json", string(a))
+	log.Box(ctx, "Input in Json", string(a))
 
 	if !showMsg {
-		log.Box("Warning 🚨", "THIS IS A DESTRUCTIVE STEP MAKE SURE IF YOU WANT TO DELETE THE CLUSTER")
+		log.Box(ctx, "Warning 🚨", "THIS IS A DESTRUCTIVE STEP MAKE SURE IF YOU WANT TO DELETE THE CLUSTER")
 
-		log.Print("Enter your choice to continue..[y/N]")
+		log.Print(ctx, "Enter your choice to continue..[y/N]")
 		choice := "n"
 		unsafe := false
 		fmt.Scanf("%s", &choice)
@@ -136,24 +183,24 @@ func deleteApproval(showMsg bool) error {
 		}
 
 		if !unsafe {
-			return log.NewError("approval cancelled")
+			return log.NewError(ctx, "approval cancelled by user")
 		}
 	}
 	return nil
 }
 
-func createApproval(showMsg bool) error {
+func createApproval(ctx context.Context, log types.LoggerFactory, showMsg bool) error {
 
 	a, err := getRequestPayload()
 	if err != nil {
 		return err
 	}
-	log.Box("Input in Json", string(a))
+	log.Box(ctx, "Input in Json", string(a))
 
 	if !showMsg {
-		log.Box("Warning 🚨", "THIS IS A CREATION STEP MAKE SURE IF YOU WANT TO CREATE THE CLUSTER")
+		log.Box(ctx, "Warning 🚨", "THIS IS A CREATION STEP MAKE SURE IF YOU WANT TO CREATE THE CLUSTER")
 
-		log.Print("Enter your choice to continue..[y/N]")
+		log.Print(ctx, "Enter your choice to continue..[y/N]")
 		choice := "n"
 		unsafe := false
 		fmt.Scanf("%s", &choice)
@@ -164,7 +211,7 @@ func createApproval(showMsg bool) error {
 		}
 
 		if !unsafe {
-			return log.NewError("approval cancelled")
+			return log.NewError(ctx, "approval cancelled by user")
 		}
 	}
 	return nil
@@ -318,8 +365,6 @@ func SetDefaults(provider consts.KsctlCloud, clusterType consts.KsctlClusterType
 		if len(storage) == 0 {
 			storage = string(consts.StoreLocal)
 		}
-		// also check for the cni plugin as in the future relase it will be required
-	// for installing ksctl agents into the cluster
 
 	case string(consts.CloudCivo) + string(consts.ClusterTypeHa):
 		if len(nodeSizeCP) == 0 {
@@ -372,23 +417,6 @@ func SetDefaults(provider consts.KsctlCloud, clusterType consts.KsctlClusterType
 			distro = string(consts.K8sK3s)
 		}
 	}
-}
-
-func safeInitializeStorageLoggerFactory(ctx context.Context) error {
-	defer func() {
-		if r := recover(); r != nil {
-			log.Error("Recovered in safeInitializeStorageLoggerFactory", r)
-		}
-	}()
-
-	switch storage {
-	case string(consts.StoreExtMongo), string(consts.StoreLocal):
-		cli.Client.Metadata.StateLocation = consts.KsctlStore(storage)
-	default:
-		return log.NewError("not a valid storage option. Valid Options %v\n", [...]string{"external-mongo", "local"})
-	}
-
-	return control_pkg.InitializeStorageFactory(ctx, &cli.Client)
 }
 
 func argsFlags() {

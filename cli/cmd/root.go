@@ -1,22 +1,13 @@
-/*
-Kubesimplify
-authors			Dipankar <dipankar@dipankar-das.com>
-				Anurag Kumar <contact.anurag7@gmail.com>
-				Avinesh Tripathi <avineshtripathi1@gmail.com>
-*/
-
 package cmd
 
 import (
+	"context"
 	"os"
 	"time"
 
-	"github.com/ksctl/ksctl/pkg/resources/controllers"
-
-	controlPkg "github.com/ksctl/ksctl/pkg/controllers"
+	"github.com/ksctl/cli/logger"
 	"github.com/ksctl/ksctl/pkg/helpers/consts"
-	"github.com/ksctl/ksctl/pkg/logger"
-	"github.com/ksctl/ksctl/pkg/resources"
+	"github.com/ksctl/ksctl/pkg/types"
 
 	"github.com/spf13/cobra"
 )
@@ -45,17 +36,16 @@ var (
 type CobraCmd struct {
 	ClusterName string
 	Region      string
-	Client      resources.KsctlClient
+	Client      types.KsctlClient
 	Version     string
 }
 
 var (
-	cli        *CobraCmd
-	controller controllers.Controller
-	log        resources.LoggerFactory
+	cli    *CobraCmd
+	logCli types.LoggerFactory
+	ctx    context.Context
 )
 
-// rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "ksctl",
 	Short: "CLI tool for managing multiple K8s clusters",
@@ -74,14 +64,26 @@ from local clusters to cloud provider specific clusters.`,
 	// Run: func(cmd *cobra.Command, args []string) {},
 }
 
-// Execute adds all child commands to the root command and sets flags appropriately.
-// This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
 
+	ctx = context.WithValue(
+		context.Background(),
+		consts.KsctlModuleNameKey,
+		"cli",
+	)
+	ctx = context.WithValue(
+		ctx, "USERID", "cli",
+	)
+	if _, ok := os.LookupEnv("KSCTL_FAKE_FLAG_ENABLED"); ok {
+		ctx = context.WithValue(
+			ctx,
+			consts.KsctlTestFlagKey,
+			"true",
+		)
+	}
+
 	cli = new(CobraCmd)
-	controller = controlPkg.GenKsctlController()
-	log = logger.NewDefaultLogger(0, os.Stdout)
-	log.SetPackageName("cli")
+	logCli = logger.NewLogger(0, os.Stdout)
 
 	cloud = map[int]string{
 		1: string(consts.CloudAws),
@@ -92,10 +94,10 @@ func Execute() {
 
 	timer := time.Now()
 	err := rootCmd.Execute()
-	defer log.Print("Time Took", "⏰", time.Since(timer).String())
+	defer logCli.Print(ctx, "Time Took", "time", time.Since(timer).String())
 
 	if err != nil {
-		log.Error("Initialization of cli failed", "Reason", err)
+		logCli.Error(ctx, "Initialization of cli failed", "Reason", err)
 		os.Exit(1)
 	}
 }

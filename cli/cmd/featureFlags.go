@@ -1,11 +1,11 @@
 package cmd
 
-// authors Dipankar <dipankar@dipankar-das.com>
 import (
-	"os"
+	"context"
 	"strings"
 
 	"github.com/ksctl/ksctl/pkg/helpers/consts"
+	"github.com/ksctl/ksctl/pkg/types"
 	"github.com/spf13/cobra"
 )
 
@@ -17,10 +17,10 @@ func featureFlag(f *cobra.Command) {
 	f.Flags().StringP("feature-flags", "", "", `Experimental Features: Supported values with comma seperated: [autoscale]`)
 }
 
-func SetRequiredFeatureFlags(cmd *cobra.Command) {
+func SetRequiredFeatureFlags(ctx context.Context, log types.LoggerFactory, cmd *cobra.Command) {
 	rawFeatures, err := cmd.Flags().GetString("feature-flags")
 	if err != nil {
-		log.Error(err.Error())
+		log.Error(ctx, "Error in setting feature flags", "Reason", err)
 		return
 	}
 	features := strings.Split(rawFeatures, ",")
@@ -28,10 +28,12 @@ func SetRequiredFeatureFlags(cmd *cobra.Command) {
 	for _, feature := range features {
 
 		switch consts.KsctlSpecialFlags(feature) {
-		case ksctl_feature_auto_scale:
-			if err := os.Setenv(string(consts.KsctlFeatureFlagHaAutoscale), "true"); err != nil {
-				log.Error("Unable to set the ha autoscale feature")
-			}
+		// case ksctl_feature_auto_scale:
+		// 	if err := os.Setenv(string(consts.KsctlFeatureFlagHaAutoscale), "true"); err != nil {
+		// 		log.Error("Unable to set the ha autoscale feature")
+		// 	}
+		default:
+			return
 		}
 	}
 }
