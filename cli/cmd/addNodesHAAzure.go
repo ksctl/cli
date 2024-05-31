@@ -7,8 +7,8 @@ import (
 
 	"github.com/fatih/color"
 
+	"github.com/ksctl/cli/logger"
 	"github.com/ksctl/ksctl/pkg/controllers"
-	"github.com/ksctl/ksctl/pkg/logger"
 	"github.com/ksctl/ksctl/pkg/types"
 
 	"github.com/spf13/cobra"
@@ -18,15 +18,15 @@ import (
 
 var addMoreWorkerNodesHAAzure = &cobra.Command{
 	Deprecated: color.HiYellowString("This will be removed in future releases once autoscaling is stable"),
-	Use:        "add-nodes",
-	Short:      "Use to add more worker nodes in HA azure k3s cluster",
-	Long: `It is used to add nodes to worker nodes in cluster with the given name from user. For example:
-
-ksctl create-cluster ha-azure add-nodes <arguments to civo cloud provider>
-`,
+	Example: `
+ksctl create ha-azure add-nodes -n demo -r eastus -s store-local --noWP 3 --nodeSizeWP Standard_F2s --bootstrap kubeadm      # Here the noWP is the desired count of workernodes
+	`,
+	Use:   "add-nodes",
+	Short: "Use to add more worker nodes in HA azure k3s cluster",
+	Long:  "It is used to add nodes to worker nodes in cluster with the given name from user",
 	Run: func(cmd *cobra.Command, args []string) {
 		verbosity, _ := cmd.Flags().GetInt("verbose")
-		var log types.LoggerFactory = logger.NewGeneralLogger(verbosity, os.Stdout)
+		var log types.LoggerFactory = logger.NewLogger(verbosity, os.Stdout)
 		SetRequiredFeatureFlags(ctx, log, cmd)
 
 		cli.Client.Metadata.Provider = consts.CloudAzure
@@ -42,7 +42,7 @@ ksctl create-cluster ha-azure add-nodes <arguments to civo cloud provider>
 		cli.Client.Metadata.K8sVersion = k8sVer
 		cli.Client.Metadata.StateLocation = consts.KsctlStore(storage)
 
-		if err := createApproval(ctx, log, cmd.Flags().Lookup("approve").Changed); err != nil {
+		if err := createApproval(ctx, log, cmd.Flags().Lookup("yes").Changed); err != nil {
 			log.Error(ctx, "createApproval", "Reason", err)
 			os.Exit(1)
 		}

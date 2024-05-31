@@ -17,12 +17,12 @@ import (
 
 var addMoreWorkerNodesHACivo = &cobra.Command{
 	Deprecated: color.HiYellowString("This will be removed in future releases once autoscaling is stable"),
-	Use:        "add-nodes",
-	Short:      "Use to add more worker nodes in HA CIVO k3s cluster",
-	Long: `It is used to add nodes to worker nodes in cluster with the given name from user. For example:
-
-ksctl create-cluster ha-civo add-nodes <arguments to civo cloud provider>
-`,
+	Example: `
+ksctl create ha-civo add-nodes -n demo -r LON1 -s store-local --noWP 3 --nodeSizeWP g3.medium --bootstrap kubeadm      # Here the noWP is the desired count of workernodes
+	`,
+	Use:   "add-nodes",
+	Short: "Use to add more worker nodes in HA CIVO k3s cluster",
+	Long:  "It is used to add nodes to worker nodes in cluster with the given name from user.",
 	Run: func(cmd *cobra.Command, args []string) {
 		verbosity, _ := cmd.Flags().GetInt("verbose")
 
@@ -42,7 +42,7 @@ ksctl create-cluster ha-civo add-nodes <arguments to civo cloud provider>
 		cli.Client.Metadata.IsHA = true
 		cli.Client.Metadata.StateLocation = consts.KsctlStore(storage)
 
-		if err := createApproval(ctx, log, cmd.Flags().Lookup("approve").Changed); err != nil {
+		if err := createApproval(ctx, log, cmd.Flags().Lookup("yes").Changed); err != nil {
 			log.Error(ctx, "createApproval", "Reason", err)
 			os.Exit(1)
 		}

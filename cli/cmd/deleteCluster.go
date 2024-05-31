@@ -5,8 +5,8 @@ package cmd
 import (
 	"os"
 
+	"github.com/ksctl/cli/logger"
 	"github.com/ksctl/ksctl/pkg/helpers/consts"
-	"github.com/ksctl/ksctl/pkg/logger"
 	"github.com/ksctl/ksctl/pkg/types"
 	"github.com/spf13/cobra"
 )
@@ -31,14 +31,14 @@ ksctl create-cluster azure <arguments to civo cloud provider>
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		verbosity, _ := cmd.Flags().GetInt("verbose")
-		var log types.LoggerFactory = logger.NewGeneralLogger(verbosity, os.Stdout)
+		var log types.LoggerFactory = logger.NewLogger(verbosity, os.Stdout)
 		SetRequiredFeatureFlags(ctx, log, cmd)
 
 		cli.Client.Metadata.Provider = consts.CloudAzure
 
 		SetDefaults(consts.CloudAzure, consts.ClusterTypeMang)
 
-		deleteManaged(ctx, log, cmd.Flags().Lookup("approve").Changed)
+		deleteManaged(ctx, log, cmd.Flags().Lookup("yes").Changed)
 	},
 }
 
@@ -51,14 +51,14 @@ ksctl delete-cluster civo
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		verbosity, _ := cmd.Flags().GetInt("verbose")
-		var log types.LoggerFactory = logger.NewGeneralLogger(verbosity, os.Stdout)
+		var log types.LoggerFactory = logger.NewLogger(verbosity, os.Stdout)
 		SetRequiredFeatureFlags(ctx, log, cmd)
 
 		cli.Client.Metadata.Provider = consts.CloudCivo
 
 		SetDefaults(consts.CloudCivo, consts.ClusterTypeMang)
 
-		deleteManaged(ctx, log, cmd.Flags().Lookup("approve").Changed)
+		deleteManaged(ctx, log, cmd.Flags().Lookup("yes").Changed)
 
 	},
 }
@@ -72,14 +72,14 @@ var deleteClusterHAAws = &cobra.Command{
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
 		verbosity, _ := cmd.Flags().GetInt("verbose")
-		var log types.LoggerFactory = logger.NewGeneralLogger(verbosity, os.Stdout)
+		var log types.LoggerFactory = logger.NewLogger(verbosity, os.Stdout)
 		SetRequiredFeatureFlags(ctx, log, cmd)
 
 		cli.Client.Metadata.Provider = consts.CloudAws
 
 		SetDefaults(consts.CloudAws, consts.ClusterTypeHa)
 
-		deleteHA(ctx, log, cmd.Flags().Lookup("approve").Changed)
+		deleteHA(ctx, log, cmd.Flags().Lookup("yes").Changed)
 	},
 }
 
@@ -92,14 +92,14 @@ var deleteClusterHAAzure = &cobra.Command{
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
 		verbosity, _ := cmd.Flags().GetInt("verbose")
-		var log types.LoggerFactory = logger.NewGeneralLogger(verbosity, os.Stdout)
+		var log types.LoggerFactory = logger.NewLogger(verbosity, os.Stdout)
 		SetRequiredFeatureFlags(ctx, log, cmd)
 
 		cli.Client.Metadata.Provider = consts.CloudAzure
 
 		SetDefaults(consts.CloudAzure, consts.ClusterTypeHa)
 
-		deleteHA(ctx, log, cmd.Flags().Lookup("approve").Changed)
+		deleteHA(ctx, log, cmd.Flags().Lookup("yes").Changed)
 	},
 }
 
@@ -112,14 +112,14 @@ ksctl delete-cluster ha-civo <arguments to cloud provider>
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		verbosity, _ := cmd.Flags().GetInt("verbose")
-		var log types.LoggerFactory = logger.NewGeneralLogger(verbosity, os.Stdout)
+		var log types.LoggerFactory = logger.NewLogger(verbosity, os.Stdout)
 		SetRequiredFeatureFlags(ctx, log, cmd)
 
 		cli.Client.Metadata.Provider = consts.CloudCivo
 
 		SetDefaults(consts.CloudCivo, consts.ClusterTypeHa)
 
-		deleteHA(ctx, log, cmd.Flags().Lookup("approve").Changed)
+		deleteHA(ctx, log, cmd.Flags().Lookup("yes").Changed)
 	},
 }
 
@@ -132,14 +132,14 @@ ksctl delete-cluster local <arguments to local/Docker provider>
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		verbosity, _ := cmd.Flags().GetInt("verbose")
-		var log types.LoggerFactory = logger.NewGeneralLogger(verbosity, os.Stdout)
+		var log types.LoggerFactory = logger.NewLogger(verbosity, os.Stdout)
 		SetRequiredFeatureFlags(ctx, log, cmd)
 
 		cli.Client.Metadata.Provider = consts.CloudLocal
 
 		SetDefaults(consts.CloudLocal, consts.ClusterTypeMang)
 
-		deleteManaged(ctx, log, cmd.Flags().Lookup("approve").Changed)
+		deleteManaged(ctx, log, cmd.Flags().Lookup("yes").Changed)
 	},
 }
 

@@ -3,8 +3,10 @@ module github.com/ksctl/cli
 go 1.22.0
 
 require (
+	github.com/Delta456/box-cli-maker/v2 v2.3.0
 	github.com/fatih/color v1.17.0
 	github.com/ksctl/ksctl v1.2.0
+	github.com/rodaine/table v1.2.0
 	github.com/spf13/cobra v1.8.0
 )
 
@@ -21,7 +23,6 @@ require (
 	github.com/Azure/go-ansiterm v0.0.0-20230124172434-306776ec8161 // indirect
 	github.com/AzureAD/microsoft-authentication-library-for-go v1.2.2 // indirect
 	github.com/BurntSushi/toml v1.4.0 // indirect
-	github.com/Delta456/box-cli-maker/v2 v2.3.0 // indirect
 	github.com/MakeNowJust/heredoc v1.0.0 // indirect
 	github.com/Masterminds/goutils v1.1.1 // indirect
 	github.com/Masterminds/semver/v3 v3.2.1 // indirect
@@ -138,7 +139,6 @@ require (
 	github.com/prometheus/common v0.53.0 // indirect
 	github.com/prometheus/procfs v0.15.0 // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
-	github.com/rodaine/table v1.2.0 // indirect
 	github.com/rubenv/sql-migrate v1.6.1 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/shopspring/decimal v1.4.0 // indirect

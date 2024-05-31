@@ -6,8 +6,8 @@ import (
 	"os"
 
 	"github.com/fatih/color"
+	"github.com/ksctl/cli/logger"
 	"github.com/ksctl/ksctl/pkg/controllers"
-	"github.com/ksctl/ksctl/pkg/logger"
 	"github.com/ksctl/ksctl/pkg/types"
 
 	"github.com/ksctl/ksctl/pkg/helpers/consts"
@@ -24,7 +24,7 @@ ksctl delete-cluster ha-azure delete-nodes <arguments to cloud provider>
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		verbosity, _ := cmd.Flags().GetInt("verbose")
-		var log types.LoggerFactory = logger.NewGeneralLogger(verbosity, os.Stdout)
+		var log types.LoggerFactory = logger.NewLogger(verbosity, os.Stdout)
 		SetRequiredFeatureFlags(ctx, log, cmd)
 
 		cli.Client.Metadata.Provider = consts.CloudAzure
@@ -38,7 +38,7 @@ ksctl delete-cluster ha-azure delete-nodes <arguments to cloud provider>
 		cli.Client.Metadata.K8sDistro = consts.KsctlKubernetes(distro)
 		cli.Client.Metadata.StateLocation = consts.KsctlStore(storage)
 
-		if err := deleteApproval(ctx, log, cmd.Flags().Lookup("approve").Changed); err != nil {
+		if err := deleteApproval(ctx, log, cmd.Flags().Lookup("yes").Changed); err != nil {
 			log.Error(ctx, "deleteApproval", "Reason", err)
 			os.Exit(1)
 		}

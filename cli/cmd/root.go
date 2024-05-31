@@ -12,8 +12,8 @@ import (
 	"os"
 	"time"
 
+	"github.com/ksctl/cli/logger"
 	"github.com/ksctl/ksctl/pkg/helpers/consts"
-	"github.com/ksctl/ksctl/pkg/logger"
 	"github.com/ksctl/ksctl/pkg/types"
 
 	"github.com/spf13/cobra"
@@ -90,7 +90,7 @@ func Execute() {
 	}
 
 	cli = new(CobraCmd)
-	logCli = logger.NewGeneralLogger(0, os.Stdout)
+	logCli = logger.NewLogger(0, os.Stdout)
 
 	cloud = map[int]string{
 		1: string(consts.CloudAws),

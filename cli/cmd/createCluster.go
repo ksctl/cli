@@ -5,40 +5,40 @@ package cmd
 import (
 	"os"
 
+	"github.com/ksctl/cli/logger"
 	"github.com/ksctl/ksctl/pkg/helpers/consts"
-	"github.com/ksctl/ksctl/pkg/logger"
 	"github.com/ksctl/ksctl/pkg/types"
 	"github.com/spf13/cobra"
 )
 
 // createClusterCmd represents the createCluster command
 var createClusterCmd = &cobra.Command{
-	Use:     "create-cluster",
+	Use: "create-cluster",
+	Example: `
+ksctl create --help
+	`,
 	Short:   "Use to create a cluster",
 	Aliases: []string{"create"},
-	Long: `It is used to create cluster with the given name from user. For example:
-
-ksctl create-cluster ["azure", "gcp", "aws", "local"]
-`,
+	Long:    "It is used to create cluster with the given name from user",
 }
 
 var createClusterHAAws = &cobra.Command{
-	Use:   "ha-aws",
-	Short: "Use to create a EKS cluster in AWS",
-	Long: `It is used to create cluster with the given name from user. For example:
-
-ksctl create-cluster ha-aws <arguments to cloud provider>
+	Use: "ha-aws",
+	Example: `
+ksctl create-cluster ha-aws -n demo -r us-east-1 --bootstrap k3s -s store-local --nodeSizeCP t2.medium --nodeSizeWP t2.medium --nodeSizeLB t2.micro --nodeSizeDS t2.small --noWP 1 --noCP 3 --noDS 3
 `,
+	Short: "Use to create a EKS cluster in AWS",
+	Long:  "It is used to create cluster with the given name from user.",
 	Run: func(cmd *cobra.Command, args []string) {
 		verbosity, _ := cmd.Flags().GetInt("verbose")
-		var log types.LoggerFactory = logger.NewGeneralLogger(verbosity, os.Stdout)
+		var log types.LoggerFactory = logger.NewLogger(verbosity, os.Stdout)
 		SetRequiredFeatureFlags(ctx, log, cmd)
 
 		cli.Client.Metadata.Provider = consts.CloudAws
 
 		SetDefaults(consts.CloudAws, consts.ClusterTypeHa)
 
-		createHA(ctx, log, cmd.Flags().Lookup("approve").Changed)
+		createHA(ctx, log, cmd.Flags().Lookup("yes").Changed)
 	},
 }
 
@@ -51,14 +51,14 @@ var createClusterAzure = &cobra.Command{
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
 		verbosity, _ := cmd.Flags().GetInt("verbose")
-		var log types.LoggerFactory = logger.NewGeneralLogger(verbosity, os.Stdout)
+		var log types.LoggerFactory = logger.NewLogger(verbosity, os.Stdout)
 		SetRequiredFeatureFlags(ctx, log, cmd)
 
 		cli.Client.Metadata.Provider = consts.CloudAzure
 
 		SetDefaults(consts.CloudAzure, consts.ClusterTypeMang)
 
-		createManaged(ctx, log, cmd.Flags().Lookup("approve").Changed)
+		createManaged(ctx, log, cmd.Flags().Lookup("yes").Changed)
 	},
 }
 
@@ -71,14 +71,14 @@ ksctl create-cluster civo <arguments to cloud provider>
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		verbosity, _ := cmd.Flags().GetInt("verbose")
-		var log types.LoggerFactory = logger.NewGeneralLogger(verbosity, os.Stdout)
+		var log types.LoggerFactory = logger.NewLogger(verbosity, os.Stdout)
 		SetRequiredFeatureFlags(ctx, log, cmd)
 
 		cli.Client.Metadata.Provider = consts.CloudCivo
 
 		SetDefaults(consts.CloudCivo, consts.ClusterTypeMang)
 
-		createManaged(ctx, log, cmd.Flags().Lookup("approve").Changed)
+		createManaged(ctx, log, cmd.Flags().Lookup("yes").Changed)
 	},
 }
 
@@ -91,14 +91,14 @@ ksctl create-cluster local <arguments to cloud provider>
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		verbosity, _ := cmd.Flags().GetInt("verbose")
-		var log types.LoggerFactory = logger.NewGeneralLogger(verbosity, os.Stdout)
+		var log types.LoggerFactory = logger.NewLogger(verbosity, os.Stdout)
 		SetRequiredFeatureFlags(ctx, log, cmd)
 
 		cli.Client.Metadata.Provider = consts.CloudLocal
 
 		SetDefaults(consts.CloudLocal, consts.ClusterTypeMang)
 
-		createManaged(ctx, log, cmd.Flags().Lookup("approve").Changed)
+		createManaged(ctx, log, cmd.Flags().Lookup("yes").Changed)
 	},
 }
 
@@ -111,14 +111,14 @@ ksctl create-cluster ha-civo <arguments to cloud provider>
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		verbosity, _ := cmd.Flags().GetInt("verbose")
-		var log types.LoggerFactory = logger.NewGeneralLogger(verbosity, os.Stdout)
+		var log types.LoggerFactory = logger.NewLogger(verbosity, os.Stdout)
 		SetRequiredFeatureFlags(ctx, log, cmd)
 
 		cli.Client.Metadata.Provider = consts.CloudCivo
 
 		SetDefaults(consts.CloudCivo, consts.ClusterTypeHa)
 
-		createHA(ctx, log, cmd.Flags().Lookup("approve").Changed)
+		createHA(ctx, log, cmd.Flags().Lookup("yes").Changed)
 	},
 }
 
@@ -131,14 +131,14 @@ var createClusterHAAzure = &cobra.Command{
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
 		verbosity, _ := cmd.Flags().GetInt("verbose")
-		var log types.LoggerFactory = logger.NewGeneralLogger(verbosity, os.Stdout)
+		var log types.LoggerFactory = logger.NewLogger(verbosity, os.Stdout)
 		SetRequiredFeatureFlags(ctx, log, cmd)
 
 		cli.Client.Metadata.Provider = consts.CloudAzure
 
 		SetDefaults(consts.CloudAzure, consts.ClusterTypeHa)
 
-		createHA(ctx, log, cmd.Flags().Lookup("approve").Changed)
+		createHA(ctx, log, cmd.Flags().Lookup("yes").Changed)
 	},
 }
 

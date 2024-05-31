@@ -5,8 +5,8 @@ package cmd
 import (
 	"os"
 
+	"github.com/ksctl/cli/logger"
 	"github.com/ksctl/ksctl/pkg/controllers"
-	"github.com/ksctl/ksctl/pkg/logger"
 	"github.com/ksctl/ksctl/pkg/types"
 
 	"github.com/ksctl/ksctl/pkg/helpers/consts"
@@ -14,16 +14,26 @@ import (
 )
 
 var switchCluster = &cobra.Command{
-	Use:     "switch-cluster",
+	Use: "switch-cluster",
+	Example: `
+ksctl switch-context -p civo -n <clustername> -r <region> <arguments to cloud provider>
+ksctl switch-context -p local -n <clustername> -r <region> <arguments to cloud provider>
+ksctl switch-context -p azure -n <clustername> -r <region> <arguments to cloud provider>
+ksctl switch-context -p ha-civo -n <clustername> -r <region> <arguments to cloud provider>
+ksctl switch-context -p ha-azure -n <clustername> -r <region> <arguments to cloud provider>
+ksctl switch-context -p ha-aws -n <clustername> -r <region> <arguments to cloud provider>
+
+	For Storage specific
+
+ksctl switch-context -s store-local -p civo -n <clustername> -r <region> <arguments to cloud provider>
+ksctl switch-context -s external-store-mongodb -p civo -n <clustername> -r <region> <arguments to cloud provider>
+`,
 	Aliases: []string{"switch"},
 	Short:   "Use to switch between clusters",
-	Long: `It is used to switch cluster with the given ClusterName from user. For example:
-
-ksctl switch-context -p <civo,local,ha-civo,ha-azure,ha-aws,azure>  -n <clustername> -r <region> <arguments to cloud provider>
-`,
+	Long:    "It is used to switch cluster with the given ClusterName from user.",
 	Run: func(cmd *cobra.Command, args []string) {
 		verbosity, _ := cmd.Flags().GetInt("verbose")
-		var log types.LoggerFactory = logger.NewGeneralLogger(verbosity, os.Stdout)
+		var log types.LoggerFactory = logger.NewLogger(verbosity, os.Stdout)
 
 		if len(storage) == 0 {
 			storage = string(consts.StoreLocal)

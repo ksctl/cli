@@ -1,0 +1,379 @@
+# name: "Test Functionality of the Mock cli"
+# on:
+#   pull_request:
+#     paths:
+#       - '.github/workflows/test-mock.yml'
+#       - 'cli/**'
+#       - 'scripts/**'
+#       - 'go.mod'
+#       - 'go.sum'
+#     types: [ labeled, opened, synchronize, reopened ]
+#     branches: [ main ]
+#   push:
+#     paths:
+#       - 'scripts/**'
+#       - 'cli/**'
+#       - '.github/workflows/test-mock.yml'
+#       - 'go.mod'
+#       - 'go.sum'
+#     branches: [ main ]
+# jobs:
+#   ksctl-cli-windows:
+#     if: |
+#       (
+#         github.event.label.name == 'pr/lgtm' ||
+#         contains(github.event.pull_request.labels.*.name, 'pr/lgtm')
+#       ) || (
+#         github.event_name == 'push' && 
+#         github.ref == 'refs/heads/main'
+#       )
+#     runs-on: windows-latest
+#     env:
+#       KSCTL_FAKE_FLAG_ENABLED: "1"
+#     steps:
+#       - name: Checkout
+#         uses: actions/checkout@v3
+#
+#       - name: Set up Go
+#         uses: actions/setup-go@v4
+#         with:
+#           go-version: 1.21.0
+#
+#       - name: build ksctl
+#         run: |
+#           cd .\scripts
+#           .\builder.ps1
+#           cd C:\Users\runneradmin\AppData\Local\ksctl
+#           .\ksctl.exe version
+#
+#       - name: civo create
+#         working-directory: 'C:\Users\runneradmin\AppData\Local\ksctl'
+#         run: |
+#           .\ksctl.exe create civo -n demo -r LON1 --nodeSizeMP "g4s.kube.small" --version 1.27.1 --verbose -1 -s store-local --yes
+#
+#           .\ksctl.exe create ha-civo -n ha-demo-k3s --nodeSizeDS "fake.small" --version 1.27.1 --nodeSizeLB "fake.small" --nodeSizeCP "fake.small" --nodeSizeWP "fake.small" -s store-local -r LON1 --verbose -1 --yes --bootstrap k3s
+#
+#           .\ksctl.exe create ha-civo -n ha-demo-kubeadm --nodeSizeDS "fake.small" --version 1.27.1 --nodeSizeLB "fake.small" --nodeSizeCP "fake.small" --nodeSizeWP "fake.small" -s store-local -r LON1 --verbose -1 --yes --bootstrap kubeadm
+#
+#       - name: azure create
+#         working-directory: 'C:\Users\runneradmin\AppData\Local\ksctl'
+#         run: |
+#           .\ksctl.exe create azure -n demo -r fake --nodeSizeMP "fake" -s store-local --version 1.27.1 --verbose -1 --yes
+#
+#           .\ksctl.exe create ha-azure -n ha-demo-k3s --nodeSizeDS "fake"  --version 1.27.1 --nodeSizeLB "fake" --nodeSizeCP "fake" --nodeSizeWP "fake" -r fake --verbose -1 -s store-local --yes --bootstrap k3s
+#
+#           .\ksctl.exe create ha-azure -n ha-demo-kubeadm --nodeSizeDS "fake"  --version 1.27.1 --nodeSizeLB "fake" --nodeSizeCP "fake" --nodeSizeWP "fake" -r fake --verbose -1 -s store-local --yes --bootstrap kubeadm
+#
+#       - name: aws create
+#         working-directory: 'C:\Users\runneradmin\AppData\Local\ksctl'
+#         run: |
+#           # .\ksctl.exe create aws -n demo -r fake --nodeSizeMP "fake" --version 1.27.1 -s store-local --verbose -1 --yes
+#           #
+#           .\ksctl.exe create ha-aws -n ha-demo-k3s --nodeSizeDS "fake"  --version 1.27.1 --nodeSizeLB "fake" --nodeSizeCP "fake" --nodeSizeWP "fake" -r fake --verbose -1 -s store-local --yes --bootstrap k3s
+#
+#           .\ksctl.exe create ha-aws -n ha-demo-kubeadm --nodeSizeDS "fake"  --version 1.27.1 --nodeSizeLB "fake" --nodeSizeCP "fake" --nodeSizeWP "fake" -r fake --verbose -1 -s store-local --yes --bootstrap kubeadm
+#
+#       - name: local create
+#         working-directory: 'C:\Users\runneradmin\AppData\Local\ksctl'
+#         run: |
+#           .\ksctl.exe create local -n demolocal  --version 1.27.1 --verbose -1 -s store-local --yes
+#
+#       - name: civo get
+#         working-directory: 'C:\Users\runneradmin\AppData\Local\ksctl'
+#         run: |
+#           .\ksctl.exe get -s store-local -p civo
+#
+#       - name: azure get
+#         working-directory: 'C:\Users\runneradmin\AppData\Local\ksctl'
+#         run: |
+#           .\ksctl.exe get -s store-local -p azure
+#
+#       - name: aws get
+#         working-directory: 'C:\Users\runneradmin\AppData\Local\ksctl'
+#         run: |
+#           .\ksctl.exe get -s store-local -p aws
+#
+#       - name: get all
+#         working-directory: 'C:\Users\runneradmin\AppData\Local\ksctl'
+#         run: |
+#           .\ksctl.exe get -s store-local
+#
+#       - name: civo switch
+#         working-directory: 'C:\Users\runneradmin\AppData\Local\ksctl'
+#         run: |
+#           .\ksctl.exe switch -p civo -n demo -s store-local -r LON1
+#           .\ksctl.exe switch -p ha-civo -n ha-demo-k3s -s store-local -r LON1 --bootstrap k3s
+#           .\ksctl.exe switch -p ha-civo -n ha-demo-kubeadm -s store-local -r LON1 --bootstrap kubeadm
+#
+#       - name: aws switch
+#         working-directory: 'C:\Users\runneradmin\AppData\Local\ksctl'
+#         run: |
+#           # .\ksctl.exe switch -p aws -n demo -s store-local -r fake
+#           .\ksctl.exe switch -p ha-aws -n ha-demo-k3s -s store-local -r fake --bootstrap k3s
+#           .\ksctl.exe switch -p ha-aws -n ha-demo-kubeadm -s store-local -r fake --bootstrap kubeadm
+#
+#       - name: azure switch
+#         working-directory: 'C:\Users\runneradmin\AppData\Local\ksctl'
+#         run: |
+#           .\ksctl.exe switch -p azure -n demo -s store-local -r fake
+#           .\ksctl.exe switch -p ha-azure -n ha-demo-k3s -s store-local -r fake --bootstrap k3s
+#           .\ksctl.exe switch -p ha-azure -n ha-demo-kubeadm -s store-local -r fake --bootstrap kubeadm
+#
+#       - name: civo scale up and down
+#         working-directory: 'C:\Users\runneradmin\AppData\Local\ksctl'
+#         run: |
+#           .\ksctl.exe delete ha-civo del-nodes -n ha-demo-k3s --noWP 0 -r LON1 -s store-local --yes -v -1 --bootstrap k3s
+#           .\ksctl.exe create ha-civo add-nodes -n ha-demo-k3s --noWP 1  --version 1.27.1 --nodeSizeWP "fake.small" -s store-local -r LON1 -v -1 --yes --bootstrap k3s
+#
+#           .\ksctl.exe delete ha-civo del-nodes -n ha-demo-kubeadm --noWP 0 -r LON1 -s store-local --yes -v -1 --bootstrap kubeadm
+#           .\ksctl.exe create ha-civo add-nodes -n ha-demo-kubeadm --noWP 1  --version 1.27.1 --nodeSizeWP "fake.small" -s store-local -r LON1 -v -1 --yes --bootstrap kubeadm
+#
+#       - name: azure scale up and down
+#         working-directory: 'C:\Users\runneradmin\AppData\Local\ksctl'
+#         run: |
+#           .\ksctl.exe delete ha-azure del-nodes -n ha-demo-k3s --noWP 0 -r fake -s store-local --yes -v -1 --bootstrap k3s
+#           .\ksctl.exe create ha-azure add-nodes -n ha-demo-k3s --noWP 1  --version 1.27.1 --nodeSizeWP "fake" -s store-local -r fake -v -1 --yes --bootstrap k3s
+#
+#           .\ksctl.exe delete ha-azure del-nodes -n ha-demo-kubeadm --noWP 0 -r fake -s store-local --yes -v -1 --bootstrap kubeadm
+#           .\ksctl.exe create ha-azure add-nodes -n ha-demo-kubeadm --noWP 1  --version 1.27.1 --nodeSizeWP "fake" -s store-local -r fake -v -1 --yes --bootstrap kubeadm
+#
+#       - name: aws scale up and down
+#         working-directory: 'C:\Users\runneradmin\AppData\Local\ksctl'
+#         run: |
+#           .\ksctl.exe delete ha-aws del-nodes -n ha-demo-k3s --noWP 0 -r fake -s store-local --yes -v -1 --bootstrap k3s
+#           .\ksctl.exe create ha-aws add-nodes -n ha-demo-k3s --noWP 1  --version 1.27.1 --nodeSizeWP "fake" -s store-local -r fake -v -1 --yes --bootstrap k3s
+#
+#           .\ksctl.exe delete ha-aws del-nodes -n ha-demo-kubeadm --noWP 0 -r fake -s store-local --yes -v -1 --bootstrap kubeadm
+#           .\ksctl.exe create ha-aws add-nodes -n ha-demo-kubeadm --noWP 1  --version 1.27.1 --nodeSizeWP "fake" -s store-local -r fake -v -1 --yes --bootstrap kubeadm
+#
+#       - name: civo delete
+#         working-directory: 'C:\Users\runneradmin\AppData\Local\ksctl'
+#         run: |
+#           .\ksctl.exe delete civo -n demo -r LON1 -s store-local -v -1 --yes
+#           .\ksctl.exe delete ha-civo -n ha-demo-k3s -r LON1 -s store-local -v -1 --yes --bootstrap k3s
+#           .\ksctl.exe delete ha-civo -n ha-demo-kubeadm -r LON1 -s store-local -v -1 --yes --bootstrap kubeadm
+#
+#
+#       - name: azure delete
+#         working-directory: 'C:\Users\runneradmin\AppData\Local\ksctl'
+#         run: |
+#           .\ksctl.exe delete azure -n demo -r fake -s store-local -v -1 --yes
+#           .\ksctl.exe delete ha-azure -n ha-demo-k3s -r fake -s store-local -v -1 --yes --bootstrap k3s
+#           .\ksctl.exe delete ha-azure -n ha-demo-kubeadm -r fake -s store-local -v -1 --yes --bootstrap kubeadm
+#
+#       - name: aws delete
+#         working-directory: 'C:\Users\runneradmin\AppData\Local\ksctl'
+#         run: |
+#           # .\ksctl.exe delete aws -n demo -r fake -s store-local -v -1 --yes
+#           .\ksctl.exe delete ha-aws -n ha-demo-k3s -r fake -s store-local -v -1 --yes --bootstrap k3s
+#           .\ksctl.exe delete ha-aws -n ha-demo-kubeadm -r fake -s store-local -v -1 --yes --bootstrap kubeadm
+#
+#       - name: local delete
+#         working-directory: 'C:\Users\runneradmin\AppData\Local\ksctl'
+#         run: |
+#           .\ksctl.exe delete local -n demolocal -s store-local -v -1 --yes
+#
+#   ksctl-cli-unix:
+#     strategy:
+#       matrix:
+#         os: [macos-latest, ubuntu-latest]
+#
+#     if: |
+#       (
+#         github.event.label.name == 'pr/lgtm' ||
+#         contains(github.event.pull_request.labels.*.name, 'pr/lgtm')
+#       ) || (
+#         github.event_name == 'push' && 
+#         github.ref == 'refs/heads/main'
+#       )
+#     runs-on: ${{ matrix.os }}
+#     env:
+#       KSCTL_FAKE_FLAG_ENABLED: "1"
+#       PS4: '+\[\033[0;33m\](\[\033[0;36m\]${BASH_SOURCE##*/}:${LINENO}\[\033[0;33m\])\[\033[0m\] '
+#     steps:
+#       - name: Checkout
+#         uses: actions/checkout@v3
+#
+#       - name: Set up Go
+#         uses: actions/setup-go@v4
+#         with:
+#           go-version: 1.21.0
+#
+#       - name: build ksctl linux
+#         if: ${{ matrix.os == 'ubuntu-latest' }}
+#         run: |
+#           set -xe
+#           make install_linux
+#           ksctl version
+#
+#       - name: build ksctl macos
+#         if: ${{ matrix.os == 'macos-latest' }}
+#         run: |
+#           set -xe
+#           make install_macos_intel
+#           ksctl version
+#
+#       - name: civo create
+#         run: |
+#           set -xe
+#           ksctl create civo -n demo -r LON1 --nodeSizeMP "g4s.kube.small"  --version 1.27.1 -s store-local --verbose -1 --yes
+#           ksctl create ha-civo -n ha-demo --nodeSizeDS "fake.small" -s store-local  --version 1.27.1 --nodeSizeLB "fake.small" --nodeSizeCP "fake.small" --nodeSizeWP "fake.small" -r LON1 --verbose -1 --yes
+#
+#       - name: azure create
+#         run: |
+#           set -xe
+#           ksctl create azure -n demo -r fake --nodeSizeMP "fake" -s store-local  --version 1.27.1 --verbose -1 --yes
+#           ksctl create ha-azure -n ha-demo --nodeSizeDS "fake" -s store-local --nodeSizeLB "fake"  --version 1.27.1 --nodeSizeCP "fake" --nodeSizeWP "fake" -r fake --verbose -1 --yes
+#
+#       - name: aws create
+#         run: |
+#           set -xe
+#           # ksctl create aws -n demo -r fake --nodeSizeMP "fake" -s store-local  --version 1.27.1 --verbose -1 --yes
+#           ksctl create ha-aws -n ha-demo --nodeSizeDS "fake" -s store-local --nodeSizeLB "fake" --version 1.27.1  --nodeSizeCP "fake" --nodeSizeWP "fake" -r fake --verbose -1 --yes
+#
+#       - name: local create
+#         run: |
+#           set -xe
+#           ksctl create local -n demolocal -s store-local --verbose -1 --yes
+#
+#       - name: local create mongodb
+#         if: ${{ matrix.os == 'ubuntu-latest' }}
+#         run: |
+#           set -xe
+#           unset KSCTL_FAKE_FLAG_ENABLED
+#           docker run -d \
+#             --name mongodb \
+#             -p 27017:27017 \
+#             -e MONGO_INITDB_ROOT_USERNAME=root \
+#             -e MONGO_INITDB_ROOT_PASSWORD=1234 \
+#             mongo
+#           export MONGODB_URI="mongodb://root:1234@127.0.0.1:27017"
+#           ksctl create local -n demolocal-extmongo -s external-store-mongodb --verbose -1 --yes
+#
+#       - name: civo get
+#         run: |
+#           set -xe
+#           ksctl get -p civo -s store-local
+#
+#       - name: azure get
+#         run: |
+#           set -xe
+#           ksctl get -p azure -s store-local
+#
+#       - name: aws get
+#         run: |
+#           set -xe
+#           ksctl get -p aws -s store-local
+#
+#       - name: local get
+#         run: |
+#           set -xe
+#           ksctl get -p local -s store-local
+#
+#       - name: local get mongo
+#         if: ${{ matrix.os == 'ubuntu-latest' }}
+#         run: |
+#           set -xe
+#           unset KSCTL_FAKE_FLAG_ENABLED
+#           export MONGODB_URI="mongodb://root:1234@127.0.0.1:27017"
+#           ksctl get -p local -s external-store-mongodb
+#
+#       - name: all
+#         run: |
+#           set -xe
+#           ksctl get -s store-local
+#       
+#       - name: all mongodb
+#         if: ${{ matrix.os == 'ubuntu-latest' }}
+#         run: |
+#           set -xe
+#           unset KSCTL_FAKE_FLAG_ENABLED
+#           export MONGODB_URI="mongodb://root:1234@127.0.0.1:27017"
+#           ksctl get -s external-store-mongodb
+#
+#       - name: local switch
+#         run: |
+#           set -xe
+#           ksctl switch -p local -n demolocal -s store-local
+#
+#       - name: local switch mongodb
+#         if: ${{ matrix.os == 'ubuntu-latest' }}
+#         run: |
+#           set -xe
+#           unset KSCTL_FAKE_FLAG_ENABLED
+#           export MONGODB_URI="mongodb://root:1234@127.0.0.1:27017"
+#           ksctl switch -p local -n demolocal-extmongo -s external-store-mongodb
+#
+#       - name: civo switch
+#         run: |
+#           set -xe
+#           ksctl switch -p civo -n demo -s store-local -r LON1
+#           ksctl switch -p ha-civo -n ha-demo -s store-local -r LON1
+#
+#       - name: azure switch
+#         run: |
+#           set -xe
+#           ksctl switch -p azure -n demo -s store-local -r fake
+#           ksctl switch -p ha-azure -n ha-demo -s store-local -r fake
+#
+#       - name: aws switch
+#         run: |
+#           set -xe
+#           # ksctl switch -p aws -n demo -s store-local -r fake
+#           ksctl switch -p ha-aws -n ha-demo -s store-local -r fake
+#
+#       - name: civo scale up and down
+#         run: |
+#           set -xe
+#           ksctl delete ha-civo del-nodes -n ha-demo --noWP 0 -r LON1 -s store-local --yes -v -1
+#           ksctl create ha-civo add-nodes -n ha-demo --noWP 1  --version 1.27.1 --nodeSizeWP "fake.small" -s store-local -r LON1 -v -1 --yes
+#
+#       - name: azure scale up and down
+#         run: |
+#           set -xe
+#           ksctl delete ha-azure del-nodes -n ha-demo --noWP 0 -s store-local -r fake --yes -v -1
+#           ksctl create ha-azure add-nodes -n ha-demo --noWP 1  --version 1.27.1 --nodeSizeWP "fake" -s store-local -r fake -v -1 --yes
+#
+#       - name: aws scale up and down
+#         run: |
+#           set -xe
+#           ksctl delete ha-aws del-nodes -n ha-demo --noWP 0 -s store-local -r fake --yes -v -1
+#           ksctl create ha-aws add-nodes -n ha-demo --noWP 1  --version 1.27.1 --nodeSizeWP "fake" -s store-local -r fake -v -1 --yes
+#
+#       - name: civo delete
+#         run: |
+#           set -xe
+#           ksctl delete civo -n demo -r LON1 -s store-local -v -1 --yes
+#           ksctl delete ha-civo -n ha-demo -r LON1 -s store-local -v -1 --yes
+#
+#       - name: azure delete
+#         run: |
+#           set -xe
+#           ksctl delete azure -n demo -r fake -s store-local -v -1 --yes
+#           ksctl delete ha-azure -n ha-demo -r fake -s store-local -v -1 --yes
+#
+#       - name: aws delete
+#         run: |
+#           set -xe
+#           # ksctl delete aws -n demo -r fake -s store-local -v -1 --yes
+#           ksctl delete ha-aws -n ha-demo -r fake -s store-local -v -1 --yes
+#
+#       - name: local delete
+#         run: |
+#           set -xe
+#           ksctl delete local -n demolocal -v -1 -s store-local --yes
+#
+#       - name: local delete mongodb
+#         if: ${{ matrix.os == 'ubuntu-latest' }}
+#         run: |
+#           set -xe
+#           unset KSCTL_FAKE_FLAG_ENABLED
+#           export MONGODB_URI="mongodb://root:1234@127.0.0.1:27017"
+#           ksctl delete local -n demolocal-extmongo -v -1 -s external-store-mongodb --yes
+#
+#       - name: storage provider
+#         run: |
+#           set -xe
+#           ksctl create local -n demolocal -s store-local -v -1 --yes
+#           ksctl create local -n demolocal -s external-store-mongodb -v -1 --yes || echo "Expected to fail :) due to missing env vars"
+#           ksctl create local -n demolocal -s store-local123 -v -1 --yes || echo "Expected to fail :) due to invalid provider name"

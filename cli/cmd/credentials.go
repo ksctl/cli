@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/ksctl/cli/logger"
 	"github.com/ksctl/ksctl/pkg/controllers"
-	"github.com/ksctl/ksctl/pkg/logger"
 	"github.com/ksctl/ksctl/pkg/types"
 
 	"github.com/ksctl/ksctl/pkg/helpers/consts"
@@ -21,7 +21,7 @@ var credCmd = &cobra.Command{
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		verbosity, _ := cmd.Flags().GetInt("verbose")
-		var log types.LoggerFactory = logger.NewGeneralLogger(verbosity, os.Stdout)
+		var log types.LoggerFactory = logger.NewLogger(verbosity, os.Stdout)
 
 		if len(storage) == 0 {
 			storage = string(consts.StoreLocal)
