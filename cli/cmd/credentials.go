@@ -26,6 +26,7 @@ var credCmd = &cobra.Command{
 		if len(storage) == 0 {
 			storage = string(consts.StoreLocal)
 		}
+		cli.Client.Metadata.StateLocation = consts.KsctlStore(storage)
 
 		SetRequiredFeatureFlags(ctx, log, cmd)
 
@@ -51,6 +52,10 @@ var credCmd = &cobra.Command{
 			log,
 			&cli.Client,
 		)
+		if err != nil {
+			log.Error(ctx, "Failed to initialize", "Reason", err)
+			os.Exit(1)
+		}
 
 		if err := m.Credentials(); err != nil {
 			log.Error(ctx, "Failed to added the credential", "Reason", err)

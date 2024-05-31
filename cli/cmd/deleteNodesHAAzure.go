@@ -3,11 +3,12 @@ package cmd
 // authors Dipankar <dipankar.das@ksctl.com>
 
 import (
+	"os"
+
 	"github.com/fatih/color"
 	"github.com/ksctl/ksctl/pkg/controllers"
 	"github.com/ksctl/ksctl/pkg/logger"
 	"github.com/ksctl/ksctl/pkg/types"
-	"os"
 
 	"github.com/ksctl/ksctl/pkg/helpers/consts"
 	"github.com/spf13/cobra"
@@ -35,6 +36,7 @@ ksctl delete-cluster ha-azure delete-nodes <arguments to cloud provider>
 		cli.Client.Metadata.ClusterName = clusterName
 		cli.Client.Metadata.Region = region
 		cli.Client.Metadata.K8sDistro = consts.KsctlKubernetes(distro)
+		cli.Client.Metadata.StateLocation = consts.KsctlStore(storage)
 
 		if err := deleteApproval(ctx, log, cmd.Flags().Lookup("approve").Changed); err != nil {
 			log.Error(ctx, "deleteApproval", "Reason", err)

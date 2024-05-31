@@ -82,6 +82,14 @@ func Execute() {
 	ctx = context.WithValue(
 		ctx, "USERID", helpers.GetUserName(),
 	)
+	if _, ok := os.LookupEnv("KSCTL_FAKE_FLAG_ENABLED"); ok {
+		ctx = context.WithValue(
+			ctx,
+			consts.KsctlTestFlagKey,
+			"true",
+		)
+	}
+
 	cli = new(CobraCmd)
 	logCli = logger.NewGeneralLogger(0, os.Stdout)
 

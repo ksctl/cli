@@ -3,11 +3,12 @@ package cmd
 // authors Dipankar <dipankar.das@ksctl.com>
 
 import (
+	"os"
+
 	"github.com/fatih/color"
 	"github.com/ksctl/ksctl/pkg/controllers"
 	"github.com/ksctl/ksctl/pkg/logger"
 	"github.com/ksctl/ksctl/pkg/types"
-	"os"
 
 	"github.com/spf13/cobra"
 
@@ -38,6 +39,7 @@ ksctl create-cluster ha-azure add-nodes <arguments to civo cloud provider>
 		cli.Client.Metadata.IsHA = true
 		cli.Client.Metadata.K8sDistro = consts.KsctlKubernetes(distro)
 		cli.Client.Metadata.K8sVersion = k8sVer
+		cli.Client.Metadata.StateLocation = consts.KsctlStore(storage)
 
 		if err := createApproval(ctx, log, cmd.Flags().Lookup("approve").Changed); err != nil {
 			log.Error(ctx, "createApproval", "Reason", err)

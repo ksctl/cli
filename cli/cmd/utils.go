@@ -24,7 +24,9 @@ func createManaged(ctx context.Context, log types.LoggerFactory, approval bool) 
 	cli.Client.Metadata.StateLocation = consts.KsctlStore(storage)
 
 	cli.Client.Metadata.CNIPlugin = cni
-	cli.Client.Metadata.Applications = strings.Split(apps, ",")
+	if len(apps) != 0 {
+		cli.Client.Metadata.Applications = strings.Split(apps, ",")
+	}
 	if err := createApproval(ctx, log, approval); err != nil {
 		log.Error(ctx, "createApproval", "Reason", err)
 		os.Exit(1)
@@ -66,7 +68,9 @@ func createHA(ctx context.Context, log types.LoggerFactory, approval bool) {
 	cli.Client.Metadata.DataStoreNodeType = nodeSizeDS
 
 	cli.Client.Metadata.CNIPlugin = cni
-	cli.Client.Metadata.Applications = strings.Split(apps, ",")
+	if len(apps) != 0 {
+		cli.Client.Metadata.Applications = strings.Split(apps, ",")
+	}
 
 	if err := createApproval(ctx, log, approval); err != nil {
 		log.Error(ctx, "createApproval", "Reason", err)
