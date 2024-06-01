@@ -13,7 +13,7 @@ Write-Host "Welcome to Installation" -ForegroundColor DarkGreen
 
 Write-Host "Available Releases"  -ForegroundColor Cyan
 
-$response = Invoke-RestMethod "https://api.github.com/repos/kubesimplify/ksctl-cli/releases"
+$response = Invoke-RestMethod "https://api.github.com/repos/ksctl/cli/releases"
 # get the release version
 
 foreach ($release in $response.tag_name) {
@@ -33,9 +33,9 @@ if ($Arch -eq 1) {
   Exit 1
 }
 
-Invoke-WebRequest -Uri https://github.com/kubesimplify/ksctl-cli/releases/download/v${ReleaseVersion}/ksctl_${ReleaseVersion}_checksums.txt -OutFile ksctl_${ReleaseVersion}_checksums.txt
-Invoke-WebRequest -Uri https://github.com/kubesimplify/ksctl-cli/releases/download/v${ReleaseVersion}/ksctl_${ReleaseVersion}_windows_${Arch}.tar.gz -OutFile ksctl_${ReleaseVersion}_windows_${Arch}.tar.gz
-Invoke-WebRequest -Uri https://github.com/kubesimplify/ksctl-cli/releases/download/v${ReleaseVersion}/ksctl_${ReleaseVersion}_windows_${Arch}.tar.gz.cert -OutFile ksctl_${ReleaseVersion}_windows_${Arch}.tar.gz.cert
+Invoke-WebRequest -Uri https://github.com/ksctl/cli/releases/download/v${ReleaseVersion}/ksctl-cli_${ReleaseVersion}_checksums.txt -OutFile ksctl_${ReleaseVersion}_checksums.txt
+Invoke-WebRequest -Uri https://github.com/ksctl/cli/releases/download/v${ReleaseVersion}/ksctl-cli_${ReleaseVersion}_windows_${Arch}.tar.gz -OutFile ksctl_${ReleaseVersion}_windows_${Arch}.tar.gz
+Invoke-WebRequest -Uri https://github.com/ksctl/cli/releases/download/v${ReleaseVersion}/ksctl-cli_${ReleaseVersion}_windows_${Arch}.tar.gz.cert -OutFile ksctl_${ReleaseVersion}_windows_${Arch}.tar.gz.cert
 
 # TODO: Add the checksum verification
 # file=$(sha256sum ksctl_${RELEASE_VERSION}_${OS}_${ARCH}.tar.gz | awk '{print $1}')
