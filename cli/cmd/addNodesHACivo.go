@@ -3,8 +3,8 @@ package cmd
 import (
 	"os"
 
+	"github.com/ksctl/cli/logger"
 	"github.com/ksctl/ksctl/pkg/controllers"
-	"github.com/ksctl/ksctl/pkg/logger"
 	"github.com/ksctl/ksctl/pkg/types"
 
 	"github.com/ksctl/ksctl/pkg/helpers/consts"
@@ -22,7 +22,7 @@ ksctl create ha-civo add-nodes -n demo -r LON1 -s store-local --noWP 3 --nodeSiz
 	Run: func(cmd *cobra.Command, args []string) {
 		verbosity, _ := cmd.Flags().GetInt("verbose")
 
-		var log types.LoggerFactory = logger.NewGeneralLogger(verbosity, os.Stdout)
+		var log types.LoggerFactory = logger.NewLogger(verbosity, os.Stdout)
 		SetRequiredFeatureFlags(ctx, log, cmd)
 
 		cli.Client.Metadata.Provider = consts.CloudCivo

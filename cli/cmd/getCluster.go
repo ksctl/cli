@@ -12,12 +12,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-type printer struct {
-	ClusterName string `json:"cluster_name"`
-	Region      string `json:"region"`
-	Provider    string `json:"provider"`
-}
-
 var getClusterCmd = &cobra.Command{
 	Use:     "get-clusters",
 	Aliases: []string{"get", "list"},
