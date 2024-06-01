@@ -25,8 +25,6 @@ var credCmd = &cobra.Command{
 		}
 		cli.Client.Metadata.StateLocation = consts.KsctlStore(storage)
 
-		SetRequiredFeatureFlags(ctx, log, cmd)
-
 		log.Print(ctx, `
 1> AWS (EKS)
 2> Azure (AKS)
