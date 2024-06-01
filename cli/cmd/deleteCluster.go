@@ -139,7 +139,7 @@ ksctl delete ha-civo --name demo --region LON1 --storage store-local
 }
 
 func init() {
-	rootCmd.AddCommand(deleteClusterCmd)
+	RootCmd.AddCommand(deleteClusterCmd)
 
 	deleteClusterCmd.AddCommand(deleteClusterHACivo)
 	deleteClusterCmd.AddCommand(deleteClusterCivo)

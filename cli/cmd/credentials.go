@@ -63,7 +63,7 @@ var credCmd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.AddCommand(credCmd)
+	RootCmd.AddCommand(credCmd)
 	storageFlag(credCmd)
 
 	credCmd.Flags().BoolP("verbose", "v", true, "for verbose output")

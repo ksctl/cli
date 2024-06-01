@@ -3,8 +3,6 @@ package cmd
 import (
 	"os"
 
-	"github.com/fatih/color"
-
 	"github.com/ksctl/cli/logger"
 	"github.com/ksctl/ksctl/pkg/controllers"
 	"github.com/ksctl/ksctl/pkg/types"
@@ -15,7 +13,7 @@ import (
 )
 
 var addMoreWorkerNodesHAAzure = &cobra.Command{
-	Deprecated: color.HiYellowString("This will be removed in future releases once autoscaling is stable"),
+	//Deprecated: color.HiYellowString("This will be removed in future releases once autoscaling is stable"),
 	Example: `
 ksctl create ha-azure add-nodes -n demo -r eastus -s store-local --noWP 3 --nodeSizeWP Standard_F2s --bootstrap kubeadm      # Here the noWP is the desired count of workernodes
 	`,

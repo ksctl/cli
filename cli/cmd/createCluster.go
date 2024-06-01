@@ -142,7 +142,7 @@ ksctl create-cluster ha-azure --name demo --region eastus --bootstrap kubeadm --
 }
 
 func init() {
-	rootCmd.AddCommand(createClusterCmd)
+	RootCmd.AddCommand(createClusterCmd)
 
 	createClusterCmd.AddCommand(createClusterAzure)
 	createClusterCmd.AddCommand(createClusterCivo)

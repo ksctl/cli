@@ -3,7 +3,6 @@ package cmd
 import (
 	"os"
 
-	"github.com/fatih/color"
 	"github.com/ksctl/cli/logger"
 	"github.com/ksctl/ksctl/pkg/controllers"
 	"github.com/ksctl/ksctl/pkg/types"
@@ -13,8 +12,8 @@ import (
 )
 
 var deleteNodesHAAws = &cobra.Command{
-	Deprecated: color.HiYellowString("This will be removed in future releases once autoscaling is stable"),
-	Use:        "del-nodes",
+	//Deprecated: color.HiYellowString("This will be removed in future releases once autoscaling is stable"),
+	Use: "del-nodes",
 	Example: `
 ksctl delete ha-aws del-nodes -n demo -r us-east-1 -s store-local --noWP 1 --bootstrap kubeadm      # Here the noWP is the desired count of workernodes
 	`,

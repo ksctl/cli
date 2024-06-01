@@ -3,8 +3,6 @@ package cmd
 import (
 	"os"
 
-	"github.com/fatih/color"
-
 	"github.com/ksctl/ksctl/pkg/controllers"
 	"github.com/ksctl/ksctl/pkg/logger"
 	"github.com/ksctl/ksctl/pkg/types"
@@ -14,7 +12,7 @@ import (
 )
 
 var addMoreWorkerNodesHACivo = &cobra.Command{
-	Deprecated: color.HiYellowString("This will be removed in future releases once autoscaling is stable"),
+	//Deprecated: color.HiYellowString("This will be removed in future releases once autoscaling is stable"),
 	Example: `
 ksctl create ha-civo add-nodes -n demo -r LON1 -s store-local --noWP 3 --nodeSizeWP g3.medium --bootstrap kubeadm      # Here the noWP is the desired count of workernodes
 	`,

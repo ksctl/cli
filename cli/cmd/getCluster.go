@@ -63,7 +63,7 @@ ksctl get-clusters `,
 }
 
 func init() {
-	rootCmd.AddCommand(getClusterCmd)
+	RootCmd.AddCommand(getClusterCmd)
 	storageFlag(getClusterCmd)
 
 	getClusterCmd.Flags().StringVarP(&provider, "provider", "p", "", "Provider")

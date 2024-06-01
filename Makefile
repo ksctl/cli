@@ -13,6 +13,11 @@ CURR_TIME = $(shell date +%s)
 help: ## Display this help.
 	@awk 'BEGIN {FS = ":.*##"; printf "\n\033[36m  _             _   _ \n | |           | | | |\n | | _____  ___| |_| |\n | |/ / __|/ __| __| |\n |   <\\__ \\ (__| |_| |\n |_|\\_\\___/\\___|\\__|_| \033[0m\n\nUsage:\n  make \033[36m<target>\033[0m\n"} /^[a-zA-Z_0-9-]+:.*?##/ { printf "  \033[36m%-15s\033[0m %s\n", $$1, $$2 } /^##@/ { printf "\n\033[1m%s\033[0m\n", substr($$0, 5) } ' $(MAKEFILE_LIST)
 
+##@ Generate
+.PHONY: gen-docs
+gen-docs: ## Generates docs
+	go run gen_docs.go
+
 ##@ Install (Dev)
 
 .PHONY: install_linux

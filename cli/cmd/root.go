@@ -46,7 +46,7 @@ var (
 	ctx    context.Context
 )
 
-var rootCmd = &cobra.Command{
+var RootCmd = &cobra.Command{
 	Use:   "ksctl",
 	Short: "CLI tool for managing multiple K8s clusters",
 	Long: `
@@ -93,7 +93,7 @@ func Execute() {
 	}
 
 	timer := time.Now()
-	err := rootCmd.Execute()
+	err := RootCmd.Execute()
 	defer logCli.Print(ctx, "Time Took", "time", time.Since(timer).String())
 
 	if err != nil {
@@ -107,11 +107,11 @@ func init() {
 	// Cobra supports persistent flags, which, if defined here,
 	// will be global for your application.
 
-	// rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.Kubesimpctl.yaml)")
+	// RootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.Kubesimpctl.yaml)")
 
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
-	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	RootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 	verboseFlags()
 
 	argsFlags()

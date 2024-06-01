@@ -85,7 +85,7 @@ ksctl switch-context -s external-store-mongodb -p civo -n <clustername> -r <regi
 }
 
 func init() {
-	rootCmd.AddCommand(switchCluster)
+	RootCmd.AddCommand(switchCluster)
 	clusterNameFlag(switchCluster)
 	regionFlag(switchCluster)
 	storageFlag(switchCluster)
