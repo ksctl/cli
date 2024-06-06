@@ -5,7 +5,7 @@ go 1.22.0
 require (
 	github.com/Delta456/box-cli-maker/v2 v2.3.0
 	github.com/fatih/color v1.17.0
-	github.com/ksctl/ksctl v1.2.1
+	github.com/ksctl/ksctl v1.2.2
 	github.com/rodaine/table v1.2.0
 	github.com/spf13/cobra v1.8.0
 )
