@@ -29,7 +29,7 @@ func addLineTerminationForLongStrings(str string) string {
 
 	helper = func(_str string) string {
 
-		if len(_str) < limitCol {
+		if len(_str) <= limitCol {
 			return _str
 		}
 
