@@ -44,12 +44,12 @@ ksctl info --provider azure --name demo --region eastus --storage store-local
 			os.Exit(1)
 		}
 
-		err = m.GetCluster()
+		_, err = m.InfoCluster()
 		if err != nil {
 			log.Error("info cluster failed", "Reason", err)
 			os.Exit(1)
 		}
-		log.Success(ctx, "Get cluster successfull")
+		log.Success(ctx, "info cluster successfull")
 	},
 }
 
@@ -61,6 +61,5 @@ func init() {
 
 	infoClusterCmd.Flags().StringVarP(&provider, "provider", "p", "", "Provider")
 	infoClusterCmd.MarkFlagRequired("name")
-	infoClusterCmd.MarkFlagRequired("region")
 	infoClusterCmd.MarkFlagRequired("provider")
 }

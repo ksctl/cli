@@ -2,6 +2,7 @@ package logger
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"io"
 	"math"
@@ -11,7 +12,6 @@ import (
 
 	box "github.com/Delta456/box-cli-maker/v2"
 	"github.com/fatih/color"
-	"github.com/gookit/goutil/dump"
 	cloudController "github.com/ksctl/ksctl/pkg/types/controllers/cloud"
 	"github.com/rodaine/table"
 
@@ -180,7 +180,7 @@ func (l *GeneralLog) Table(ctx context.Context, op consts.LogClusterDetail, data
 	columnFmt := color.New(color.FgYellow).SprintfFunc()
 
 	if op == consts.LoggingGetClusters {
-		tbl := table.New("ClusterName", "Region", "ClusterType", "CloudProvider", "BootStrap", "NoOfWorkerPlaneNodes", "NoOfControlPlaneNodes", "NoOfEtcdNodes", "NoOfCloudManagedNodes")
+		tbl := table.New("ClusterName", "Region", "ClusterType", "CloudProvider", "BootStrap", "WorkerPlaneNodes", "ControlPlaneNodes", "EtcdNodes", "CloudManagedNodes")
 		tbl.WithHeaderFormatter(headerFmt).WithFirstColumnFormatter(columnFmt)
 
 		for _, row := range data {
@@ -195,7 +195,11 @@ func (l *GeneralLog) Table(ctx context.Context, op consts.LogClusterDetail, data
 
 		tbl.Print()
 	} else if op == consts.LoggingInfoCluster {
-		dump.Println(data)
+		a, err := json.MarshalIndent(data[0], "", " ")
+		if err != nil {
+			panic(err)
+		}
+		l.Box(ctx, "Cluster Data", string(a))
 	}
 
 }

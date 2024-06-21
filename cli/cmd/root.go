@@ -72,7 +72,7 @@ func Execute() {
 		"cli",
 	)
 	ctx = context.WithValue(
-		ctx, "USERID", "cli",
+		ctx, consts.KsctlContextUserID, "cli",
 	)
 	if _, ok := os.LookupEnv("KSCTL_FAKE_FLAG_ENABLED"); ok {
 		ctx = context.WithValue(
