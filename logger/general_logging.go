@@ -11,6 +11,7 @@ import (
 
 	box "github.com/Delta456/box-cli-maker/v2"
 	"github.com/fatih/color"
+	"github.com/gookit/goutil/dump"
 	cloudController "github.com/ksctl/ksctl/pkg/types/controllers/cloud"
 	"github.com/rodaine/table"
 
@@ -162,8 +163,8 @@ func (l *GeneralLog) Debug(ctx context.Context, msg string, args ...any) {
 	l.log(false, true, ctx, consts.LogDebug, msg, args...)
 }
 
-func (l *GeneralLog) Error(ctx context.Context, msg string, args ...any) {
-	l.log(true, true, ctx, consts.LogError, msg, args...)
+func (l *GeneralLog) Error(msg string, args ...any) {
+	l.log(true, true, nil, consts.LogError, msg, args...)
 }
 
 func (l *GeneralLog) NewError(ctx context.Context, msg string, args ...any) error {
@@ -174,48 +175,29 @@ func (l *GeneralLog) Warn(ctx context.Context, msg string, args ...any) {
 	l.log(false, true, ctx, consts.LogWarning, msg, args...)
 }
 
-func (l *GeneralLog) Table(ctx context.Context, data []cloudController.AllClusterData) {
+func (l *GeneralLog) Table(ctx context.Context, op consts.LogClusterDetail, data []cloudController.AllClusterData) {
 	headerFmt := color.New(color.FgGreen, color.Underline).SprintfFunc()
 	columnFmt := color.New(color.FgYellow).SprintfFunc()
 
-	tbl := table.New("ClusterName", "Region", "ClusterType", "CloudProvider", "BootStrap", "Mgt Nodes", "Self-Mgt Nodes")
-	tbl.WithHeaderFormatter(headerFmt).WithFirstColumnFormatter(columnFmt)
+	if op == consts.LoggingGetClusters {
+		tbl := table.New("ClusterName", "Region", "ClusterType", "CloudProvider", "BootStrap", "NoOfWorkerPlaneNodes", "NoOfControlPlaneNodes", "NoOfEtcdNodes", "NoOfCloudManagedNodes")
+		tbl.WithHeaderFormatter(headerFmt).WithFirstColumnFormatter(columnFmt)
 
-	extractVMSizes := func(v []cloudController.VMData) string {
-		sizes := []string{}
-		for _, _v := range v {
-			sizes = append(sizes, _v.VMSize)
-		}
-		return strings.Join(sizes, ",")
-	}
-
-	for _, row := range data {
-		mgtN, selfMgtN := "null", "null"
-		if row.ClusterType == "ha" {
-			selfMgtN = fmt.Sprintf(
-				"cp: %d{%s}\nwp: %d{%s}\nds: %d{%s}\nlb: 1{%s}\n",
-				row.NoCP,
-				extractVMSizes(row.CP),
-				row.NoWP,
-				extractVMSizes(row.WP),
-				row.NoDS,
-				extractVMSizes(row.DS),
-				row.LB.VMSize,
+		for _, row := range data {
+			tbl.AddRow(row.Name,
+				row.Region,
+				string(row.ClusterType),
+				string(row.CloudProvider),
+				string(row.K8sDistro),
+				row.NoWP, row.NoCP, row.NoDS, row.NoMgt,
 			)
-		} else {
-			mgtN = fmt.Sprintf("wp: %d{%s}", row.NoMgt, row.Mgt.VMSize)
 		}
-		tbl.AddRow(row.Name,
-			row.Region,
-			string(row.ClusterType),
-			string(row.CloudProvider),
-			string(row.K8sDistro),
-			mgtN,
-			selfMgtN,
-		)
+
+		tbl.Print()
+	} else if op == consts.LoggingInfoCluster {
+		dump.Println(data)
 	}
 
-	tbl.Print()
 }
 
 func (l *GeneralLog) boxBox(title, lines string, color string) {

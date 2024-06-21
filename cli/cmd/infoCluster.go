@@ -12,16 +12,14 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var getClusterCmd = &cobra.Command{
-	Use:     "get-clusters",
-	Aliases: []string{"get", "list"},
+var infoClusterCmd = &cobra.Command{
+	Use:     "info-cluster",
+	Aliases: []string{"info"},
 	Example: `
-ksctl get --provider all --storage store-local
+ksctl info --provider azure --name demo --region eastus --storage store-local
 `,
-	Short: "Use to get clusters",
-	Long: `It is used to view clusters. For example:
-
-ksctl get-clusters `,
+	Short: "Use to info cluster",
+	Long:  `It is used to detailed data for a given cluster`,
 	Run: func(cmd *cobra.Command, args []string) {
 		verbosity, _ := cmd.Flags().GetInt("verbose")
 		var log types.LoggerFactory = logger.NewLogger(verbosity, os.Stdout)
@@ -30,10 +28,9 @@ ksctl get-clusters `,
 			storage = string(consts.StoreLocal)
 		}
 
-		if len(provider) == 0 {
-			provider = "all"
-		}
 		SetRequiredFeatureFlags(ctx, log, cmd)
+		cli.Client.Metadata.ClusterName = clusterName
+		cli.Client.Metadata.Region = region
 		cli.Client.Metadata.Provider = consts.KsctlCloud(provider)
 		cli.Client.Metadata.StateLocation = consts.KsctlStore(storage)
 
@@ -49,7 +46,7 @@ ksctl get-clusters `,
 
 		err = m.GetCluster()
 		if err != nil {
-			log.Error("Get cluster failed", "Reason", err)
+			log.Error("info cluster failed", "Reason", err)
 			os.Exit(1)
 		}
 		log.Success(ctx, "Get cluster successfull")
@@ -57,8 +54,13 @@ ksctl get-clusters `,
 }
 
 func init() {
-	RootCmd.AddCommand(getClusterCmd)
-	storageFlag(getClusterCmd)
+	RootCmd.AddCommand(infoClusterCmd)
+	storageFlag(infoClusterCmd)
+	clusterNameFlag(infoClusterCmd)
+	regionFlag(infoClusterCmd)
 
-	getClusterCmd.Flags().StringVarP(&provider, "provider", "p", "", "Provider")
+	infoClusterCmd.Flags().StringVarP(&provider, "provider", "p", "", "Provider")
+	infoClusterCmd.MarkFlagRequired("name")
+	infoClusterCmd.MarkFlagRequired("region")
+	infoClusterCmd.MarkFlagRequired("provider")
 }

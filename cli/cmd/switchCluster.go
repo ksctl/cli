@@ -71,12 +71,12 @@ ksctl switch-context -s external-store-mongodb -p civo -n <clustername> -r <regi
 			&cli.Client,
 		)
 		if err != nil {
-			log.Error(ctx, "failed to init", "Reason", err)
+			log.Error("failed to init", "Reason", err)
 			os.Exit(1)
 		}
 		kubeconfig, err := m.SwitchCluster()
 		if err != nil {
-			log.Error(ctx, "Switch cluster failed", "Reason", err)
+			log.Error("Switch cluster failed", "Reason", err)
 			os.Exit(1)
 		}
 		log.Debug(ctx, "kubeconfig output as string", "kubeconfig", kubeconfig)

@@ -30,6 +30,7 @@ func verboseFlags() {
 
 	getClusterCmd.Flags().IntP("verbose", "v", 0, msgVerbose)
 	switchCluster.Flags().IntP("verbose", "v", 0, msgVerbose)
+	infoClusterCmd.Flags().IntP("verbose", "v", 0, msgVerbose)
 
 	createClusterAzure.Flags().BoolP("yes", "y", true, msgApproval)
 	createClusterCivo.Flags().BoolP("yes", "y", true, msgApproval)

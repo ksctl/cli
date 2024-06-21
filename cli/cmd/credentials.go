@@ -40,7 +40,7 @@ var credCmd = &cobra.Command{
 		if provider, ok := cloud[choice]; ok {
 			cli.Client.Metadata.Provider = consts.KsctlCloud(provider)
 		} else {
-			log.Error(ctx, "invalid provider")
+			log.Error("invalid provider")
 		}
 		m, err := controllers.NewManagerClusterKsctl(
 			ctx,
@@ -48,12 +48,12 @@ var credCmd = &cobra.Command{
 			&cli.Client,
 		)
 		if err != nil {
-			log.Error(ctx, "Failed to initialize", "Reason", err)
+			log.Error("Failed to initialize", "Reason", err)
 			os.Exit(1)
 		}
 
 		if err := m.Credentials(); err != nil {
-			log.Error(ctx, "Failed to added the credential", "Reason", err)
+			log.Error("Failed to added the credential", "Reason", err)
 			os.Exit(1)
 		}
 		log.Success(ctx, "Credentials added successfully")

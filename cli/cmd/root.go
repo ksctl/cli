@@ -97,7 +97,7 @@ func Execute() {
 	defer logCli.Print(ctx, "Time Took", "time", time.Since(timer).String())
 
 	if err != nil {
-		logCli.Error(ctx, "Initialization of cli failed", "Reason", err)
+		logCli.Error("Initialization of cli failed", "Reason", err)
 		os.Exit(1)
 	}
 }
