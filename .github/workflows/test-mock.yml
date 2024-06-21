@@ -21,6 +21,61 @@ on:
     branches: [ main ]
 
 jobs:
+  ksctl-cli-mongodb-driver:
+    runs-on: ubuntu-latest
+    if: |
+      (
+        github.event.label.name == 'pr/lgtm' ||
+        contains(github.event.pull_request.labels.*.name, 'pr/lgtm')
+      ) || (
+        github.event_name == 'push' && 
+        github.ref == 'refs/heads/main'
+      )
+    env:
+      MONGODB_URI: "mongodb://root:1234@127.0.0.1:27017"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4.1.4
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: 1.22.3
+
+      - name: build ksctl linux
+        run: |
+          set -x
+          make install_linux
+          echo "KSCTL_BIN=ksctl" >> "${GITHUB_ENV}"
+
+      - name: local version
+        run: |
+          ${{ env.KSCTL_BIN }} version
+
+      - name: local create
+        run: |
+          docker run -d \
+            --name mongodb \
+            -p 27017:27017 \
+            -e MONGO_INITDB_ROOT_USERNAME=root \
+            -e MONGO_INITDB_ROOT_PASSWORD=1234 \
+            mongo
+          ${{env.KSCTL_BIN}} create local -n demolocal-extmongo -s external-store-mongodb --verbose -1 --yes
+          ${{env.KSCTL_BIN}} info -p local -n demolocal-extmongo -s external-store-mongodb --verbose -1
+
+      - name: local get
+        run: |
+          ${{env.KSCTL_BIN}} get -s external-store-mongodb
+
+      - name: local switch
+        run: |
+          ${{env.KSCTL_BIN}} switch -p local -n demolocal-extmongo -s external-store-mongodb
+
+      - name: local delete
+        run: |
+          ${{env.KSCTL_BIN}} delete local -n demolocal-extmongo -v -1 -s external-store-mongodb --yes
+
+
   ksctl-cli:
     strategy:
       matrix:
@@ -119,21 +174,6 @@ jobs:
           ${{env.KSCTL_BIN}} create local -n demolocal  --version 1.27.1 --verbose -1 -s store-local --yes
           ${{env.KSCTL_BIN}} info -p local -n demolocal -s store-local --verbose -1
 
-
-      - name: local create mongodb
-        if: ${{ matrix.os == 'ubuntu-latest' }}
-        run: |
-          unset KSCTL_FAKE_FLAG_ENABLED
-          docker run -d \
-            --name mongodb \
-            -p 27017:27017 \
-            -e MONGO_INITDB_ROOT_USERNAME=root \
-            -e MONGO_INITDB_ROOT_PASSWORD=1234 \
-            mongo
-          export MONGODB_URI="mongodb://root:1234@127.0.0.1:27017"
-          ${{env.KSCTL_BIN}} create local -n demolocal-extmongo -s external-store-mongodb --verbose -1 --yes
-          ${{env.KSCTL_BIN}} info -p local -n demolocal-extmongo -s external-store-mongodb --verbose -1
-
       - name: civo get
         run: |
           ${{env.KSCTL_BIN}} get -s store-local -p civo
@@ -146,24 +186,9 @@ jobs:
         run: |
           ${{env.KSCTL_BIN}} get -s store-local -p aws
 
-      - name: local get mongo
-        if: ${{ matrix.os == 'ubuntu-latest' }}
-        run: |
-          unset KSCTL_FAKE_FLAG_ENABLED
-          export MONGODB_URI="mongodb://root:1234@127.0.0.1:27017"
-          ${{env.KSCTL_BIN}} get -p local -s external-store-mongodb
-
       - name: get all
         run: |
           ${{env.KSCTL_BIN}} get -s store-local
-
-
-      - name: all mongodb
-        if: ${{ matrix.os == 'ubuntu-latest' }}
-        run: |
-          unset KSCTL_FAKE_FLAG_ENABLED
-          export MONGODB_URI="mongodb://root:1234@127.0.0.1:27017"
-          ${{env.KSCTL_BIN}} get -s external-store-mongodb
 
       - name: civo switch
         run: |
@@ -186,13 +211,6 @@ jobs:
       - name: local switch
         run: |
           ${{env.KSCTL_BIN}} switch -p local -n demolocal -s store-local
-
-      - name: local switch mongodb
-        if: ${{ matrix.os == 'ubuntu-latest' }}
-        run: |
-          unset KSCTL_FAKE_FLAG_ENABLED
-          export MONGODB_URI="mongodb://root:1234@127.0.0.1:27017"
-          ${{env.KSCTL_BIN}} switch -p local -n demolocal-extmongo -s external-store-mongodb
 
       - name: civo scale up and down
         run: |
@@ -246,10 +264,4 @@ jobs:
         run: |
           ${{env.KSCTL_BIN}} delete local -n demolocal -s store-local -v -1 --yes
 
-      - name: local delete mongodb
-        if: ${{ matrix.os == 'ubuntu-latest' }}
-        run: |
-          unset KSCTL_FAKE_FLAG_ENABLED
-          export MONGODB_URI="mongodb://root:1234@127.0.0.1:27017"
-          ${{env.KSCTL_BIN}} delete local -n demolocal-extmongo -v -1 -s external-store-mongodb --yes
 
