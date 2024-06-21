@@ -69,7 +69,7 @@ jobs:
 
       - name: local switch
         run: |
-          ${{env.KSCTL_BIN}} switch -p local -n demolocal-extmongo -s external-store-mongodb
+          ${{env.KSCTL_BIN}} switch -p local -v -1 -n demolocal-extmongo -s external-store-mongodb
 
       - name: local delete
         run: |
