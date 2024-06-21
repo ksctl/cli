@@ -1,21 +1,19 @@
-.. _ksctl_get-clusters:
+.. _ksctl_info-cluster:
 
-ksctl get-clusters
+ksctl info-cluster
 ------------------
 
-Use to get clusters
+Use to info cluster
 
 Synopsis
 ~~~~~~~~
 
 
-It is used to view clusters. For example:
-
-ksctl get-clusters 
+It is used to detailed data for a given cluster
 
 ::
 
-  ksctl get-clusters [flags]
+  ksctl info-cluster [flags]
 
 Examples
 ~~~~~~~~
@@ -23,7 +21,8 @@ Examples
 ::
 
 
-  ksctl get --provider all --storage store-local
+  ksctl info --provider azure --name demo --region eastus --storage store-local
+  ksctl info -p ha-azure -n ha-demo-kubeadm -r eastus -s store-local --verbose -1
 
 
 Options
@@ -32,8 +31,10 @@ Options
 ::
 
       --feature-flags string   Experimental Features: Supported values with comma seperated: [autoscale]
-  -h, --help                   help for get-clusters
+  -h, --help                   help for info-cluster
+  -n, --name string            Cluster Name (default "demo")
   -p, --provider string        Provider
+  -r, --region string          Region
   -s, --storage string         storage provider
   -v, --verbose int            for verbose output
 
