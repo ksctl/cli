@@ -51,21 +51,21 @@ jobs:
         run: |
           Set-PSDebug -Trace 2
           cd .\scripts
-          .\builder.ps1
+          .\builder-mock.ps1
           echo "KSCTL_BIN=$env:LOCALAPPDATA\ksctl\ksctl.exe" >> $env:GITHUB_ENV
 
       - name: build ksctl linux
         if: ${{ matrix.os == 'ubuntu-latest' }}
         run: |
           set -x
-          make install_linux
+          make install_linux_mock
           echo "KSCTL_BIN=ksctl" >> "${GITHUB_ENV}"
 
       - name: build ksctl macos
         if: ${{ matrix.os == 'macos-latest' }}
         run: |
           set -x
-          make install_macos_intel
+          make install_macos_intel_mock
           echo "KSCTL_BIN=ksctl" >> "${GITHUB_ENV}"
 
       - name: version
@@ -76,29 +76,48 @@ jobs:
         run: |
           ${{ env.KSCTL_BIN }} create civo -n demo -r LON1 --nodeSizeMP "g4s.kube.small" --version 1.27.1 --verbose -1 -s store-local --yes
 
+          ${{ env.KSCTL_BIN }} info -p civo -n demo -r LON1 --verbose -1 -s store-local
+
           ${{env.KSCTL_BIN}} create ha-civo -n ha-demo-k3s --nodeSizeDS "fake.small" --version 1.27.1 --nodeSizeLB "fake.small" --nodeSizeCP "fake.small" --nodeSizeWP "fake.small" -s store-local -r LON1 --verbose -1 --yes --bootstrap k3s
 
+          ${{env.KSCTL_BIN}} info -p ha-civo -n ha-demo-k3s -s store-local -r LON1 --verbose -1
+
           ${{env.KSCTL_BIN}} create ha-civo -n ha-demo-kubeadm --nodeSizeDS "fake.small" --version 1.28 --nodeSizeLB "fake.small" --nodeSizeCP "fake.small" --nodeSizeWP "fake.small" -s store-local -r LON1 --verbose -1 --yes --bootstrap kubeadm
+
+          ${{env.KSCTL_BIN}} info ha-civo -n ha-demo-kubeadm -s store-local -r LON1 --verbose -1
 
       - name: azure create
         run: |
           ${{env.KSCTL_BIN}} create azure -n demo -r fake --nodeSizeMP "fake" -s store-local --version 1.27.1 --verbose -1 --yes
 
+          ${{env.KSCTL_BIN}} info -p azure -n demo -r fake -s store-local --verbose -1
+
           ${{env.KSCTL_BIN}} create ha-azure -n ha-demo-k3s --nodeSizeDS "fake"  --version 1.27.1 --nodeSizeLB "fake" --nodeSizeCP "fake" --nodeSizeWP "fake" -r fake --verbose -1 -s store-local --yes --bootstrap k3s
 
+          ${{env.KSCTL_BIN}} info -p ha-azure -n ha-demo-k3s -r fake -s store-local --verbose -1
+
           ${{env.KSCTL_BIN}} create ha-azure -n ha-demo-kubeadm --nodeSizeDS "fake"  --version 1.28 --nodeSizeLB "fake" --nodeSizeCP "fake" --nodeSizeWP "fake" -r fake --verbose -1 -s store-local --yes --bootstrap kubeadm
+
+          ${{env.KSCTL_BIN}} info -p ha-azure -n ha-demo-kubeadm -r fake -s store-local --verbose -1
 
       - name: aws create
         run: |
           # ${{env.KSCTL_BIN}} create aws -n demo -r fake --nodeSizeMP "fake" --version 1.27.1 -s store-local --verbose -1 --yes
           
+          #${{env.KSCTL_BIN}} info -p aws -n demo -r fake -s store-local --verbose -1
+          
           ${{env.KSCTL_BIN}} create ha-aws -n ha-demo-k3s --nodeSizeDS "fake"  --version 1.27.1 --nodeSizeLB "fake" --nodeSizeCP "fake" --nodeSizeWP "fake" -r fake --verbose -1 -s store-local --yes --bootstrap k3s
 
+          ${{env.KSCTL_BIN}} info -p ha-aws -n ha-demo-k3s -r fake -s store-local --verbose -1
+
           ${{env.KSCTL_BIN}} create ha-aws -n ha-demo-kubeadm --nodeSizeDS "fake"  --version 1.28 --nodeSizeLB "fake" --nodeSizeCP "fake" --nodeSizeWP "fake" -r fake --verbose -1 -s store-local --yes --bootstrap kubeadm
+
+          ${{env.KSCTL_BIN}} info -p ha-aws -n ha-demo-kubeadm -r fake -s store-local --verbose -1
 
       - name: local create
         run: |
           ${{env.KSCTL_BIN}} create local -n demolocal  --version 1.27.1 --verbose -1 -s store-local --yes
+          ${{env.KSCTL_BIN}} info -p local -n demolocal -s store-local --verbose -1
 
 
       - name: local create mongodb
@@ -113,6 +132,7 @@ jobs:
             mongo
           export MONGODB_URI="mongodb://root:1234@127.0.0.1:27017"
           ${{env.KSCTL_BIN}} create local -n demolocal-extmongo -s external-store-mongodb --verbose -1 --yes
+          ${{env.KSCTL_BIN}} info -p local -n demolocal-extmongo -s external-store-mongodb --verbose -1
 
       - name: civo get
         run: |
