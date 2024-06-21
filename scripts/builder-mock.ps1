@@ -16,7 +16,7 @@ Set-Location .\..
 
 Set-Location .\cli\
 
-go build -tags testing-civo,testing-azure,testing-aws,testing-local -v -o ksctl.exe .
+go build -tags testing_civo,testing_azure,testing_aws,testing_local -v -o ksctl.exe .
 
 #Move-Item ksctl.exe $env:USERPROFILE\.ksctl\
 

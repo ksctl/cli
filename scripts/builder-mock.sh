@@ -6,7 +6,7 @@ cd .. || echo -e "\033[1;31mUnable to cd into ksctl root\033[0m\n"
 cd cli || echo -e "\033[1;31mPath couldn't be found\033[0m\n"
 # Check if sudo access
 go get -d
-go build -tags testing-civo,testing-azure,testing-aws,testing-local -v -o ksctl .
+go build -tags testing_civo,testing_azure,testing_aws,testing_local -v -o ksctl .
 chmod +x ksctl
 
 sudo mv -v ksctl /usr/local/bin/ksctl
