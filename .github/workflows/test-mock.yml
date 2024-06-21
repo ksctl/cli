@@ -84,7 +84,7 @@ jobs:
 
           ${{env.KSCTL_BIN}} create ha-civo -n ha-demo-kubeadm --nodeSizeDS "fake.small" --version 1.28 --nodeSizeLB "fake.small" --nodeSizeCP "fake.small" --nodeSizeWP "fake.small" -s store-local -r LON1 --verbose -1 --yes --bootstrap kubeadm
 
-          ${{env.KSCTL_BIN}} info ha-civo -n ha-demo-kubeadm -s store-local -r LON1 --verbose -1
+          ${{env.KSCTL_BIN}} info -p ha-civo -n ha-demo-kubeadm -s store-local -r LON1 --verbose -1
 
       - name: azure create
         run: |
