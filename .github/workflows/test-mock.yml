@@ -102,17 +102,17 @@ jobs:
 
       - name: aws create
         run: |
-          # ${{env.KSCTL_BIN}} create aws -n demo -r fake --nodeSizeMP "fake" --version 1.27.1 -s store-local --verbose -1 --yes
+          # ${{env.KSCTL_BIN}} create aws -n demo -r fake-region --nodeSizeMP "fake" --version 1.27.1 -s store-local --verbose -1 --yes
           
-          #${{env.KSCTL_BIN}} info -p aws -n demo -r fake -s store-local --verbose -1
+          #${{env.KSCTL_BIN}} info -p aws -n demo -r fake-region -s store-local --verbose -1
           
-          ${{env.KSCTL_BIN}} create ha-aws -n ha-demo-k3s --nodeSizeDS "fake"  --version 1.27.1 --nodeSizeLB "fake" --nodeSizeCP "fake" --nodeSizeWP "fake" -r fake --verbose -1 -s store-local --yes --bootstrap k3s
+          ${{env.KSCTL_BIN}} create ha-aws -n ha-demo-k3s --nodeSizeDS "fake"  --version 1.27.1 --nodeSizeLB "fake" --nodeSizeCP "fake" --nodeSizeWP "fake" -r fake-region --verbose -1 -s store-local --yes --bootstrap k3s
 
-          ${{env.KSCTL_BIN}} info -p ha-aws -n ha-demo-k3s -r fake -s store-local --verbose -1
+          ${{env.KSCTL_BIN}} info -p ha-aws -n ha-demo-k3s -r fake-region -s store-local --verbose -1
 
-          ${{env.KSCTL_BIN}} create ha-aws -n ha-demo-kubeadm --nodeSizeDS "fake"  --version 1.28 --nodeSizeLB "fake" --nodeSizeCP "fake" --nodeSizeWP "fake" -r fake --verbose -1 -s store-local --yes --bootstrap kubeadm
+          ${{env.KSCTL_BIN}} create ha-aws -n ha-demo-kubeadm --nodeSizeDS "fake"  --version 1.28 --nodeSizeLB "fake" --nodeSizeCP "fake" --nodeSizeWP "fake" -r fake-region --verbose -1 -s store-local --yes --bootstrap kubeadm
 
-          ${{env.KSCTL_BIN}} info -p ha-aws -n ha-demo-kubeadm -r fake -s store-local --verbose -1
+          ${{env.KSCTL_BIN}} info -p ha-aws -n ha-demo-kubeadm -r fake-region -s store-local --verbose -1
 
       - name: local create
         run: |
@@ -173,9 +173,9 @@ jobs:
 
       - name: aws switch
         run: |
-          # ${{env.KSCTL_BIN}} switch -p aws -n demo -s store-local -r fake
-          ${{env.KSCTL_BIN}} switch -p ha-aws -n ha-demo-k3s -s store-local -r fake
-          ${{env.KSCTL_BIN}} switch -p ha-aws -n ha-demo-kubeadm -s store-local -r fake
+          # ${{env.KSCTL_BIN}} switch -p aws -n demo -s store-local -r fake-region
+          ${{env.KSCTL_BIN}} switch -p ha-aws -n ha-demo-k3s -s store-local -r fake-region
+          ${{env.KSCTL_BIN}} switch -p ha-aws -n ha-demo-kubeadm -s store-local -r fake-region
 
       - name: azure switch
         run: |
@@ -216,13 +216,13 @@ jobs:
 
       - name: aws scale up and down
         run: |
-          ${{env.KSCTL_BIN}} delete ha-aws del-nodes -n ha-demo-k3s --noWP 0 -r fake -s store-local --yes -v -1 --bootstrap k3s
+          ${{env.KSCTL_BIN}} delete ha-aws del-nodes -n ha-demo-k3s --noWP 0 -r fake-region -s store-local --yes -v -1 --bootstrap k3s
 
-          ${{env.KSCTL_BIN}} create ha-aws add-nodes -n ha-demo-k3s --noWP 1  --version 1.27.1 --nodeSizeWP "fake" -s store-local -r fake -v -1 --yes --bootstrap k3s
+          ${{env.KSCTL_BIN}} create ha-aws add-nodes -n ha-demo-k3s --noWP 1  --version 1.27.1 --nodeSizeWP "fake" -s store-local -r fake-region -v -1 --yes --bootstrap k3s
 
-          ${{env.KSCTL_BIN}} delete ha-aws del-nodes -n ha-demo-kubeadm --noWP 0 -r fake -s store-local --yes -v -1 --bootstrap kubeadm
+          ${{env.KSCTL_BIN}} delete ha-aws del-nodes -n ha-demo-kubeadm --noWP 0 -r fake-region -s store-local --yes -v -1 --bootstrap kubeadm
 
-          ${{env.KSCTL_BIN}} create ha-aws add-nodes -n ha-demo-kubeadm --noWP 1  --version 1.28 --nodeSizeWP "fake" -s store-local -r fake -v -1 --yes --bootstrap kubeadm
+          ${{env.KSCTL_BIN}} create ha-aws add-nodes -n ha-demo-kubeadm --noWP 1  --version 1.28 --nodeSizeWP "fake" -s store-local -r fake-region -v -1 --yes --bootstrap kubeadm
 
       - name: civo delete
         run: |
@@ -238,9 +238,9 @@ jobs:
 
       - name: aws delete
         run: |
-          # ${{env.KSCTL_BIN}} delete aws -n demo -r fake -s store-local -v -1 --yes
-          ${{env.KSCTL_BIN}} delete ha-aws -n ha-demo-k3s -r fake -s store-local -v -1 --yes
-          ${{env.KSCTL_BIN}} delete ha-aws -n ha-demo-kubeadm -r fake -s store-local -v -1 --yes
+          # ${{env.KSCTL_BIN}} delete aws -n demo -r fake-region -s store-local -v -1 --yes
+          ${{env.KSCTL_BIN}} delete ha-aws -n ha-demo-k3s -r fake-region -s store-local -v -1 --yes
+          ${{env.KSCTL_BIN}} delete ha-aws -n ha-demo-kubeadm -r fake-region -s store-local -v -1 --yes
 
       - name: local delete
         run: |
