@@ -8,27 +8,19 @@ import (
 	"github.com/ksctl/ksctl/pkg/types"
 
 	"github.com/ksctl/ksctl/pkg/helpers/consts"
+
 	"github.com/spf13/cobra"
 )
 
-var switchCluster = &cobra.Command{
-	Use: "switch-cluster",
+var infoClusterCmd = &cobra.Command{
+	Use:     "info-cluster",
+	Aliases: []string{"info"},
 	Example: `
-ksctl switch-context --provider civo --name <clustername> --region <region>
-ksctl switch-context --provider local --name <clustername>
-ksctl switch-context --provider azure --name <clustername> --region <region>
-ksctl switch-context --provider ha-civo --name <clustername> --region <region>
-ksctl switch-context --provider ha-azure --name <clustername> --region <region>
-ksctl switch-context --provider ha-aws --name <clustername> --region <region>
-
-	For Storage specific
-
-ksctl switch-context -s store-local -p civo -n <clustername> -r <region>
-ksctl switch-context -s external-store-mongodb -p civo -n <clustername> -r <region>
+ksctl info --provider azure --name demo --region eastus --storage store-local
+ksctl info -p ha-azure -n ha-demo-kubeadm -r eastus -s store-local --verbose -1
 `,
-	Aliases: []string{"switch"},
-	Short:   "Use to switch between clusters",
-	Long:    "It is used to switch cluster with the given ClusterName from user.",
+	Short: "Use to info cluster",
+	Long:  `It is used to detailed data for a given cluster`,
 	Run: func(cmd *cobra.Command, args []string) {
 		verbosity, _ := cmd.Flags().GetInt("verbose")
 		var log types.LoggerFactory = logger.NewLogger(verbosity, os.Stdout)
@@ -36,8 +28,8 @@ ksctl switch-context -s external-store-mongodb -p civo -n <clustername> -r <regi
 		if len(storage) == 0 {
 			storage = string(consts.StoreLocal)
 		}
-		SetRequiredFeatureFlags(ctx, log, cmd)
 
+		SetRequiredFeatureFlags(ctx, log, cmd)
 		cli.Client.Metadata.ClusterName = clusterName
 		cli.Client.Metadata.Region = region
 		cli.Client.Metadata.StateLocation = consts.KsctlStore(storage)
@@ -63,6 +55,9 @@ ksctl switch-context -s external-store-mongodb -p civo -n <clustername> -r <regi
 
 		case string(consts.CloudAzure):
 			cli.Client.Metadata.Provider = consts.CloudAzure
+		default:
+			log.Error("invalid provider specified", "provider", provider)
+			os.Exit(1)
 		}
 
 		m, err := controllers.NewManagerClusterKsctl(
@@ -74,23 +69,23 @@ ksctl switch-context -s external-store-mongodb -p civo -n <clustername> -r <regi
 			log.Error("failed to init", "Reason", err)
 			os.Exit(1)
 		}
-		kubeconfig, err := m.SwitchCluster()
+
+		_, err = m.InfoCluster()
 		if err != nil {
-			log.Error("Switch cluster failed", "Reason", err)
+			log.Error("info cluster failed", "Reason", err)
 			os.Exit(1)
 		}
-		log.Debug(ctx, "kubeconfig output as string", "kubeconfig", kubeconfig)
-		log.Success(ctx, "Switch cluster Successful")
+		log.Success(ctx, "info cluster successfull")
 	},
 }
 
 func init() {
-	RootCmd.AddCommand(switchCluster)
-	clusterNameFlag(switchCluster)
-	regionFlag(switchCluster)
-	storageFlag(switchCluster)
+	RootCmd.AddCommand(infoClusterCmd)
+	storageFlag(infoClusterCmd)
+	clusterNameFlag(infoClusterCmd)
+	regionFlag(infoClusterCmd)
 
-	switchCluster.Flags().StringVarP(&provider, "provider", "p", "", "Provider")
-	switchCluster.MarkFlagRequired("name")
-	switchCluster.MarkFlagRequired("provider")
+	infoClusterCmd.Flags().StringVarP(&provider, "provider", "p", "", "Provider")
+	infoClusterCmd.MarkFlagRequired("name")
+	infoClusterCmd.MarkFlagRequired("provider")
 }

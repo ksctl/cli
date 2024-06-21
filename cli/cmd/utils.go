@@ -27,7 +27,7 @@ func createManaged(ctx context.Context, log types.LoggerFactory, approval bool) 
 		cli.Client.Metadata.Applications = strings.Split(apps, ",")
 	}
 	if err := createApproval(ctx, log, approval); err != nil {
-		log.Error(ctx, "createApproval", "Reason", err)
+		log.Error("createApproval", "Reason", err)
 		os.Exit(1)
 	}
 	m, err := controllers.NewManagerClusterManaged(
@@ -36,13 +36,13 @@ func createManaged(ctx context.Context, log types.LoggerFactory, approval bool) 
 		&cli.Client,
 	)
 	if err != nil {
-		log.Error(ctx, "Failed to create self-managed HA cluster", "Reason", err)
+		log.Error("Failed to create self-managed HA cluster", "Reason", err)
 		os.Exit(1)
 	}
 
 	err = m.CreateCluster()
 	if err != nil {
-		log.Error(ctx, "Failed to create managed cluster", "Reason", err)
+		log.Error("Failed to create managed cluster", "Reason", err)
 		os.Exit(1)
 	}
 	log.Success(ctx, "Created the managed cluster successfully")
@@ -72,7 +72,7 @@ func createHA(ctx context.Context, log types.LoggerFactory, approval bool) {
 	}
 
 	if err := createApproval(ctx, log, approval); err != nil {
-		log.Error(ctx, "createApproval", "Reason", err)
+		log.Error("createApproval", "Reason", err)
 		os.Exit(1)
 	}
 	m, err := controllers.NewManagerClusterSelfManaged(
@@ -81,13 +81,13 @@ func createHA(ctx context.Context, log types.LoggerFactory, approval bool) {
 		&cli.Client,
 	)
 	if err != nil {
-		log.Error(ctx, "Failed to create self-managed HA cluster", "Reason", err)
+		log.Error("Failed to create self-managed HA cluster", "Reason", err)
 		os.Exit(1)
 	}
 
 	err = m.CreateCluster()
 	if err != nil {
-		log.Error(ctx, "Failed to create self-managed HA cluster", "Reason", err)
+		log.Error("Failed to create self-managed HA cluster", "Reason", err)
 		os.Exit(1)
 	}
 	log.Success(ctx, "Created the self-managed HA cluster successfully")
@@ -101,7 +101,7 @@ func deleteManaged(ctx context.Context, log types.LoggerFactory, approval bool) 
 	cli.Client.Metadata.StateLocation = consts.KsctlStore(storage)
 
 	if err := deleteApproval(ctx, log, approval); err != nil {
-		log.Error(ctx, "deleteApproval", "Reason", err)
+		log.Error("deleteApproval", "Reason", err)
 		os.Exit(1)
 	}
 
@@ -111,12 +111,12 @@ func deleteManaged(ctx context.Context, log types.LoggerFactory, approval bool) 
 		&cli.Client,
 	)
 	if err != nil {
-		log.Error(ctx, "Failed to create self-managed HA cluster", "Reason", err)
+		log.Error("Failed to create self-managed HA cluster", "Reason", err)
 		os.Exit(1)
 	}
 	err = m.DeleteCluster()
 	if err != nil {
-		log.Error(ctx, "Failed to delete managed cluster", "Reason", err)
+		log.Error("Failed to delete managed cluster", "Reason", err)
 		os.Exit(1)
 	}
 	log.Success(ctx, "Deleted the managed cluster successfully")
@@ -132,7 +132,7 @@ func deleteHA(ctx context.Context, log types.LoggerFactory, approval bool) {
 	cli.Client.Metadata.StateLocation = consts.KsctlStore(storage)
 
 	if err := deleteApproval(ctx, log, approval); err != nil {
-		log.Error(ctx, "deleteApproval", "Reason", err)
+		log.Error("deleteApproval", "Reason", err)
 		os.Exit(1)
 	}
 	m, err := controllers.NewManagerClusterSelfManaged(
@@ -141,13 +141,13 @@ func deleteHA(ctx context.Context, log types.LoggerFactory, approval bool) {
 		&cli.Client,
 	)
 	if err != nil {
-		log.Error(ctx, "Failed to create self-managed HA cluster", "Reason", err)
+		log.Error("Failed to create self-managed HA cluster", "Reason", err)
 		os.Exit(1)
 	}
 
 	err = m.DeleteCluster()
 	if err != nil {
-		log.Error(ctx, "Failed to delete self-managed HA cluster", "Reason", err)
+		log.Error("Failed to delete self-managed HA cluster", "Reason", err)
 		os.Exit(1)
 	}
 	log.Success(ctx, "Deleted the self-managed HA cluster successfully")
@@ -556,4 +556,5 @@ func AllFeatures() {
 
 	featureFlag(getClusterCmd)
 	featureFlag(switchCluster)
+	featureFlag(infoClusterCmd)
 }

@@ -39,7 +39,7 @@ ksctl create ha-aws add-nodes -n demo -r ap-south-1 -s store-local --noWP 3 --no
 		cli.Client.Metadata.StateLocation = consts.KsctlStore(storage)
 
 		if err := createApproval(ctx, log, cmd.Flags().Lookup("yes").Changed); err != nil {
-			log.Error(ctx, "createApproval", "Reason", err)
+			log.Error("createApproval", "Reason", err)
 			os.Exit(1)
 		}
 
@@ -49,13 +49,13 @@ ksctl create ha-aws add-nodes -n demo -r ap-south-1 -s store-local --noWP 3 --no
 			&cli.Client,
 		)
 		if err != nil {
-			log.Error(ctx, "Failed to init manager", "Reason", err)
+			log.Error("Failed to init manager", "Reason", err)
 			os.Exit(1)
 		}
 
 		err = m.AddWorkerPlaneNodes()
 		if err != nil {
-			log.Error(ctx, "Failed to scale up", "Reason", err)
+			log.Error("Failed to scale up", "Reason", err)
 			os.Exit(1)
 		}
 		log.Success(ctx, "Scale up successful")

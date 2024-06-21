@@ -20,7 +20,7 @@ func featureFlag(f *cobra.Command) {
 func SetRequiredFeatureFlags(ctx context.Context, log types.LoggerFactory, cmd *cobra.Command) {
 	rawFeatures, err := cmd.Flags().GetString("feature-flags")
 	if err != nil {
-		log.Error(ctx, "Error in setting feature flags", "Reason", err)
+		log.Error("Error in setting feature flags", "Reason", err)
 		return
 	}
 	features := strings.Split(rawFeatures, ",")

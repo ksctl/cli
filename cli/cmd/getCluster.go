@@ -43,13 +43,13 @@ ksctl get-clusters `,
 			&cli.Client,
 		)
 		if err != nil {
-			log.Error(ctx, "failed to init", "Reason", err)
+			log.Error("failed to init", "Reason", err)
 			os.Exit(1)
 		}
 
 		err = m.GetCluster()
 		if err != nil {
-			log.Error(ctx, "Get cluster failed", "Reason", err)
+			log.Error("Get cluster failed", "Reason", err)
 			os.Exit(1)
 		}
 		log.Success(ctx, "Get cluster successfull")

@@ -47,7 +47,7 @@ func TestPrinters(t *testing.T) {
 	})
 
 	t.Run("Error", func(t *testing.T) {
-		gL.Error(dummyCtx, "FAKE", "type", "error")
+		gL.Error("FAKE", "type", "error")
 	})
 
 	t.Run("Debug", func(t *testing.T) {
@@ -64,6 +64,7 @@ func TestPrinters(t *testing.T) {
 
 	t.Run("Table", func(t *testing.T) {
 		gL.Table(dummyCtx,
+			consts.LoggingGetClusters,
 			[]cloud.AllClusterData{
 				{
 					Name:          "fake-demo",
@@ -72,7 +73,7 @@ func TestPrinters(t *testing.T) {
 				},
 			})
 
-		gL.Table(dummyCtx, nil)
+		gL.Table(dummyCtx, consts.LoggingGetClusters, nil)
 	})
 
 	t.Run("Box", func(t *testing.T) {

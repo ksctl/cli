@@ -34,7 +34,7 @@ ksctl delete ha-civo del-nodes -n demo -r LON1 -s store-local --noWP 1 --bootstr
 		cli.Client.Metadata.StateLocation = consts.KsctlStore(storage)
 
 		if err := deleteApproval(ctx, log, cmd.Flags().Lookup("yes").Changed); err != nil {
-			log.Error(ctx, "deleteApproval", "Reason", err)
+			log.Error("deleteApproval", "Reason", err)
 			os.Exit(1)
 		}
 
@@ -44,13 +44,13 @@ ksctl delete ha-civo del-nodes -n demo -r LON1 -s store-local --noWP 1 --bootstr
 			&cli.Client,
 		)
 		if err != nil {
-			log.Error(ctx, "Failed to init manager", "Reason", err)
+			log.Error("Failed to init manager", "Reason", err)
 			os.Exit(1)
 		}
 
 		err = m.DelWorkerPlaneNodes()
 		if err != nil {
-			log.Error(ctx, "Failed to scale down", "Reason", err)
+			log.Error("Failed to scale down", "Reason", err)
 			os.Exit(1)
 		}
 		log.Success(ctx, "Scale down successful")
