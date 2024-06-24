@@ -57,12 +57,12 @@ var versionCmd = &cobra.Command{
 		y := []string{}
 
 		colorCode := map[int]func(str string) string{
-			0: func(str string) string { return color.HiMagentaString(str) },
-			1: func(str string) string { return color.HiBlueString(str) },
-			2: func(str string) string { return color.HiCyanString(str) },
-			3: func(str string) string { return color.HiGreenString(str) },
-			4: func(str string) string { return color.HiYellowString(str) },
-			5: func(str string) string { return color.HiRedString(str) },
+			0: func(str string) string { return color.New(color.BgHiMagenta).Add(color.FgHiBlack).SprintFunc()(str) },
+			1: func(str string) string { return color.New(color.BgHiBlue).Add(color.FgHiBlack).SprintFunc()(str) },
+			2: func(str string) string { return color.New(color.BgHiCyan).Add(color.FgHiBlack).SprintFunc()(str) },
+			3: func(str string) string { return color.New(color.BgHiGreen).Add(color.FgHiBlack).SprintFunc()(str) },
+			4: func(str string) string { return color.New(color.BgHiYellow).Add(color.FgHiBlack).SprintFunc()(str) },
+			5: func(str string) string { return color.New(color.BgHiRed).Add(color.FgHiBlack).SprintFunc()(str) },
 		}
 
 		for i, _x := range x {
