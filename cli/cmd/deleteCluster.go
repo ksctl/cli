@@ -38,6 +38,7 @@ ksctl delete local --name demo --storage store-local
 		deleteManaged(ctx, log, cmd.Flags().Lookup("yes").Changed)
 	},
 }
+
 var deleteClusterAzure = &cobra.Command{
 	Use: "azure",
 	Example: `
@@ -53,6 +54,26 @@ ksctl delete azure --name demo --region eastus --storage store-local
 		cli.Client.Metadata.Provider = consts.CloudAzure
 
 		SetDefaults(consts.CloudAzure, consts.ClusterTypeMang)
+
+		deleteManaged(ctx, log, cmd.Flags().Lookup("yes").Changed)
+	},
+}
+
+var deleteClusterAws = &cobra.Command{
+	Use: "aws",
+	Example: `
+ksctl delete aws --name demo --region ap-south-1 --storage store-local
+`,
+	Short: "Use to deletes a EKS cluster",
+	Long:  "It is used to delete cluster of given provider",
+	Run: func(cmd *cobra.Command, args []string) {
+		verbosity, _ := cmd.Flags().GetInt("verbose")
+		var log types.LoggerFactory = logger.NewLogger(verbosity, os.Stdout)
+		SetRequiredFeatureFlags(ctx, log, cmd)
+
+		cli.Client.Metadata.Provider = consts.CloudAws
+
+		SetDefaults(consts.CloudAws, consts.ClusterTypeMang)
 
 		deleteManaged(ctx, log, cmd.Flags().Lookup("yes").Changed)
 	},
@@ -147,7 +168,10 @@ func init() {
 	deleteClusterCmd.AddCommand(deleteClusterAzure)
 	deleteClusterCmd.AddCommand(deleteClusterLocal)
 	deleteClusterCmd.AddCommand(deleteClusterHAAws)
+	deleteClusterCmd.AddCommand(deleteClusterAws)
 
+	deleteClusterAws.MarkFlagRequired("name")
+	deleteClusterAws.MarkFlagRequired("region")
 	deleteClusterAzure.MarkFlagRequired("name")
 	deleteClusterAzure.MarkFlagRequired("region")
 	deleteClusterCivo.MarkFlagRequired("name")

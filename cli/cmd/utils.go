@@ -315,6 +315,23 @@ func SetDefaults(provider consts.KsctlCloud, clusterType consts.KsctlClusterType
 			storage = string(consts.StoreLocal)
 		}
 
+	case string(consts.CloudAws) + string(consts.ClusterTypeMang):
+		if len(nodeSizeMP) == 0 {
+			nodeSizeMP = "t2.micro"
+		}
+		if noMP == -1 {
+			noMP = 2
+		}
+		if len(region) == 0 {
+			region = "ap-south-1"
+		}
+		if len(k8sVer) == 0 {
+			k8sVer = "1.30"
+		}
+		if len(storage) == 0 {
+			storage = string(consts.StoreLocal)
+		}
+
 	case string(consts.CloudAws) + string(consts.ClusterTypeHa):
 		if len(nodeSizeCP) == 0 {
 			if distro == string(consts.K8sKubeadm) {
@@ -431,6 +448,17 @@ func argsFlags() {
 	cniFlag(createClusterAzure)
 	storageFlag(createClusterAzure)
 
+	// Managed Aws
+	clusterNameFlag(createClusterAws)
+	nodeSizeManagedFlag(createClusterAws)
+	regionFlag(createClusterAws)
+	noOfMPFlag(createClusterAws)
+	k8sVerFlag(createClusterAws)
+	distroFlag(createClusterAws)
+	appsFlag(createClusterAws)
+	cniFlag(createClusterAws)
+	storageFlag(createClusterAws)
+
 	// Managed Civo
 	clusterNameFlag(createClusterCivo)
 	nodeSizeManagedFlag(createClusterCivo)
@@ -509,6 +537,11 @@ func argsFlags() {
 	regionFlag(deleteClusterAzure)
 	storageFlag(deleteClusterAzure)
 
+	// managed Aws
+	clusterNameFlag(deleteClusterAws)
+	regionFlag(deleteClusterAws)
+	storageFlag(deleteClusterAws)
+
 	// Managed Civo
 	clusterNameFlag(deleteClusterCivo)
 	regionFlag(deleteClusterCivo)
@@ -540,6 +573,7 @@ func AllFeatures() {
 	featureFlag(createClusterHACivo)
 	featureFlag(createClusterLocal)
 	featureFlag(createClusterHAAws)
+	featureFlag(createClusterAws)
 
 	featureFlag(deleteClusterAzure)
 	featureFlag(deleteClusterHAAzure)

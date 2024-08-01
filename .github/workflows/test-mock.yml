@@ -157,9 +157,9 @@ jobs:
 
       - name: aws create
         run: |
-          # ${{env.KSCTL_BIN}} create aws -n demo -r fake-region --nodeSizeMP "fake" --version 1.27.1 -s store-local --verbose -1 --yes
+          ${{env.KSCTL_BIN}} create aws -n demo -r fake-region --nodeSizeMP "fake" --version 1.30 -s store-local --verbose -1 --yes
           
-          #${{env.KSCTL_BIN}} info -p aws -n demo -r fake-region -s store-local --verbose -1
+          ${{env.KSCTL_BIN}} info -p aws -n demo -r fake-region -s store-local --verbose -1
           
           ${{env.KSCTL_BIN}} create ha-aws -n ha-demo-k3s --nodeSizeDS "fake"  --version 1.27.1 --nodeSizeLB "fake" --nodeSizeCP "fake" --nodeSizeWP "fake" -r fake-region --verbose -1 -s store-local --yes --bootstrap k3s
 
@@ -198,7 +198,7 @@ jobs:
 
       - name: aws switch
         run: |
-          # ${{env.KSCTL_BIN}} switch -p aws -n demo -s store-local -r fake-region
+          ${{env.KSCTL_BIN}} switch -p aws -n demo -s store-local -r fake-region
           ${{env.KSCTL_BIN}} switch -p ha-aws -n ha-demo-k3s -s store-local -r fake-region
           ${{env.KSCTL_BIN}} switch -p ha-aws -n ha-demo-kubeadm -s store-local -r fake-region
 

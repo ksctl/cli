@@ -20,6 +20,7 @@ ksctl switch-context --provider azure --name <clustername> --region <region>
 ksctl switch-context --provider ha-civo --name <clustername> --region <region>
 ksctl switch-context --provider ha-azure --name <clustername> --region <region>
 ksctl switch-context --provider ha-aws --name <clustername> --region <region>
+ksctl switch-context --provider aws --name <clustername> --region <region>
 
 	For Storage specific
 
@@ -60,6 +61,9 @@ ksctl switch-context -s external-store-mongodb -p civo -n <clustername> -r <regi
 		case string(consts.ClusterTypeHa) + "-" + string(consts.CloudAws):
 			cli.Client.Metadata.Provider = consts.CloudAws
 			cli.Client.Metadata.IsHA = true
+
+		case string(consts.CloudAws):
+			cli.Client.Metadata.Provider = consts.CloudAws
 
 		case string(consts.CloudAzure):
 			cli.Client.Metadata.Provider = consts.CloudAzure

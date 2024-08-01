@@ -53,6 +53,9 @@ ksctl info -p ha-azure -n ha-demo-kubeadm -r eastus -s store-local --verbose -1
 			cli.Client.Metadata.Provider = consts.CloudAws
 			cli.Client.Metadata.IsHA = true
 
+		case string(consts.CloudAws):
+			cli.Client.Metadata.Provider = consts.CloudAws
+
 		case string(consts.CloudAzure):
 			cli.Client.Metadata.Provider = consts.CloudAzure
 		default:

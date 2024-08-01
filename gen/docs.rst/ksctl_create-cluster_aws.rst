@@ -1,9 +1,9 @@
-.. _ksctl_create-cluster_azure:
+.. _ksctl_create-cluster_aws:
 
-ksctl create-cluster azure
---------------------------
+ksctl create-cluster aws
+------------------------
 
-Use to create a AKS cluster in Azure
+Use to create a EKS cluster in Aws
 
 Synopsis
 ~~~~~~~~
@@ -13,7 +13,7 @@ It is used to create cluster with the given name from user
 
 ::
 
-  ksctl create-cluster azure [flags]
+  ksctl create-cluster aws [flags]
 
 Examples
 ~~~~~~~~
@@ -21,7 +21,7 @@ Examples
 ::
 
 
-  ksctl create-cluster azure -n demo -r eastus -s store-local --nodeSizeMP Standard_DS2_v2 --noMP 3
+  ksctl create-cluster aws -n demo -r ap-south-1 -s store-local --nodeSizeMP t2.micro --noMP 3
 
 
 Options
@@ -33,15 +33,13 @@ Options
       --bootstrap string       Kubernetes Bootstrap
       --cni string             CNI
       --feature-flags string   Experimental Features: Supported values with comma seperated: [autoscale]
-  -h, --help                   help for azure
+  -h, --help                   help for aws
   -n, --name string            Cluster Name (default "demo")
       --noMP int               Number of Managed Nodes (default -1)
       --nodeSizeMP string      Node size of managed cluster nodes
   -r, --region string          Region
   -s, --storage string         storage provider
-  -v, --verbose int            for verbose output
       --version string         Kubernetes Version
-  -y, --yes                    approval to avoid showMsg (default true)
 
 SEE ALSO
 ~~~~~~~~
