@@ -1,12 +1,12 @@
 package cmd
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/ksctl/cli/logger"
 	"github.com/ksctl/ksctl/pkg/controllers"
 	"github.com/ksctl/ksctl/pkg/types"
+	"github.com/pterm/pterm"
 
 	"github.com/ksctl/ksctl/pkg/helpers/consts"
 	"github.com/spf13/cobra"
@@ -25,19 +25,20 @@ var credCmd = &cobra.Command{
 		}
 		cli.Client.Metadata.StateLocation = consts.KsctlStore(storage)
 
-		log.Print(ctx, `
-1> AWS (EKS)
-2> Azure (AKS)
-3> Civo (K3s)
-`)
-
-		choice := 0
-
-		_, err := fmt.Scanf("%d", &choice)
-		if err != nil {
-			panic(err.Error())
+		cloudMap := map[string]int{
+			"Amazon Web Services": 1,
+			"Azure":               2,
+			"Civo":                3,
 		}
-		if provider, ok := cloud[choice]; ok {
+		var options []string
+		for k := range cloudMap {
+			options = append(options, k)
+		}
+		log.Print(ctx, "Select the cloud provider")
+
+		selectedOption, _ := pterm.DefaultInteractiveSelect.WithOptions(options).Show()
+
+		if provider, ok := cloud[cloudMap[selectedOption]]; ok {
 			cli.Client.Metadata.Provider = consts.KsctlCloud(provider)
 		} else {
 			log.Error("invalid provider")

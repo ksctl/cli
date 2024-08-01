@@ -8,11 +8,15 @@ require (
 	github.com/Delta456/box-cli-maker/v2 v2.3.0
 	github.com/fatih/color v1.17.0
 	github.com/ksctl/ksctl v1.2.5
+	github.com/pterm/pterm v0.12.79
 	github.com/rodaine/table v1.2.0
 	github.com/spf13/cobra v1.8.1
 )
 
 require (
+	atomicgo.dev/cursor v0.2.0 // indirect
+	atomicgo.dev/keyboard v0.2.9 // indirect
+	atomicgo.dev/schedule v0.1.0 // indirect
 	github.com/AdaLogics/go-fuzz-headers v0.0.0-20230811130428-ced1acdcaa24 // indirect
 	github.com/Azure/azure-sdk-for-go/sdk/azcore v1.11.1 // indirect
 	github.com/Azure/azure-sdk-for-go/sdk/azidentity v1.6.0 // indirect
@@ -53,6 +57,7 @@ require (
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/chai2010/gettext-go v1.0.2 // indirect
 	github.com/civo/civogo v0.3.69 // indirect
+	github.com/containerd/console v1.0.3 // indirect
 	github.com/containerd/containerd v1.7.12 // indirect
 	github.com/containerd/log v0.1.0 // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.4 // indirect
@@ -110,6 +115,7 @@ require (
 	github.com/lann/ps v0.0.0-20150810152359-62de8c46ede0 // indirect
 	github.com/lib/pq v1.10.9 // indirect
 	github.com/liggitt/tabwriter v0.0.0-20181228230101-89fcab3d43de // indirect
+	github.com/lithammer/fuzzysearch v1.1.8 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
@@ -138,7 +144,7 @@ require (
 	github.com/prometheus/client_model v0.4.0 // indirect
 	github.com/prometheus/common v0.44.0 // indirect
 	github.com/prometheus/procfs v0.12.0 // indirect
-	github.com/rivo/uniseg v0.2.0 // indirect
+	github.com/rivo/uniseg v0.4.4 // indirect
 	github.com/rubenv/sql-migrate v1.5.2 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/shopspring/decimal v1.3.1 // indirect
