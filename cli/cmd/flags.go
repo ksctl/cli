@@ -7,6 +7,7 @@ func verboseFlags() {
 	msgApproval := "approval to avoid showMsg"
 
 	createClusterAzure.Flags().IntP("verbose", "v", 0, msgVerbose)
+	createClusterAws.Flags().IntP("verbose", "v", 0, msgVerbose)
 	createClusterCivo.Flags().IntP("verbose", "v", 0, msgVerbose)
 	createClusterLocal.Flags().IntP("verbose", "v", 0, msgVerbose)
 	createClusterHACivo.Flags().IntP("verbose", "v", 0, msgVerbose)
@@ -41,6 +42,7 @@ func verboseFlags() {
 
 	deleteClusterLocal.Flags().BoolP("yes", "y", true, msgApproval)
 	deleteClusterAzure.Flags().BoolP("yes", "y", true, msgApproval)
+	deleteClusterAws.Flags().BoolP("yes", "y", true, msgApproval)
 	deleteClusterCivo.Flags().BoolP("yes", "y", true, msgApproval)
 	deleteClusterHAAzure.Flags().BoolP("yes", "y", true, msgApproval)
 	deleteClusterHACivo.Flags().BoolP("yes", "y", true, msgApproval)
