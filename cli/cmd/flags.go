@@ -19,6 +19,7 @@ func verboseFlags() {
 	deleteClusterHAAzure.Flags().IntP("verbose", "v", 0, msgVerbose)
 	deleteClusterHACivo.Flags().IntP("verbose", "v", 0, msgVerbose)
 	deleteClusterHAAws.Flags().IntP("verbose", "v", 0, msgVerbose)
+	deleteClusterAws.Flags().IntP("verbose", "v", 0, msgVerbose)
 	deleteClusterLocal.Flags().IntP("verbose", "v", 0, msgVerbose)
 
 	addMoreWorkerNodesHAAzure.Flags().IntP("verbose", "v", 0, msgVerbose)
@@ -34,6 +35,7 @@ func verboseFlags() {
 	infoClusterCmd.Flags().IntP("verbose", "v", 0, msgVerbose)
 
 	createClusterAzure.Flags().BoolP("yes", "y", true, msgApproval)
+	createClusterAws.Flags().BoolP("yes", "y", true, msgApproval)
 	createClusterCivo.Flags().BoolP("yes", "y", true, msgApproval)
 	createClusterLocal.Flags().BoolP("yes", "y", true, msgApproval)
 	createClusterHACivo.Flags().BoolP("yes", "y", true, msgApproval)
