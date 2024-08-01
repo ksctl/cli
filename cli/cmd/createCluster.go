@@ -39,6 +39,26 @@ ksctl create-cluster azure -n demo -r eastus -s store-local --nodeSizeMP Standar
 	},
 }
 
+var createClusterAws = &cobra.Command{
+	Use: "aws",
+	Example: `
+ksctl create-cluster aws -n demo -r ap-south-1 -s store-local --nodeSizeMP t2.micro --noMP 3
+`,
+	Short: "Use to create a EKS cluster in Aws",
+	Long:  "It is used to create cluster with the given name from user",
+	Run: func(cmd *cobra.Command, args []string) {
+		verbosity, _ := cmd.Flags().GetInt("verbose")
+		var log types.LoggerFactory = logger.NewLogger(verbosity, os.Stdout)
+		SetRequiredFeatureFlags(ctx, log, cmd)
+
+		cli.Client.Metadata.Provider = consts.CloudAws
+
+		SetDefaults(consts.CloudAws, consts.ClusterTypeMang)
+
+		createManaged(ctx, log, cmd.Flags().Lookup("yes").Changed)
+	},
+}
+
 var createClusterCivo = &cobra.Command{
 	Use: "civo",
 	Example: `
@@ -150,8 +170,10 @@ func init() {
 	createClusterCmd.AddCommand(createClusterHACivo)
 	createClusterCmd.AddCommand(createClusterHAAzure)
 	createClusterCmd.AddCommand(createClusterHAAws)
+	createClusterCmd.AddCommand(createClusterAws)
 
 	createClusterAzure.MarkFlagRequired("name")
+	createClusterAws.MarkFlagRequired("name")
 	createClusterCivo.MarkFlagRequired("name")
 	createClusterCivo.MarkFlagRequired("region")
 	createClusterLocal.MarkFlagRequired("name")
