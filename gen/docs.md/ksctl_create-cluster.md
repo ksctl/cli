@@ -23,6 +23,7 @@ ksctl create --help
 ### SEE ALSO
 
 * [ksctl](ksctl.md)	 - CLI tool for managing multiple K8s clusters
+* [ksctl create-cluster aws](ksctl_create-cluster_aws.md)	 - Use to create a EKS cluster in Aws
 * [ksctl create-cluster azure](ksctl_create-cluster_azure.md)	 - Use to create a AKS cluster in Azure
 * [ksctl create-cluster civo](ksctl_create-cluster_civo.md)	 - Use to create a Civo managed k3s cluster
 * [ksctl create-cluster ha-aws](ksctl_create-cluster_ha-aws.md)	 - Use to create a self-managed Highly Available cluster on AWS

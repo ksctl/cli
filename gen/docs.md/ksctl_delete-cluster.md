@@ -23,6 +23,7 @@ ksctl delete --help
 ### SEE ALSO
 
 * [ksctl](ksctl.md)	 - CLI tool for managing multiple K8s clusters
+* [ksctl delete-cluster aws](ksctl_delete-cluster_aws.md)	 - Use to deletes a EKS cluster
 * [ksctl delete-cluster azure](ksctl_delete-cluster_azure.md)	 - Use to deletes a AKS cluster
 * [ksctl delete-cluster civo](ksctl_delete-cluster_civo.md)	 - Use to delete a Civo managed k3s cluster
 * [ksctl delete-cluster ha-aws](ksctl_delete-cluster_ha-aws.md)	 - Use to delete a self-managed Highly Available cluster on AWS

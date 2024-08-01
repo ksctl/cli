@@ -27,6 +27,7 @@ Examples
   ksctl switch-context --provider ha-civo --name <clustername> --region <region>
   ksctl switch-context --provider ha-azure --name <clustername> --region <region>
   ksctl switch-context --provider ha-aws --name <clustername> --region <region>
+  ksctl switch-context --provider aws --name <clustername> --region <region>
 
   	For Storage specific
 

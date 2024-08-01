@@ -31,6 +31,7 @@ SEE ALSO
 ~~~~~~~~
 
 * `ksctl <ksctl.rst>`_ 	 - CLI tool for managing multiple K8s clusters
+* `ksctl delete-cluster aws <ksctl_delete-cluster_aws.rst>`_ 	 - Use to deletes a EKS cluster
 * `ksctl delete-cluster azure <ksctl_delete-cluster_azure.rst>`_ 	 - Use to deletes a AKS cluster
 * `ksctl delete-cluster civo <ksctl_delete-cluster_civo.rst>`_ 	 - Use to delete a Civo managed k3s cluster
 * `ksctl delete-cluster ha-aws <ksctl_delete-cluster_ha-aws.rst>`_ 	 - Use to delete a self-managed Highly Available cluster on AWS
