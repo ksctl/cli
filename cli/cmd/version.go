@@ -19,15 +19,6 @@ const (
 
 `
 
-	v1_0Ksctl = `
- __                     __   .__   
-|  | __  ______  ____ _/  |_ |  |  
-|  |/ / /  ___/_/ ___\\   __\|  |  
-|    <  \___ \ \  \___ |  |  |  |__
-|__|_ \/____  > \___  >|__|  |____/
-     \/     \/      \/             
-`
-
 	v2_0Ksctl = `
 ░  ░░░░  ░░░      ░░░░      ░░░        ░░  ░░░░░░░
 ▒  ▒▒▒  ▒▒▒  ▒▒▒▒▒▒▒▒  ▒▒▒▒  ▒▒▒▒▒  ▒▒▒▒▒  ▒▒▒▒▒▒▒
@@ -48,9 +39,7 @@ var versionCmd = &cobra.Command{
 	Short: "Print the version number of ksctl",
 	Run: func(cmd *cobra.Command, args []string) {
 
-		fmt.Println(v0_1Ksctl)
-
-		color.HiGreen(v1_0Ksctl)
+		color.HiGreen(v0_1Ksctl)
 
 		x := strings.Split(v2_0Ksctl, "\n")
 

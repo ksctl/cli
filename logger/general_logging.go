@@ -193,7 +193,10 @@ func (l *GeneralLog) Table(ctx context.Context, op consts.LogClusterDetail, data
 			)
 		}
 
+		println()
 		tbl.Print()
+		println()
+		println()
 	} else if op == consts.LoggingInfoCluster {
 		a, err := json.MarshalIndent(data[0], "", " ")
 		if err != nil {
