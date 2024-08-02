@@ -6,10 +6,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"os"
 	"regexp"
 	"runtime"
+	"strings"
 
 	"github.com/pterm/pterm"
 
@@ -17,6 +19,8 @@ import (
 )
 
 func fetchLatestVersion() ([]string, error) {
+
+	log.Print(ctx, "Fetching available versions")
 
 	type Release struct {
 		TagName string `json:"tag_name"`
@@ -56,7 +60,8 @@ func filterToUpgradeableVersions(versions []string) []string {
 }
 
 func downloadFile(url, localFilename string) error {
-	fmt.Printf("Downloading %s to %s\n", url, localFilename)
+	logCli.Print(ctx, "Downloading file", "url", url, "localFilename", localFilename)
+
 	resp, err := http.Get(url)
 	if err != nil {
 		return err
@@ -72,7 +77,26 @@ func downloadFile(url, localFilename string) error {
 	_, err = io.Copy(out, resp.Body)
 	return err
 }
-func verifyChecksum(filePath, expectedChecksum string) (bool, error) {
+func verifyChecksum(filePath, checksumfileLoc string) (bool, error) {
+	logCli.Print(ctx, "Verifying checksum", "file", filePath, "checksumfile", checksumfileLoc)
+
+	rawChecksum, err := os.ReadFile(checksumfileLoc)
+	if err != nil {
+		return false, err
+	}
+	checksums := strings.Split(string(rawChecksum), "\n")
+
+	var expectedChecksum string = "LOL"
+	for _, line := range checksums {
+		if strings.Contains(line, filePath) {
+			expectedChecksum = strings.Fields(line)[0]
+			break
+		}
+	}
+	if expectedChecksum == "LOL" {
+		return false, logCli.NewError(ctx, "Checksum not found in checksum file")
+	}
+
 	file, err := os.Open(filePath)
 	if err != nil {
 		return false, err
@@ -107,14 +131,52 @@ func getOs() (string, error) {
 }
 
 func update(version string) error {
-	os, err := getOs()
+	osName, err := getOs()
 	if err != nil {
 		return err
 	}
-	arch, err := getOsArch()
+	archName, err := getOsArch()
 	if err != nil {
 		return err
 	}
+
+	logCli.Print(ctx, "Delected System", "OS", osName, "Arch", archName)
+	downloadURLBase := fmt.Sprintf("https://github.com/ksctl/cli/releases/download/%s", version)
+	tarFile := fmt.Sprintf("ksctl-cli_%s_%s_%s.tar.gz", version[1:], osName, archName)
+	checksumFile := fmt.Sprintf("ksctl-cli_%s_checksums.txt", version[1:])
+
+	tarUri := fmt.Sprintf("%s/%s", downloadURLBase, tarFile)
+	checksumUri := fmt.Sprintf("%s/%s", downloadURLBase, checksumFile)
+
+	defer func() {
+		if err := os.Remove(checksumFile); err != nil {
+			logCli.Error("Failed to remove checksum file", "error", err)
+		}
+
+		if err := os.Remove(tarFile); err != nil {
+			logCli.Error("Failed to remove checksum file", "error", err)
+		}
+	}()
+
+	if err := downloadFile(tarUri, tarFile); err != nil {
+		return err
+	}
+
+	if err := downloadFile(checksumUri, checksumFile); err != nil {
+		return err
+	}
+
+	match, err := verifyChecksum(tarFile, checksumFile)
+	if err != nil {
+		logCli.Error("Failed to verify checksum", "error", err)
+		os.Exit(1)
+	}
+	if !match {
+		logCli.Error("Checksum verification failed")
+		os.Exit(1)
+	}
+	logCli.Success(ctx, "Checksum verification successful")
+
 	return nil
 }
 
