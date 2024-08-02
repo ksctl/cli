@@ -1,13 +1,16 @@
 package cmd
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
+	"fmt"
+	"io"
 	"net/http"
 	"os"
 	"regexp"
+	"runtime"
 
-	"github.com/ksctl/cli/logger"
-	"github.com/ksctl/ksctl/pkg/types"
 	"github.com/pterm/pterm"
 
 	"github.com/spf13/cobra"
@@ -52,7 +55,66 @@ func filterToUpgradeableVersions(versions []string) []string {
 	return upgradeableVersions
 }
 
+func downloadFile(url, localFilename string) error {
+	fmt.Printf("Downloading %s to %s\n", url, localFilename)
+	resp, err := http.Get(url)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	out, err := os.Create(localFilename)
+	if err != nil {
+		return err
+	}
+	defer out.Close()
+
+	_, err = io.Copy(out, resp.Body)
+	return err
+}
+func verifyChecksum(filePath, expectedChecksum string) (bool, error) {
+	file, err := os.Open(filePath)
+	if err != nil {
+		return false, err
+	}
+	defer file.Close()
+
+	hash := sha256.New()
+	if _, err := io.Copy(hash, file); err != nil {
+		return false, err
+	}
+
+	calculatedChecksum := hex.EncodeToString(hash.Sum(nil))
+	return calculatedChecksum == expectedChecksum, nil
+}
+
+func getOsArch() (string, error) {
+	arch := runtime.GOARCH
+
+	if arch != "amd64" && arch != "arm64" {
+		return "", logCli.NewError(ctx, "Unsupported architecture")
+	}
+	return arch, nil
+}
+
+func getOs() (string, error) {
+	os := runtime.GOOS
+
+	if os != "linux" && os != "darwin" {
+		return "", logCli.NewError(ctx, "Unsupported OS", "message", "will provide support for windows based OS soon")
+	}
+	return os, nil
+}
+
 func update(version string) error {
+	os, err := getOs()
+	if err != nil {
+		return err
+	}
+	arch, err := getOsArch()
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -61,30 +123,32 @@ var selfUpdate = &cobra.Command{
 	Short: "update the ksctl cli",
 	Long:  "setups up update for ksctl cli",
 	Run: func(cmd *cobra.Command, args []string) {
-		verbosity, _ := cmd.Flags().GetInt("verbose")
-		var log types.LoggerFactory = logger.NewLogger(verbosity, os.Stdout)
 
 		// if Version == "dev" {
 		// 	log.Error("Cannot update a dev version of ksctl")
 		// 	os.Exit(1)
 		// }
 
+		logCli.Warn(ctx, "Currently no migrations are supported", "Message", "Please help us by creating a PR to support migrations. Thank you!")
+
 		vers, err := fetchLatestVersion()
 		if err != nil {
-			log.Error("Failed to fetch latest version", "error", err)
+			logCli.Error("Failed to fetch latest version", "error", err)
 			os.Exit(1)
 		}
 		vers = filterToUpgradeableVersions(vers)
 
-		log.Print(ctx, "Available versions to update")
+		logCli.Print(ctx, "Available versions to update")
 		selectedOption, _ := pterm.DefaultInteractiveSelect.WithOptions(vers).Show()
 
 		newVer := selectedOption
 
 		if err := update(newVer); err != nil {
+			logCli.Error("Failed to update ksctl cli", "error", err)
+			os.Exit(1)
 		}
 
-		log.Success(ctx, "Updated Ksctl cli", "previousVer", Version, "newVer", newVer)
+		logCli.Success(ctx, "Updated Ksctl cli", "previousVer", Version, "newVer", newVer)
 	},
 }
 
