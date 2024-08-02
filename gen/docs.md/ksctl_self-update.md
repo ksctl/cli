@@ -1,19 +1,19 @@
-## ksctl cred
+## ksctl self-update
 
-Login to your Cloud-provider Credentials
+update the ksctl cli
 
 ### Synopsis
 
-login to your cloud provider credentials
+setups up update for ksctl cli
 
 ```
-ksctl cred [flags]
+ksctl self-update [flags]
 ```
 
 ### Options
 
 ```
-  -h, --help             help for cred
+  -h, --help             help for self-update
   -s, --storage string   storage provider
   -v, --verbose          for verbose output (default true)
 ```
