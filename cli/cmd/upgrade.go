@@ -257,6 +257,11 @@ var selfUpdate = &cobra.Command{
 		}
 		vers = filterToUpgradeableVersions(vers)
 
+		if len(vers) == 0 {
+			logCli.Success(ctx, "You are already on the latest version", "version", Version)
+			os.Exit(0)
+		}
+
 		logCli.Print(ctx, "Available versions to update")
 		selectedOption, _ := pterm.DefaultInteractiveSelect.WithOptions(vers).Show()
 
