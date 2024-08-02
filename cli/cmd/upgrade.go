@@ -1,14 +1,17 @@
 package cmd
 
 import (
+	"archive/tar"
+	"compress/gzip"
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"os"
+	"os/exec"
+	"path/filepath"
 	"regexp"
 	"runtime"
 	"strings"
@@ -20,7 +23,7 @@ import (
 
 func fetchLatestVersion() ([]string, error) {
 
-	log.Print(ctx, "Fetching available versions")
+	logCli.Print(ctx, "Fetching available versions")
 
 	type Release struct {
 		TagName string `json:"tag_name"`
@@ -149,6 +152,7 @@ func update(version string) error {
 	checksumUri := fmt.Sprintf("%s/%s", downloadURLBase, checksumFile)
 
 	defer func() {
+		logCli.Print(ctx, "Cleaning up")
 		if err := os.Remove(checksumFile); err != nil {
 			logCli.Error("Failed to remove checksum file", "error", err)
 		}
@@ -168,14 +172,67 @@ func update(version string) error {
 
 	match, err := verifyChecksum(tarFile, checksumFile)
 	if err != nil {
-		logCli.Error("Failed to verify checksum", "error", err)
-		os.Exit(1)
+		return logCli.NewError(ctx, "Failed to verify checksum", "error", err)
 	}
 	if !match {
-		logCli.Error("Checksum verification failed")
-		os.Exit(1)
+		return logCli.NewError(ctx, "Checksum verification failed")
 	}
 	logCli.Success(ctx, "Checksum verification successful")
+
+	tempDir, err := os.MkdirTemp("", "ksctl-update")
+	if err != nil {
+		return logCli.NewError(ctx, "Failed to create temp dir", "error", err)
+	}
+	file, err := os.Open(tarFile)
+	if err != nil {
+		return logCli.NewError(ctx, "Failed to open tar file", "error", err)
+	}
+	defer file.Close()
+
+	gzr, err := gzip.NewReader(file)
+	if err != nil {
+		return logCli.NewError(ctx, "Failed to read gzip file", "error", err)
+	}
+	defer gzr.Close()
+	tr := tar.NewReader(gzr)
+	for {
+		header, err := tr.Next()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			return logCli.NewError(ctx, "Failed to read tar file", "error", err)
+		}
+		if header.Name == "ksctl" {
+			outFile, err := os.Create(filepath.Join(tempDir, "ksctl"))
+			if err != nil {
+				return logCli.NewError(ctx, "Failed to create ksctl binary", "error", err)
+			}
+			defer outFile.Close()
+
+			if _, err := io.Copy(outFile, tr); err != nil {
+				return logCli.NewError(ctx, "Failed to copy ksctl binary", "error", err)
+			}
+			break
+		}
+	}
+
+	logCli.Print(ctx, "Making ksctl executable...")
+	if err := os.Chmod(filepath.Join(tempDir, "ksctl"), 0550); err != nil {
+		return logCli.NewError(ctx, "Failed to make ksctl executable", "error", err)
+	}
+
+	logCli.Print(ctx, "Moving ksctl to /usr/local/bin (requires sudo)...")
+	cmd := exec.Command("sudo", "mv", "-v", filepath.Join(tempDir, "ksctl"), "/usr/local/bin/ksctl")
+	err = cmd.Run()
+	if err != nil {
+		return logCli.NewError(ctx, "Failed to move ksctl to /usr/local/bin", "error", err)
+	}
+
+	_, err = exec.LookPath("ksctl")
+	if err != nil {
+		return logCli.NewError(ctx, "Failed to find ksctl in PATH", "error", err)
+	}
 
 	return nil
 }
@@ -186,12 +243,12 @@ var selfUpdate = &cobra.Command{
 	Long:  "setups up update for ksctl cli",
 	Run: func(cmd *cobra.Command, args []string) {
 
-		// if Version == "dev" {
-		// 	log.Error("Cannot update a dev version of ksctl")
-		// 	os.Exit(1)
-		// }
+		if Version == "dev" {
+			logCli.Error("Cannot update dev version", "msg", "Please use a stable version to update")
+			os.Exit(1)
+		}
 
-		logCli.Warn(ctx, "Currently no migrations are supported", "Message", "Please help us by creating a PR to support migrations. Thank you!")
+		logCli.Warn(ctx, "Currently no migrations are supported", "msg", "Please help us by creating a PR to support migrations. Thank you!")
 
 		vers, err := fetchLatestVersion()
 		if err != nil {
@@ -211,6 +268,7 @@ var selfUpdate = &cobra.Command{
 		}
 
 		logCli.Success(ctx, "Updated Ksctl cli", "previousVer", Version, "newVer", newVer)
+		logCli.Note(ctx, "Please restart your terminal to use the updated version")
 	},
 }
 
