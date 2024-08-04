@@ -1,6 +1,9 @@
 ![CoverPage Social Media](https://github.com/ksctl/ksctl/raw/main/img/cover.svg)
 
 # Ksctl CLI
+
+**Status: `Technical Preview`**
+
 It utilizes [Ksctl](https://github.com/ksctl/ksctl) and builds on top to provide Command Line user experience
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/ksctl/cli)](https://goreportcard.com/report/github.com/ksctl/cli) [![](https://pkg.go.dev/badge/github.com/ksctl/cli.svg)](https://pkg.go.dev/github.com/ksctl/cli) [![OpenSSF Best Practices](https://www.bestpractices.dev/projects/7469/badge)](https://www.bestpractices.dev/projects/7469)
