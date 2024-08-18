@@ -1,8 +1,12 @@
 package cmd
 
 import (
+	"fmt"
 	"os"
+	"os/exec"
+	"strings"
 
+	"github.com/fatih/color"
 	"github.com/ksctl/cli/logger"
 	"github.com/ksctl/ksctl/pkg/controllers"
 	"github.com/ksctl/ksctl/pkg/types"
@@ -27,7 +31,7 @@ ksctl switch-context --provider aws --name <clustername> --region <region>
 ksctl switch-context -s store-local -p civo -n <clustername> -r <region>
 ksctl switch-context -s external-store-mongodb -p civo -n <clustername> -r <region>
 `,
-	Aliases: []string{"switch"},
+	Aliases: []string{"switch", "access"},
 	Short:   "Use to switch between clusters",
 	Long:    "It is used to switch cluster with the given ClusterName from user.",
 	Run: func(cmd *cobra.Command, args []string) {
@@ -85,6 +89,20 @@ ksctl switch-context -s external-store-mongodb -p civo -n <clustername> -r <regi
 		}
 		log.Debug(ctx, "kubeconfig output as string", "kubeconfig", kubeconfig)
 		log.Success(ctx, "Switch cluster Successful")
+
+		_cmd := exec.Command("k9s", "--kubeconfig", "/home/dipankar/.ksctl/kubeconfig")
+
+		_bout := new(strings.Builder)
+		_berr := new(strings.Builder)
+		_cmd.Stdout = _bout
+		_cmd.Stderr = _berr
+
+		if err := _cmd.Run(); err != nil {
+			log.Error("Failed to run k9s", "Reason", err)
+		}
+		_stdout, _stderr := _bout.String(), _berr.String()
+		fmt.Println(color.HiBlueString(_stdout))
+		fmt.Println(color.HiRedString(_stderr))
 	},
 }
 
