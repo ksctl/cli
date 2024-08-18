@@ -240,7 +240,7 @@ func update(version string) error {
 var selfUpdate = &cobra.Command{
 	Use:   "self-update",
 	Short: "update the ksctl cli",
-	Long:  "setups up update for ksctl cli",
+	Long:  LongMessage("to self-update ksctl cli"),
 	Run: func(cmd *cobra.Command, args []string) {
 
 		if Version == "dev" {

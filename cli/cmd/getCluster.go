@@ -19,9 +19,9 @@ var getClusterCmd = &cobra.Command{
 ksctl get --provider all --storage store-local
 `,
 	Short: "Use to get clusters",
-	Long: `It is used to view clusters. For example:
+	Long: LongMessage(`It is used to view clusters. For example:
 
-ksctl get-clusters `,
+ksctl get-clusters `),
 	Run: func(cmd *cobra.Command, args []string) {
 		verbosity, _ := cmd.Flags().GetInt("verbose")
 		var log types.LoggerFactory = logger.NewLogger(verbosity, os.Stdout)

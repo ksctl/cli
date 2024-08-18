@@ -15,7 +15,7 @@ import (
 var credCmd = &cobra.Command{
 	Use:   "cred",
 	Short: "Login to your Cloud-provider Credentials",
-	Long:  "login to your cloud provider credentials",
+	Long:  LongMessage("login to your cloud provider credentials"),
 	Run: func(cmd *cobra.Command, args []string) {
 		verbosity, _ := cmd.Flags().GetInt("verbose")
 		var log types.LoggerFactory = logger.NewLogger(verbosity, os.Stdout)

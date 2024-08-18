@@ -16,7 +16,7 @@ ksctl delete --help
 	`,
 	Short:   "Use to delete a cluster",
 	Aliases: []string{"delete"},
-	Long:    "It is used to delete cluster of given provider",
+	Long:    LongMessage("It is used to delete cluster of given provider"),
 }
 
 var deleteClusterLocal = &cobra.Command{
@@ -25,7 +25,7 @@ var deleteClusterLocal = &cobra.Command{
 ksctl delete local --name demo --storage store-local
 `,
 	Short: "Use to delete a kind cluster",
-	Long:  "It is used to delete cluster of given provider",
+	Long:  LongMessage("It is used to delete cluster of given provider"),
 	Run: func(cmd *cobra.Command, args []string) {
 		verbosity, _ := cmd.Flags().GetInt("verbose")
 		var log types.LoggerFactory = logger.NewLogger(verbosity, os.Stdout)
@@ -45,7 +45,7 @@ var deleteClusterAzure = &cobra.Command{
 ksctl delete azure --name demo --region eastus --storage store-local
 `,
 	Short: "Use to deletes a AKS cluster",
-	Long:  "It is used to delete cluster of given provider",
+	Long:  LongMessage("It is used to delete cluster of given provider"),
 	Run: func(cmd *cobra.Command, args []string) {
 		verbosity, _ := cmd.Flags().GetInt("verbose")
 		var log types.LoggerFactory = logger.NewLogger(verbosity, os.Stdout)
@@ -65,7 +65,7 @@ var deleteClusterAws = &cobra.Command{
 ksctl delete aws --name demo --region ap-south-1 --storage store-local
 `,
 	Short: "Use to deletes a EKS cluster",
-	Long:  "It is used to delete cluster of given provider",
+	Long:  LongMessage("It is used to delete cluster of given provider"),
 	Run: func(cmd *cobra.Command, args []string) {
 		verbosity, _ := cmd.Flags().GetInt("verbose")
 		var log types.LoggerFactory = logger.NewLogger(verbosity, os.Stdout)
@@ -85,7 +85,7 @@ var deleteClusterCivo = &cobra.Command{
 ksctl delete civo --name demo --region LON1 --storage store-local
 `,
 	Short: "Use to delete a Civo managed k3s cluster",
-	Long:  "It is used to delete cluster of given provider",
+	Long:  LongMessage("It is used to delete cluster of given provider"),
 	Run: func(cmd *cobra.Command, args []string) {
 		verbosity, _ := cmd.Flags().GetInt("verbose")
 		var log types.LoggerFactory = logger.NewLogger(verbosity, os.Stdout)
@@ -105,7 +105,7 @@ var deleteClusterHAAws = &cobra.Command{
 ksctl delete ha-aws --name demo --region us-east-1 --storage store-local
 `,
 	Short: "Use to delete a self-managed Highly Available cluster on AWS",
-	Long:  "It is used to delete cluster of given provider",
+	Long:  LongMessage("It is used to delete cluster of given provider"),
 	Run: func(cmd *cobra.Command, args []string) {
 		verbosity, _ := cmd.Flags().GetInt("verbose")
 		var log types.LoggerFactory = logger.NewLogger(verbosity, os.Stdout)
@@ -125,7 +125,7 @@ var deleteClusterHAAzure = &cobra.Command{
 ksctl delete ha-azure --name demo --region eastus --storage store-local
 `,
 	Short: "Use to delete a self-managed Highly Available cluster on Azure",
-	Long:  "It is used to delete cluster of given provider",
+	Long:  LongMessage("It is used to delete cluster of given provider"),
 	Run: func(cmd *cobra.Command, args []string) {
 		verbosity, _ := cmd.Flags().GetInt("verbose")
 		var log types.LoggerFactory = logger.NewLogger(verbosity, os.Stdout)
@@ -145,7 +145,7 @@ var deleteClusterHACivo = &cobra.Command{
 ksctl delete ha-civo --name demo --region LON1 --storage store-local
 `,
 	Short: "Use to delete a self-managed Highly Available cluster on Civo",
-	Long:  "It is used to delete cluster of given provider",
+	Long:  LongMessage("It is used to delete cluster of given provider"),
 	Run: func(cmd *cobra.Command, args []string) {
 		verbosity, _ := cmd.Flags().GetInt("verbose")
 		var log types.LoggerFactory = logger.NewLogger(verbosity, os.Stdout)

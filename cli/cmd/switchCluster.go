@@ -33,7 +33,7 @@ ksctl switch-context -s external-store-mongodb -p civo -n <clustername> -r <regi
 `,
 	Aliases: []string{"switch", "access"},
 	Short:   "Use to switch between clusters",
-	Long:    "It is used to switch cluster with the given ClusterName from user.",
+	Long:    LongMessage("It is used to switch cluster with the given ClusterName from user."),
 	Run: func(cmd *cobra.Command, args []string) {
 		verbosity, _ := cmd.Flags().GetInt("verbose")
 		var log types.LoggerFactory = logger.NewLogger(verbosity, os.Stdout)

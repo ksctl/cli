@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
@@ -41,28 +40,7 @@ var versionCmd = &cobra.Command{
 
 		color.HiGreen(v0_1Ksctl)
 
-		x := strings.Split(v2_0Ksctl, "\n")
-
-		y := []string{}
-
-		colorCode := map[int]func(str string) string{
-			0: func(str string) string { return color.New(color.BgHiMagenta).Add(color.FgHiBlack).SprintFunc()(str) },
-			1: func(str string) string { return color.New(color.BgHiBlue).Add(color.FgHiBlack).SprintFunc()(str) },
-			2: func(str string) string { return color.New(color.BgHiCyan).Add(color.FgHiBlack).SprintFunc()(str) },
-			3: func(str string) string { return color.New(color.BgHiGreen).Add(color.FgHiBlack).SprintFunc()(str) },
-			4: func(str string) string { return color.New(color.BgHiYellow).Add(color.FgHiBlack).SprintFunc()(str) },
-			5: func(str string) string { return color.New(color.BgHiRed).Add(color.FgHiBlack).SprintFunc()(str) },
-		}
-
-		for i, _x := range x {
-			fmt.Println(i, _x)
-			if _y, ok := colorCode[i]; ok {
-				y = append(y, _y(_x))
-			} else {
-				fmt.Println("Not found", i)
-			}
-		}
-		fmt.Println(strings.Join(y, "\n"))
+		fmt.Println(newLogo())
 
 		fmt.Println("Version:", Version)
 		fmt.Println("BuildDate:", BuildDate)

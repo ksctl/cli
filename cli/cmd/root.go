@@ -49,19 +49,7 @@ var (
 var RootCmd = &cobra.Command{
 	Use:   "ksctl",
 	Short: "CLI tool for managing multiple K8s clusters",
-	Long: `
-  _             _   _ 
- | |           | | | |
- | | _____  ___| |_| |
- | |/ / __|/ __| __| |
- |   <\__ \ (__| |_| |
- |_|\_\___/\___|\__|_|
-
-	CLI tool which can manage multiple K8s clusters
-from local clusters to cloud provider specific clusters.`,
-	// Uncomment the following line if your bare application
-	// has an action associated with it:
-	// Run: func(cmd *cobra.Command, args []string) {},
+	Long:  LongMessage("CLI tool which can manage multiple K8s clusters from local clusters to cloud provider specific clusters."),
 }
 
 func Execute() {

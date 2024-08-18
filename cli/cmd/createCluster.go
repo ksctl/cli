@@ -16,7 +16,7 @@ ksctl create --help
 	`,
 	Short:   "Use to create a cluster",
 	Aliases: []string{"create"},
-	Long:    "It is used to create cluster with the given name from user",
+	Long:    LongMessage("It is used to create cluster with the given name from user"),
 }
 
 var createClusterAzure = &cobra.Command{
@@ -25,7 +25,7 @@ var createClusterAzure = &cobra.Command{
 ksctl create-cluster azure -n demo -r eastus -s store-local --nodeSizeMP Standard_DS2_v2 --noMP 3
 `,
 	Short: "Use to create a AKS cluster in Azure",
-	Long:  "It is used to create cluster with the given name from user",
+	Long:  LongMessage("It is used to create cluster with the given name from user"),
 	Run: func(cmd *cobra.Command, args []string) {
 		verbosity, _ := cmd.Flags().GetInt("verbose")
 		var log types.LoggerFactory = logger.NewLogger(verbosity, os.Stdout)
@@ -45,7 +45,7 @@ var createClusterAws = &cobra.Command{
 ksctl create-cluster aws -n demo -r ap-south-1 -s store-local --nodeSizeMP t2.micro --noMP 3
 `,
 	Short: "Use to create a EKS cluster in Aws",
-	Long:  "It is used to create cluster with the given name from user",
+	Long:  LongMessage("It is used to create cluster with the given name from user"),
 	Run: func(cmd *cobra.Command, args []string) {
 		verbosity, _ := cmd.Flags().GetInt("verbose")
 		var log types.LoggerFactory = logger.NewLogger(verbosity, os.Stdout)
@@ -65,7 +65,7 @@ var createClusterCivo = &cobra.Command{
 ksctl create-cluster civo --name demo --region LON1 --storage store-local --nodeSizeMP g4s.kube.small --noMP 3
 `,
 	Short: "Use to create a Civo managed k3s cluster",
-	Long:  "It is used to create cluster with the given name from user",
+	Long:  LongMessage("It is used to create cluster with the given name from user"),
 	Run: func(cmd *cobra.Command, args []string) {
 		verbosity, _ := cmd.Flags().GetInt("verbose")
 		var log types.LoggerFactory = logger.NewLogger(verbosity, os.Stdout)
@@ -85,7 +85,7 @@ var createClusterLocal = &cobra.Command{
 ksctl create-cluster local --name demo --storage store-local --noMP 3
 `,
 	Short: "Use to create a kind cluster",
-	Long:  "It is used to create cluster with the given name from user",
+	Long:  LongMessage("It is used to create cluster with the given name from user"),
 	Run: func(cmd *cobra.Command, args []string) {
 		verbosity, _ := cmd.Flags().GetInt("verbose")
 		var log types.LoggerFactory = logger.NewLogger(verbosity, os.Stdout)
@@ -105,7 +105,7 @@ var createClusterHAAws = &cobra.Command{
 ksctl create-cluster ha-aws -n demo -r us-east-1 --bootstrap k3s -s store-local --nodeSizeCP t2.medium --nodeSizeWP t2.medium --nodeSizeLB t2.micro --nodeSizeDS t2.small --noWP 1 --noCP 3 --noDS 3
 `,
 	Short: "Use to create a self-managed Highly Available cluster on AWS",
-	Long:  "It is used to create cluster with the given name from user.",
+	Long:  LongMessage("It is used to create cluster with the given name from user."),
 	Run: func(cmd *cobra.Command, args []string) {
 		verbosity, _ := cmd.Flags().GetInt("verbose")
 		var log types.LoggerFactory = logger.NewLogger(verbosity, os.Stdout)
@@ -126,7 +126,7 @@ ksctl create-cluster ha-civo --name demo --region LON1 --bootstrap k3s --storage
 ksctl create-cluster ha-civo --name demo --region LON1 --bootstrap kubeadm --storage store-local --nodeSizeCP g3.medium --nodeSizeWP g3.large --nodeSizeLB g3.small --nodeSizeDS g3.small --noWP 1 --noCP 3 --noDS 3
 `,
 	Short: "Use to create a self-managed Highly Available cluster on Civo",
-	Long:  "It is used to create cluster with the given name from user",
+	Long:  LongMessage("It is used to create cluster with the given name from user"),
 	Run: func(cmd *cobra.Command, args []string) {
 		verbosity, _ := cmd.Flags().GetInt("verbose")
 		var log types.LoggerFactory = logger.NewLogger(verbosity, os.Stdout)
@@ -147,7 +147,7 @@ ksctl create-cluster ha-azure --name demo --region eastus --bootstrap k3s --stor
 ksctl create-cluster ha-azure --name demo --region eastus --bootstrap kubeadm --storage store-local --nodeSizeCP Standard_F2s --nodeSizeWP Standard_F4s --nodeSizeLB Standard_F2s --nodeSizeDS Standard_F2s --noWP 1 --noCP 3 --noDS 3
 `,
 	Short: "Use to create a self-managed Highly-Available cluster on Azure",
-	Long:  "It is used to create cluster with the given name from user",
+	Long:  LongMessage("It is used to create cluster with the given name from user"),
 	Run: func(cmd *cobra.Command, args []string) {
 		verbosity, _ := cmd.Flags().GetInt("verbose")
 		var log types.LoggerFactory = logger.NewLogger(verbosity, os.Stdout)

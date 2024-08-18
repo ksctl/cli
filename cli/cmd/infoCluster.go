@@ -20,7 +20,7 @@ ksctl info --provider azure --name demo --region eastus --storage store-local
 ksctl info -p ha-azure -n ha-demo-kubeadm -r eastus -s store-local --verbose -1
 `,
 	Short: "Use to info cluster",
-	Long:  `It is used to detailed data for a given cluster`,
+	Long:  LongMessage(`It is used to detailed data for a given cluster`),
 	Run: func(cmd *cobra.Command, args []string) {
 		verbosity, _ := cmd.Flags().GetInt("verbose")
 		var log types.LoggerFactory = logger.NewLogger(verbosity, os.Stdout)

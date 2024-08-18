@@ -7,10 +7,37 @@ import (
 	"os"
 	"strings"
 
+	"github.com/fatih/color"
 	"github.com/ksctl/ksctl/pkg/controllers"
 	"github.com/ksctl/ksctl/pkg/helpers/consts"
 	"github.com/ksctl/ksctl/pkg/types"
 )
+
+func newLogo() string {
+	x := strings.Split(v2_0Ksctl, "\n")
+
+	y := []string{}
+
+	colorCode := map[int]func(str string) string{
+		0: func(str string) string { return color.New(color.BgHiMagenta).Add(color.FgHiBlack).SprintFunc()(str) },
+		1: func(str string) string { return color.New(color.BgHiBlue).Add(color.FgHiBlack).SprintFunc()(str) },
+		2: func(str string) string { return color.New(color.BgHiCyan).Add(color.FgHiBlack).SprintFunc()(str) },
+		3: func(str string) string { return color.New(color.BgHiGreen).Add(color.FgHiBlack).SprintFunc()(str) },
+		4: func(str string) string { return color.New(color.BgHiYellow).Add(color.FgHiBlack).SprintFunc()(str) },
+		5: func(str string) string { return color.New(color.BgHiRed).Add(color.FgHiBlack).SprintFunc()(str) },
+	}
+
+	for i, _x := range x {
+		if _y, ok := colorCode[i]; ok {
+			y = append(y, _y(_x))
+		}
+	}
+	return strings.Join(y, "\n")
+}
+
+func LongMessage(message string) string {
+	return fmt.Sprintf("%s\n\n%s", newLogo(), color.New(color.BgHiYellow).Add(color.FgBlack).SprintFunc()(message))
+}
 
 func createManaged(ctx context.Context, log types.LoggerFactory, approval bool) {
 	cli.Client.Metadata.ManagedNodeType = nodeSizeMP
