@@ -14,7 +14,7 @@ import (
 )
 
 func newLogo() string {
-	x := strings.Split(v2_0Ksctl, "\n")
+	x := strings.Split(logoKsctl, "\n")
 
 	y := []string{}
 
