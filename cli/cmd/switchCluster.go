@@ -22,22 +22,25 @@ import (
 )
 
 var switchCluster = &cobra.Command{
-	Use: "switch-cluster",
+	Use: "connect-cluster",
 	Example: `
-ksctl switch-context --provider civo --name <clustername> --region <region>
-ksctl switch-context --provider local --name <clustername>
-ksctl switch-context --provider azure --name <clustername> --region <region>
-ksctl switch-context --provider ha-civo --name <clustername> --region <region>
-ksctl switch-context --provider ha-azure --name <clustername> --region <region>
-ksctl switch-context --provider ha-aws --name <clustername> --region <region>
-ksctl switch-context --provider aws --name <clustername> --region <region>
+ksctl connect-context --provider civo --name <clustername> --region <region>
+ksctl connect --provider civo --name <clustername> --region <region>
+ksctl switch --provider civo --name <clustername> --region <region>
+ksctl connect --provider civo --name <clustername> --region <region>
+ksctl connect-context --provider local --name <clustername>
+ksctl connect-context --provider azure --name <clustername> --region <region>
+ksctl connect-context --provider ha-civo --name <clustername> --region <region>
+ksctl connect-context --provider ha-azure --name <clustername> --region <region>
+ksctl connect-context --provider ha-aws --name <clustername> --region <region>
+ksctl connect-context --provider aws --name <clustername> --region <region>
 
 	For Storage specific
 
-ksctl switch-context -s store-local -p civo -n <clustername> -r <region>
-ksctl switch-context -s external-store-mongodb -p civo -n <clustername> -r <region>
+ksctl connect-context -s store-local -p civo -n <clustername> -r <region>
+ksctl connect-context -s external-store-mongodb -p civo -n <clustername> -r <region>
 `,
-	Aliases: []string{"switch", "access"},
+	Aliases: []string{"connect", "switch", "access"},
 	Short:   "Use to switch between clusters",
 	Long:    LongMessage("It is used to switch cluster with the given ClusterName from user."),
 	Run: func(cmd *cobra.Command, args []string) {
@@ -143,11 +146,9 @@ func shellAccess(log types.LoggerFactory) {
 	}
 	defer func() { _ = term.Restore(int(os.Stdin.Fd()), oldState) }()
 
-	// Print welcome message
 	fmt.Fprintln(ptmx, "echo Hi from Ksctl team! You are now in the shell session having cluster context.")
 	fmt.Fprintln(ptmx, "kubectl get nodes -owide")
 
-	// Copy stdin to ptmx, and ptmx to stdout
 	go func() { _, _ = io.Copy(ptmx, os.Stdin) }()
 	_, _ = io.Copy(os.Stdout, ptmx)
 }
