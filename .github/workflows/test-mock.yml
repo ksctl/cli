@@ -214,33 +214,33 @@ jobs:
 
       - name: civo scale up and down
         run: |
-          ${{env.KSCTL_BIN}} delete ha-civo del-nodes -n ha-demo-k3s --noWP 0 -r LON1 -s store-local --yes -v -1 --bootstrap k3s
+          ${{env.KSCTL_BIN}} delete ha-civo del-nodes -n ha-demo-k3s --noWP 0 -r LON1 -s store-local --yes -v -1
 
-          ${{env.KSCTL_BIN}} create ha-civo add-nodes -n ha-demo-k3s --noWP 1  --version 1.27.1 --nodeSizeWP "fake.small" -s store-local -r LON1 -v -1 --yes --bootstrap k3s
+          ${{env.KSCTL_BIN}} create ha-civo add-nodes -n ha-demo-k3s --noWP 1  --nodeSizeWP "fake.small" -s store-local -r LON1 -v -1 --yes
 
-          ${{env.KSCTL_BIN}} delete ha-civo del-nodes -n ha-demo-kubeadm --noWP 0 -r LON1 -s store-local --yes -v -1 --bootstrap kubeadm
+          ${{env.KSCTL_BIN}} delete ha-civo del-nodes -n ha-demo-kubeadm --noWP 0 -r LON1 -s store-local --yes -v -1
 
-          ${{env.KSCTL_BIN}} create ha-civo add-nodes -n ha-demo-kubeadm --noWP 1  --version 1.28 --nodeSizeWP "fake.small" -s store-local -r LON1 -v -1 --yes --bootstrap kubeadm
+          ${{env.KSCTL_BIN}} create ha-civo add-nodes -n ha-demo-kubeadm --noWP 1 --nodeSizeWP "fake.small" -s store-local -r LON1 -v -1 --yes
 
       - name: azure scale up and down
         run: |
-          ${{env.KSCTL_BIN}} delete ha-azure del-nodes -n ha-demo-k3s --noWP 0 -r fake -s store-local --yes -v -1 --bootstrap k3s
+          ${{env.KSCTL_BIN}} delete ha-azure del-nodes -n ha-demo-k3s --noWP 0 -r fake -s store-local --yes -v -1
 
-          ${{env.KSCTL_BIN}} create ha-azure add-nodes -n ha-demo-k3s --noWP 1  --version 1.27.1 --nodeSizeWP "fake" -s store-local -r fake -v -1 --yes --bootstrap k3s
+          ${{env.KSCTL_BIN}} create ha-azure add-nodes -n ha-demo-k3s --noWP 1 --nodeSizeWP "fake" -s store-local -r fake -v -1 --yes
 
-          ${{env.KSCTL_BIN}} delete ha-azure del-nodes -n ha-demo-kubeadm --noWP 0 -r fake -s store-local --yes -v -1 --bootstrap kubeadm
+          ${{env.KSCTL_BIN}} delete ha-azure del-nodes -n ha-demo-kubeadm --noWP 0 -r fake -s store-local --yes -v -1
 
-          ${{env.KSCTL_BIN}} create ha-azure add-nodes -n ha-demo-kubeadm --noWP 1  --version 1.28 --nodeSizeWP "fake" -s store-local -r fake -v -1 --yes --bootstrap kubeadm
+          ${{env.KSCTL_BIN}} create ha-azure add-nodes -n ha-demo-kubeadm --noWP 1  --version 1.28 --nodeSizeWP "fake" -s store-local -r fake -v -1 --yes
 
       - name: aws scale up and down
         run: |
-          ${{env.KSCTL_BIN}} delete ha-aws del-nodes -n ha-demo-k3s --noWP 0 -r fake-region -s store-local --yes -v -1 --bootstrap k3s
+          ${{env.KSCTL_BIN}} delete ha-aws del-nodes -n ha-demo-k3s --noWP 0 -r fake-region -s store-local --yes -v -1
 
-          ${{env.KSCTL_BIN}} create ha-aws add-nodes -n ha-demo-k3s --noWP 1  --version 1.27.1 --nodeSizeWP "fake" -s store-local -r fake-region -v -1 --yes --bootstrap k3s
+          ${{env.KSCTL_BIN}} create ha-aws add-nodes -n ha-demo-k3s --noWP 1 --nodeSizeWP "fake" -s store-local -r fake-region -v -1 --yes
 
-          ${{env.KSCTL_BIN}} delete ha-aws del-nodes -n ha-demo-kubeadm --noWP 0 -r fake-region -s store-local --yes -v -1 --bootstrap kubeadm
+          ${{env.KSCTL_BIN}} delete ha-aws del-nodes -n ha-demo-kubeadm --noWP 0 -r fake-region -s store-local --yes -v -1
 
-          ${{env.KSCTL_BIN}} create ha-aws add-nodes -n ha-demo-kubeadm --noWP 1  --version 1.28 --nodeSizeWP "fake" -s store-local -r fake-region -v -1 --yes --bootstrap kubeadm
+          ${{env.KSCTL_BIN}} create ha-aws add-nodes -n ha-demo-kubeadm --noWP 1 --nodeSizeWP "fake" -s store-local -r fake-region -v -1 --yes
 
       - name: civo delete
         run: |

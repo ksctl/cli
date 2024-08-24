@@ -10,6 +10,7 @@ require (
 	github.com/ksctl/ksctl v1.2.6
 	github.com/pterm/pterm v0.12.79
 	github.com/rodaine/table v1.2.0
+	github.com/rogpeppe/go-internal v1.12.0
 	github.com/spf13/cobra v1.8.1
 )
 
