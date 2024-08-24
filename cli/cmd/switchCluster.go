@@ -2,9 +2,15 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/creack/pty"
+	"golang.org/x/term"
+	"io"
 	"os"
 	"os/exec"
+	"os/signal"
+	"path/filepath"
 	"strings"
+	"syscall"
 
 	"github.com/fatih/color"
 	"github.com/ksctl/cli/logger"
@@ -90,20 +96,82 @@ ksctl switch-context -s external-store-mongodb -p civo -n <clustername> -r <regi
 		log.Debug(ctx, "kubeconfig output as string", "kubeconfig", kubeconfig)
 		log.Success(ctx, "Switch cluster Successful")
 
-		_cmd := exec.Command("k9s", "--kubeconfig", "/home/dipankar/.ksctl/kubeconfig")
-
-		_bout := new(strings.Builder)
-		_berr := new(strings.Builder)
-		_cmd.Stdout = _bout
-		_cmd.Stderr = _berr
-
-		if err := _cmd.Run(); err != nil {
-			log.Error("Failed to run k9s", "Reason", err)
+		if accessMode == "k9s" {
+			K9sAccess(log)
+		} else if accessMode == "shell" {
+			shellAccess(log)
+		} else {
+			log.Print(ctx, "No mode selected")
 		}
-		_stdout, _stderr := _bout.String(), _berr.String()
-		fmt.Println(color.HiBlueString(_stdout))
-		fmt.Println(color.HiRedString(_stderr))
 	},
+}
+
+func shellAccess(log types.LoggerFactory) {
+	home, err := os.UserHomeDir()
+	if err != nil {
+		log.Error("Failed to get home dir", "Reason", err)
+		os.Exit(1)
+	}
+
+	home = filepath.Join(home, ".ksctl", "kubeconfig")
+	cmd := exec.Command("/bin/bash")
+
+	cmd.Env = append(os.Environ(), "KUBECONFIG="+home)
+
+	ptmx, err := pty.Start(cmd)
+	if err != nil {
+		fmt.Println("Error creating pseudo-terminal:", err)
+		return
+	}
+	defer func() { _ = ptmx.Close() }()
+
+	ch := make(chan os.Signal, 1)
+	signal.Notify(ch, syscall.SIGWINCH)
+	go func() {
+		for range ch {
+			if err := pty.InheritSize(os.Stdin, ptmx); err != nil {
+				fmt.Println("Error resizing pty:", err)
+			}
+		}
+	}()
+	ch <- syscall.SIGWINCH
+
+	oldState, err := term.MakeRaw(int(os.Stdin.Fd()))
+	if err != nil {
+		fmt.Println("Error setting raw mode:", err)
+		return
+	}
+	defer func() { _ = term.Restore(int(os.Stdin.Fd()), oldState) }()
+
+	// Print welcome message
+	fmt.Fprintln(ptmx, "echo Hi from Ksctl team! You are now in the shell session having cluster context.")
+	fmt.Fprintln(ptmx, "kubectl get nodes -owide")
+
+	// Copy stdin to ptmx, and ptmx to stdout
+	go func() { _, _ = io.Copy(ptmx, os.Stdin) }()
+	_, _ = io.Copy(os.Stdout, ptmx)
+}
+
+func K9sAccess(log types.LoggerFactory) {
+	home, err := os.UserHomeDir()
+	if err != nil {
+		log.Error("Failed to get home dir", "Reason", err)
+		os.Exit(1)
+	}
+	home = filepath.Join(home, ".ksctl", "kubeconfig")
+	_cmd := exec.Command("k9s", "--kubeconfig", home)
+
+	_bout := new(strings.Builder)
+	_berr := new(strings.Builder)
+	_cmd.Stdout = _bout
+	_cmd.Stderr = _berr
+
+	if err := _cmd.Run(); err != nil {
+		log.Error("Failed to run k9s", "Reason", err)
+	}
+	_stdout, _stderr := _bout.String(), _berr.String()
+	fmt.Println(color.HiBlueString(_stdout))
+	fmt.Println(color.HiRedString(_stderr))
 }
 
 func init() {
@@ -113,6 +181,8 @@ func init() {
 	storageFlag(switchCluster)
 
 	switchCluster.Flags().StringVarP(&provider, "provider", "p", "", "Provider")
+	switchCluster.Flags().StringVarP(&accessMode, "mode", "m", "", "Mode of access can be shell or k9s or none")
+
 	switchCluster.MarkFlagRequired("name")
 	switchCluster.MarkFlagRequired("provider")
 }

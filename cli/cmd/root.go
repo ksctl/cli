@@ -27,6 +27,7 @@ var (
 	apps        string
 	cni         string
 	provider    string
+	accessMode  string
 	storage     string
 	distro      string
 	k8sVer      string
