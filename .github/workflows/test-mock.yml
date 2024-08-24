@@ -133,11 +133,11 @@ jobs:
 
           ${{ env.KSCTL_BIN }} info -p civo -n demo -r LON1 --verbose -1 -s store-local
 
-          ${{env.KSCTL_BIN}} create ha-civo -n ha-demo-k3s --nodeSizeDS "fake.small" --version 1.27.1 --nodeSizeLB "fake.small" --nodeSizeCP "fake.small" --nodeSizeWP "fake.small" -s store-local -r LON1 --verbose -1 --yes --bootstrap k3s
+          ${{env.KSCTL_BIN}} create ha-civo -n ha-demo-k3s --nodeSizeDS "fake.small" --nodeSizeLB "fake.small" --nodeSizeCP "fake.small" --nodeSizeWP "fake.small" -s store-local -r LON1 --verbose -1 --yes --bootstrap k3s
 
           ${{env.KSCTL_BIN}} info -p ha-civo -n ha-demo-k3s -s store-local -r LON1 --verbose -1
 
-          ${{env.KSCTL_BIN}} create ha-civo -n ha-demo-kubeadm --nodeSizeDS "fake.small" --version 1.28 --nodeSizeLB "fake.small" --nodeSizeCP "fake.small" --nodeSizeWP "fake.small" -s store-local -r LON1 --verbose -1 --yes --bootstrap kubeadm
+          ${{env.KSCTL_BIN}} create ha-civo -n ha-demo-kubeadm --nodeSizeDS "fake.small" --nodeSizeLB "fake.small" --nodeSizeCP "fake.small" --nodeSizeWP "fake.small" -s store-local -r LON1 --verbose -1 --yes --bootstrap kubeadm
 
           ${{env.KSCTL_BIN}} info -p ha-civo -n ha-demo-kubeadm -s store-local -r LON1 --verbose -1
 
@@ -147,11 +147,11 @@ jobs:
 
           ${{env.KSCTL_BIN}} info -p azure -n demo -r fake -s store-local --verbose -1
 
-          ${{env.KSCTL_BIN}} create ha-azure -n ha-demo-k3s --nodeSizeDS "fake"  --version 1.27.1 --nodeSizeLB "fake" --nodeSizeCP "fake" --nodeSizeWP "fake" -r fake --verbose -1 -s store-local --yes --bootstrap k3s
+          ${{env.KSCTL_BIN}} create ha-azure -n ha-demo-k3s --nodeSizeDS "fake" --nodeSizeLB "fake" --nodeSizeCP "fake" --nodeSizeWP "fake" -r fake --verbose -1 -s store-local --yes --bootstrap k3s
 
           ${{env.KSCTL_BIN}} info -p ha-azure -n ha-demo-k3s -r fake -s store-local --verbose -1
 
-          ${{env.KSCTL_BIN}} create ha-azure -n ha-demo-kubeadm --nodeSizeDS "fake"  --version 1.28 --nodeSizeLB "fake" --nodeSizeCP "fake" --nodeSizeWP "fake" -r fake --verbose -1 -s store-local --yes --bootstrap kubeadm
+          ${{env.KSCTL_BIN}} create ha-azure -n ha-demo-kubeadm --nodeSizeDS "fake" --nodeSizeLB "fake" --nodeSizeCP "fake" --nodeSizeWP "fake" -r fake --verbose -1 -s store-local --yes --bootstrap kubeadm
 
           ${{env.KSCTL_BIN}} info -p ha-azure -n ha-demo-kubeadm -r fake -s store-local --verbose -1
 
@@ -161,11 +161,11 @@ jobs:
           
           ${{env.KSCTL_BIN}} info -p aws -n demo -r fake-region -s store-local --verbose -1
           
-          ${{env.KSCTL_BIN}} create ha-aws -n ha-demo-k3s --nodeSizeDS "fake"  --version 1.27.1 --nodeSizeLB "fake" --nodeSizeCP "fake" --nodeSizeWP "fake" -r fake-region --verbose -1 -s store-local --yes --bootstrap k3s
+          ${{env.KSCTL_BIN}} create ha-aws -n ha-demo-k3s --nodeSizeDS "fake" --nodeSizeLB "fake" --nodeSizeCP "fake" --nodeSizeWP "fake" -r fake-region --verbose -1 -s store-local --yes --bootstrap k3s
 
           ${{env.KSCTL_BIN}} info -p ha-aws -n ha-demo-k3s -r fake-region -s store-local --verbose -1
 
-          ${{env.KSCTL_BIN}} create ha-aws -n ha-demo-kubeadm --nodeSizeDS "fake"  --version 1.28 --nodeSizeLB "fake" --nodeSizeCP "fake" --nodeSizeWP "fake" -r fake-region --verbose -1 -s store-local --yes --bootstrap kubeadm
+          ${{env.KSCTL_BIN}} create ha-aws -n ha-demo-kubeadm --nodeSizeDS "fake" --nodeSizeLB "fake" --nodeSizeCP "fake" --nodeSizeWP "fake" -r fake-region --verbose -1 -s store-local --yes --bootstrap kubeadm
 
           ${{env.KSCTL_BIN}} info -p ha-aws -n ha-demo-kubeadm -r fake-region -s store-local --verbose -1
 
@@ -230,7 +230,7 @@ jobs:
 
           ${{env.KSCTL_BIN}} delete ha-azure del-nodes -n ha-demo-kubeadm --noWP 0 -r fake -s store-local --yes -v -1
 
-          ${{env.KSCTL_BIN}} create ha-azure add-nodes -n ha-demo-kubeadm --noWP 1  --version 1.28 --nodeSizeWP "fake" -s store-local -r fake -v -1 --yes
+          ${{env.KSCTL_BIN}} create ha-azure add-nodes -n ha-demo-kubeadm --noWP 1 --nodeSizeWP "fake" -s store-local -r fake -v -1 --yes
 
       - name: aws scale up and down
         run: |
