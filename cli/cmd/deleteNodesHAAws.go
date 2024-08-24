@@ -15,7 +15,7 @@ var deleteNodesHAAws = &cobra.Command{
 	//Deprecated: color.HiYellowString("This will be removed in future releases once autoscaling is stable"),
 	Use: "del-nodes",
 	Example: `
-ksctl delete ha-aws del-nodes -n demo -r us-east-1 -s store-local --noWP 1 --bootstrap kubeadm      # Here the noWP is the desired count of workernodes
+ksctl delete ha-aws del-nodes -n demo -r us-east-1 -s store-local --noWP 1      # Here the noWP is the desired count of workernodes
 	`,
 	Short: "Use to remove worker nodes in self-managed Highly-Available cluster on Aws",
 	Long:  "It is used to delete cluster with the given name from user",
@@ -32,7 +32,6 @@ ksctl delete ha-aws del-nodes -n demo -r us-east-1 -s store-local --noWP 1 --boo
 		cli.Client.Metadata.NoWP = noWP
 		cli.Client.Metadata.ClusterName = clusterName
 		cli.Client.Metadata.Region = region
-		cli.Client.Metadata.K8sDistro = consts.KsctlKubernetes(distro)
 		cli.Client.Metadata.StateLocation = consts.KsctlStore(storage)
 
 		if err := deleteApproval(ctx, log, cmd.Flags().Lookup("yes").Changed); err != nil {
@@ -65,7 +64,6 @@ func init() {
 	clusterNameFlag(deleteNodesHAAws)
 	noOfWPFlag(deleteNodesHAAws)
 	regionFlag(deleteNodesHAAws)
-	distroFlag(deleteNodesHAAws)
 	storageFlag(deleteNodesHAAws)
 
 	deleteNodesHAAws.MarkFlagRequired("name")

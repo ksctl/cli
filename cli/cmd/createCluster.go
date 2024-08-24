@@ -102,7 +102,7 @@ ksctl create-cluster local --name demo --storage store-local --noMP 3
 var createClusterHAAws = &cobra.Command{
 	Use: "ha-aws",
 	Example: `
-ksctl create-cluster ha-aws -n demo -r us-east-1 --bootstrap k3s -s store-local --nodeSizeCP t2.medium --nodeSizeWP t2.medium --nodeSizeLB t2.micro --nodeSizeDS t2.small --noWP 1 --noCP 3 --noDS 3
+ksctl create-cluster ha-aws -n demo -r us-east-1 --bootstrap k3s -s store-local --nodeSizeCP t2.medium --nodeSizeWP t2.medium --nodeSizeLB t2.micro --nodeSizeDS t2.small --noWP 1 --noCP 3 --noDS 3 --cni cilium@v1.16.1
 `,
 	Short: "Use to create a self-managed Highly Available cluster on AWS",
 	Long:  LongMessage("It is used to create cluster with the given name from user."),
@@ -123,7 +123,7 @@ var createClusterHACivo = &cobra.Command{
 	Use: "ha-civo",
 	Example: `
 ksctl create-cluster ha-civo --name demo --region LON1 --bootstrap k3s --storage store-local --nodeSizeCP g3.small --nodeSizeWP g3.medium --nodeSizeLB g3.small --nodeSizeDS g3.small --noWP 1 --noCP 3 --noDS 3
-ksctl create-cluster ha-civo --name demo --region LON1 --bootstrap kubeadm --storage store-local --nodeSizeCP g3.medium --nodeSizeWP g3.large --nodeSizeLB g3.small --nodeSizeDS g3.small --noWP 1 --noCP 3 --noDS 3
+ksctl create-cluster ha-civo --name demo --region LON1 --bootstrap kubeadm --storage store-local --nodeSizeCP g3.medium --nodeSizeWP g3.large --nodeSizeLB g3.small --nodeSizeDS g3.small --noWP 1 --noCP 3 --noDS 3 --cni cilium@v1.16.1
 `,
 	Short: "Use to create a self-managed Highly Available cluster on Civo",
 	Long:  LongMessage("It is used to create cluster with the given name from user"),
@@ -144,7 +144,7 @@ var createClusterHAAzure = &cobra.Command{
 	Use: "ha-azure",
 	Example: `
 ksctl create-cluster ha-azure --name demo --region eastus --bootstrap k3s --storage store-local --nodeSizeCP Standard_F2s --nodeSizeWP Standard_F2s --nodeSizeLB Standard_F2s --nodeSizeDS Standard_F2s --noWP 1 --noCP 3 --noDS 3
-ksctl create-cluster ha-azure --name demo --region eastus --bootstrap kubeadm --storage store-local --nodeSizeCP Standard_F2s --nodeSizeWP Standard_F4s --nodeSizeLB Standard_F2s --nodeSizeDS Standard_F2s --noWP 1 --noCP 3 --noDS 3
+ksctl create-cluster ha-azure --name demo --region eastus --bootstrap kubeadm --storage store-local --nodeSizeCP Standard_F2s --nodeSizeWP Standard_F4s --nodeSizeLB Standard_F2s --nodeSizeDS Standard_F2s --noWP 1 --noCP 3 --noDS 3 --cni cilium@v1.16.1
 `,
 	Short: "Use to create a self-managed Highly-Available cluster on Azure",
 	Long:  LongMessage("It is used to create cluster with the given name from user"),

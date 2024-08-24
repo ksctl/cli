@@ -5,14 +5,14 @@ import (
 	"compress/gzip"
 	"crypto/sha256"
 	"encoding/hex"
-	"encoding/json"
 	"fmt"
+	"github.com/ksctl/ksctl/poller"
+	"github.com/rogpeppe/go-internal/semver"
 	"io"
 	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
-	"regexp"
 	"runtime"
 	"strings"
 
@@ -25,37 +25,14 @@ func fetchLatestVersion() ([]string, error) {
 
 	logCli.Print(ctx, "Fetching available versions")
 
-	type Release struct {
-		TagName string `json:"tag_name"`
-	}
-
-	resp, err := http.Get("https://api.github.com/repos/ksctl/cli/releases")
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	var _releases []Release
-	if err := json.NewDecoder(resp.Body).Decode(&_releases); err != nil {
-		return nil, err
-	}
-
-	var releases []string
-	rcRegex := regexp.MustCompile(`.*-rc[0-9]+$`)
-	for _, release := range _releases {
-		if rcRegex.MatchString(release.TagName) {
-			continue
-		}
-		releases = append(releases, release.TagName)
-	}
-
-	return releases, nil
+	poller.InitSharedGithubReleasePoller()
+	return poller.GetSharedPoller().Get("ksctl", "cli")
 }
 
 func filterToUpgradeableVersions(versions []string) []string {
 	var upgradeableVersions []string
 	for _, version := range versions {
-		if version > Version {
+		if semver.Compare(version, Version) > 0 {
 			upgradeableVersions = append(upgradeableVersions, version)
 		}
 	}

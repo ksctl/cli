@@ -14,7 +14,7 @@ import (
 var addMoreWorkerNodesHACivo = &cobra.Command{
 	//Deprecated: color.HiYellowString("This will be removed in future releases once autoscaling is stable"),
 	Example: `
-ksctl create ha-civo add-nodes -n demo -r LON1 -s store-local --noWP 3 --nodeSizeWP g3.medium --bootstrap kubeadm      # Here the noWP is the desired count of workernodes
+ksctl create ha-civo add-nodes -n demo -r LON1 -s store-local --noWP 3 --nodeSizeWP g3.medium   # Here the noWP is the desired count of workernodes
 	`,
 	Use:   "add-nodes",
 	Short: "Use to add more worker nodes in self-managed Highly-Available cluster on Civo",
@@ -33,8 +33,6 @@ ksctl create ha-civo add-nodes -n demo -r LON1 -s store-local --noWP 3 --nodeSiz
 		cli.Client.Metadata.WorkerPlaneNodeType = nodeSizeWP
 		cli.Client.Metadata.ClusterName = clusterName
 		cli.Client.Metadata.Region = region
-		cli.Client.Metadata.K8sDistro = consts.KsctlKubernetes(distro)
-		cli.Client.Metadata.K8sVersion = k8sVer
 		cli.Client.Metadata.IsHA = true
 		cli.Client.Metadata.StateLocation = consts.KsctlStore(storage)
 
@@ -68,8 +66,6 @@ func init() {
 	noOfWPFlag(addMoreWorkerNodesHACivo)
 	nodeSizeWPFlag(addMoreWorkerNodesHACivo)
 	regionFlag(addMoreWorkerNodesHACivo)
-	k8sVerFlag(addMoreWorkerNodesHACivo)
-	distroFlag(addMoreWorkerNodesHACivo)
 	storageFlag(addMoreWorkerNodesHACivo)
 
 	addMoreWorkerNodesHACivo.MarkFlagRequired("name")

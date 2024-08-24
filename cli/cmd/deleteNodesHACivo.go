@@ -15,7 +15,7 @@ var deleteNodesHACivo = &cobra.Command{
 	//Deprecated: color.HiYellowString("This will be removed in future releases once autoscaling is stable"),
 	Use: "del-nodes",
 	Example: `
-ksctl delete ha-civo del-nodes -n demo -r LON1 -s store-local --noWP 1 --bootstrap kubeadm      # Here the noWP is the desired count of workernodes
+ksctl delete ha-civo del-nodes -n demo -r LON1 -s store-local --noWP 1      # Here the noWP is the desired count of workernodes
 	`,
 	Short: "Use to remove worker nodes in self-managed Highly-Available cluster on Civo",
 	Long:  "It is used to delete cluster with the given name from user",
@@ -30,7 +30,6 @@ ksctl delete ha-civo del-nodes -n demo -r LON1 -s store-local --noWP 1 --bootstr
 		cli.Client.Metadata.NoWP = noWP
 		cli.Client.Metadata.ClusterName = clusterName
 		cli.Client.Metadata.Region = region
-		cli.Client.Metadata.K8sDistro = consts.KsctlKubernetes(distro)
 		cli.Client.Metadata.StateLocation = consts.KsctlStore(storage)
 
 		if err := deleteApproval(ctx, log, cmd.Flags().Lookup("yes").Changed); err != nil {
@@ -63,8 +62,6 @@ func init() {
 	clusterNameFlag(deleteNodesHACivo)
 	noOfWPFlag(deleteNodesHACivo)
 	regionFlag(deleteNodesHACivo)
-	//k8sVerFlag(deleteNodesHACivo)
-	distroFlag(deleteNodesHACivo)
 	storageFlag(deleteNodesHACivo)
 
 	deleteNodesHACivo.MarkFlagRequired("name")

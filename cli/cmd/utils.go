@@ -48,10 +48,21 @@ func createManaged(ctx context.Context, log types.LoggerFactory, approval bool) 
 	cli.Client.Metadata.K8sVersion = k8sVer
 	cli.Client.Metadata.Region = region
 	cli.Client.Metadata.StateLocation = consts.KsctlStore(storage)
-
-	cli.Client.Metadata.CNIPlugin = cni
-	if len(apps) != 0 {
-		cli.Client.Metadata.Applications = strings.Split(apps, ",")
+	if len(cni) > 0 {
+		_cni := strings.Split(cni, "@")
+		cli.Client.Metadata.CNIPlugin = types.KsctlApp{
+			StackName: _cni[0],
+			Overrides: map[string]map[string]any{
+				_cni[0]: {
+					"version": func() string {
+						if len(_cni) != 2 {
+							return "latest"
+						}
+						return _cni[1]
+					}(),
+				},
+			},
+		}
 	}
 	if err := createApproval(ctx, log, approval); err != nil {
 		log.Error("createApproval", "Reason", err)
@@ -93,9 +104,21 @@ func createHA(ctx context.Context, log types.LoggerFactory, approval bool) {
 	cli.Client.Metadata.WorkerPlaneNodeType = nodeSizeWP
 	cli.Client.Metadata.DataStoreNodeType = nodeSizeDS
 
-	cli.Client.Metadata.CNIPlugin = cni
-	if len(apps) != 0 {
-		cli.Client.Metadata.Applications = strings.Split(apps, ",")
+	if len(cni) > 0 {
+		_cni := strings.Split(cni, "@")
+		cli.Client.Metadata.CNIPlugin = types.KsctlApp{
+			StackName: _cni[0],
+			Overrides: map[string]map[string]any{
+				_cni[0]: {
+					"version": func() string {
+						if len(_cni) != 2 {
+							return "latest"
+						}
+						return _cni[1]
+					}(),
+				},
+			},
+		}
 	}
 
 	if err := createApproval(ctx, log, approval); err != nil {
@@ -251,7 +274,7 @@ func SetDefaults(provider consts.KsctlCloud, clusterType consts.KsctlClusterType
 			noMP = 2
 		}
 		if len(k8sVer) == 0 {
-			k8sVer = "1.27.1"
+			k8sVer = "1.30.0"
 		}
 		if len(storage) == 0 {
 			storage = string(consts.StoreLocal)
@@ -266,9 +289,6 @@ func SetDefaults(provider consts.KsctlCloud, clusterType consts.KsctlClusterType
 		}
 		if len(region) == 0 {
 			region = "eastus"
-		}
-		if len(k8sVer) == 0 {
-			k8sVer = "1.27"
 		}
 		if len(storage) == 0 {
 			storage = string(consts.StoreLocal)
@@ -327,13 +347,6 @@ func SetDefaults(provider consts.KsctlCloud, clusterType consts.KsctlClusterType
 		}
 		if noDS == -1 {
 			noDS = 3
-		}
-		if len(k8sVer) == 0 {
-			if distro == string(consts.K8sKubeadm) {
-				k8sVer = "1.29"
-			} else {
-				k8sVer = "1.29.4"
-			}
 		}
 		if len(distro) == 0 {
 			distro = string(consts.K8sK3s)
@@ -396,13 +409,6 @@ func SetDefaults(provider consts.KsctlCloud, clusterType consts.KsctlClusterType
 		if noDS == -1 {
 			noDS = 3
 		}
-		if len(k8sVer) == 0 {
-			if distro == string(consts.K8sKubeadm) {
-				k8sVer = "1.29"
-			} else {
-				k8sVer = "1.29.4"
-			}
-		}
 		if len(distro) == 0 {
 			distro = string(consts.K8sK3s)
 		}
@@ -447,13 +453,6 @@ func SetDefaults(provider consts.KsctlCloud, clusterType consts.KsctlClusterType
 		if noDS == -1 {
 			noDS = 3
 		}
-		if len(k8sVer) == 0 {
-			if distro == string(consts.K8sKubeadm) {
-				k8sVer = "1.29"
-			} else {
-				k8sVer = "1.29.4"
-			}
-		}
 		if len(storage) == 0 {
 			storage = string(consts.StoreLocal)
 		}
@@ -471,7 +470,6 @@ func argsFlags() {
 	noOfMPFlag(createClusterAzure)
 	k8sVerFlag(createClusterAzure)
 	distroFlag(createClusterAzure)
-	appsFlag(createClusterAzure)
 	cniFlag(createClusterAzure)
 	storageFlag(createClusterAzure)
 
@@ -482,7 +480,6 @@ func argsFlags() {
 	noOfMPFlag(createClusterAws)
 	k8sVerFlag(createClusterAws)
 	distroFlag(createClusterAws)
-	appsFlag(createClusterAws)
 	cniFlag(createClusterAws)
 	storageFlag(createClusterAws)
 
@@ -490,7 +487,6 @@ func argsFlags() {
 	clusterNameFlag(createClusterCivo)
 	nodeSizeManagedFlag(createClusterCivo)
 	regionFlag(createClusterCivo)
-	appsFlag(createClusterCivo)
 	cniFlag(createClusterCivo)
 	noOfMPFlag(createClusterCivo)
 	distroFlag(createClusterCivo)
@@ -499,7 +495,6 @@ func argsFlags() {
 
 	// Managed Local
 	clusterNameFlag(createClusterLocal)
-	appsFlag(createClusterLocal)
 	cniFlag(createClusterLocal)
 	noOfMPFlag(createClusterLocal)
 	distroFlag(createClusterLocal)
@@ -513,7 +508,6 @@ func argsFlags() {
 	nodeSizeWPFlag(createClusterHACivo)
 	nodeSizeLBFlag(createClusterHACivo)
 	regionFlag(createClusterHACivo)
-	appsFlag(createClusterHACivo)
 	cniFlag(createClusterHACivo)
 	noOfWPFlag(createClusterHACivo)
 	noOfCPFlag(createClusterHACivo)
@@ -529,7 +523,6 @@ func argsFlags() {
 	nodeSizeWPFlag(createClusterHAAws)
 	nodeSizeLBFlag(createClusterHAAws)
 	regionFlag(createClusterHAAws)
-	appsFlag(createClusterHAAws)
 	cniFlag(createClusterHAAws)
 	noOfWPFlag(createClusterHAAws)
 	noOfCPFlag(createClusterHAAws)
@@ -545,7 +538,6 @@ func argsFlags() {
 	nodeSizeWPFlag(createClusterHAAzure)
 	nodeSizeLBFlag(createClusterHAAzure)
 	regionFlag(createClusterHAAzure)
-	appsFlag(createClusterHAAzure)
 	cniFlag(createClusterHAAzure)
 	noOfWPFlag(createClusterHAAzure)
 	noOfCPFlag(createClusterHAAzure)

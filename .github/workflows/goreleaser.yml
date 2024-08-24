@@ -22,7 +22,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v4
         with:
-          go-version: 1.21.0
+          go-version: 1.22.0
 
       - name: Install Cosign 
         uses: sigstore/cosign-installer@main
@@ -30,8 +30,12 @@ jobs:
       - name: Set the value
         id: set_environment
         run: |
+          set -xe
+          sudo apt install jq -y
           echo "CURR_DATE=$(date '+%d-%m-%Y')" >> $GITHUB_ENV
           echo "CURR_VER=$(git describe --tags --abbrev=0)" >> $GITHUB_ENV
+          ksctl_core=$(curl -sSfL https://api.github.com/repos/ksctl/ksctl/releases/latest)
+          echo "KSCTL_CORE=$(echo $ksctl_core | jq -r '.tag_name')" >> $GITHUB_ENV
 
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v4
@@ -43,3 +47,4 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DATE: ${{ env.CURR_DATE }}
           VERSION: ${{ env.CURR_VER }}
+          OCIVERSION: ${{ env.KSCTL_CORE }}

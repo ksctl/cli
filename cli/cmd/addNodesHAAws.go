@@ -15,7 +15,7 @@ import (
 var addMoreWorkerNodesHAAws = &cobra.Command{
 	//Deprecated: color.HiYellowString("This will be removed in future releases once autoscaling is stable"),
 	Example: `
-ksctl create ha-aws add-nodes -n demo -r ap-south-1 -s store-local --noWP 3 --nodeSizeWP t2.medium --bootstrap kubeadm      # Here the noWP is the desired count of workernodes
+ksctl create ha-aws add-nodes -n demo -r ap-south-1 -s store-local --noWP 3 --nodeSizeWP t2.medium # Here the noWP is the desired count of workernodes
 	`,
 	Use:   "add-nodes",
 	Short: "Use to add more worker nodes in self-managed Highly-Available cluster on Aws",
@@ -34,8 +34,6 @@ ksctl create ha-aws add-nodes -n demo -r ap-south-1 -s store-local --noWP 3 --no
 		cli.Client.Metadata.ClusterName = clusterName
 		cli.Client.Metadata.Region = region
 		cli.Client.Metadata.IsHA = true
-		cli.Client.Metadata.K8sDistro = consts.KsctlKubernetes(distro)
-		cli.Client.Metadata.K8sVersion = k8sVer
 		cli.Client.Metadata.StateLocation = consts.KsctlStore(storage)
 
 		if err := createApproval(ctx, log, cmd.Flags().Lookup("yes").Changed); err != nil {
@@ -68,8 +66,6 @@ func init() {
 	noOfWPFlag(addMoreWorkerNodesHAAws)
 	nodeSizeWPFlag(addMoreWorkerNodesHAAws)
 	regionFlag(addMoreWorkerNodesHAAws)
-	k8sVerFlag(addMoreWorkerNodesHAAws)
-	distroFlag(addMoreWorkerNodesHAAws)
 	storageFlag(addMoreWorkerNodesHAAws)
 
 	addMoreWorkerNodesHAAws.MarkFlagRequired("name")
