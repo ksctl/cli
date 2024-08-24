@@ -2,7 +2,9 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/ksctl/ksctl/commons"
 
+	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 )
 
@@ -28,8 +30,8 @@ var versionCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 
 		fmt.Println(newLogo())
-
-		fmt.Println("Version:", Version)
+		fmt.Printf("%s@%s\n", color.HiGreenString("ksctl:cli"), color.HiBlueString(Version))
+		fmt.Printf("%s@%s\n", color.HiGreenString("ksctl:core"), color.HiBlueString(commons.GetOCIVersion()))
 		fmt.Println("BuildDate:", BuildDate)
 	},
 }
