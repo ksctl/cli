@@ -17,6 +17,9 @@ on:
           - stable
           - develop
 
+concurrency:
+  group: sync-docs
+
 jobs:
   generate-and-sync-docs:
     runs-on: ubuntu-latest
