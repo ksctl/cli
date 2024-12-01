@@ -26,12 +26,9 @@ jobs:
       with:
         path: cli-repo
 
-    - name: Checkout Docs repository
-      uses: actions/checkout@v4
-      with:
-        path: docs-repo
-        repository: 'ksctl/docs'
-        ref: 'main'
+    - name: checkout docs repo
+      run: |
+        git clone https://github.com/ksctl/docs.git docs-repo
 
     - name: Set up Go
       uses: actions/setup-go@v4
@@ -47,15 +44,17 @@ jobs:
       run: |
         # Copy generated docs
         cp -rv cli-repo/gen/docs.md/. docs-repo/content/en/docs/${{ github.event.inputs.branch }}/Reference/.
-
         ls -l docs-repo/content/en/docs/${{ github.event.inputs.branch }}/Reference/
 
     - name: Commit and Push Changes
       working-directory: docs-repo
-      env:
-        GITHUB_TOKEN: ${{ secrets.PAT_SYNC_CLI_DOCS_TO_DOCS_REPO }}
+      # env:
+      #   GITHUB_TOKEN: ${{ secrets.PAT_SYNC_CLI_DOCS_TO_DOCS_REPO }}
       run: |
-        git config user.name github-actions
-        git config user.email github-actions@github.com
+        git config user.name "Dipankar Das"
+        git config user.email "65275144+dipankardas011@users.noreply.github.com"
+        git remote add docs https://${{ secrets.PAT_SYNC_CLI_DOCS_TO_DOCS_REPO }}@github.com/ksctl/docs.git
         git add content/en/docs/${{ github.event.inputs.branch }}/Reference
-        git diff --quiet && git diff --staged --quiet || (git commit -m "chore(cicd): Update CLI documentation" && git push)
+        git remote -v
+        git branch -v
+        git diff --quiet && git diff --staged --quiet || (git commit -m "chore(cicd): Update CLI documentation" && git push docs main)

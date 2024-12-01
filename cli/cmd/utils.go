@@ -36,6 +36,9 @@ func newLogo() string {
 }
 
 func LongMessage(message string) string {
+	if !DisableHeaderBanner {
+		return "Ksctl ascii [logo]"
+	}
 	return fmt.Sprintf("%s\n\n%s", newLogo(), color.New(color.BgHiYellow).Add(color.FgBlack).SprintFunc()(message))
 }
 

@@ -34,6 +34,10 @@ var (
 	cloud       map[int]string
 )
 
+var (
+	DisableHeaderBanner bool
+)
+
 type CobraCmd struct {
 	ClusterName string
 	Region      string
