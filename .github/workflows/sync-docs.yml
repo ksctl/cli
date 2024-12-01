@@ -41,6 +41,8 @@ jobs:
         # Copy generated docs
         cp -rv cli-repo/gen/docs.md/. docs-repo/content/en/docs/develop/Reference/.
 
+        ls -l docs-repo/content/en/docs/develop/Reference/
+
     - name: Commit and Push Changes
       working-directory: docs-repo
       env:
@@ -48,5 +50,5 @@ jobs:
       run: |
         git config user.name github-actions
         git config user.email github-actions@github.com
-        git add content/en/cli-reference
+        git add docs-repo/content/en/docs/develop/Reference
         git diff --quiet && git diff --staged --quiet || (git commit -m "chore(cicd): Update CLI documentation" && git push)
