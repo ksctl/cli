@@ -1,14 +1,21 @@
 name: Generate and Sync CLI Docs
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - 'cli/**'  # Adjust this to match your CLI code structure
-      - 'gen/docs.md/**'  # If the generator is in a separate directory
+  # push:
+  #   branches:
+  #     - main
+  #   paths:
+  #     - 'cli/**'  # Adjust this to match your CLI code structure
+  #     - 'gen/docs.md/**'  # If the generator is in a separate directory
   
   workflow_dispatch:
+    inputs:
+      branch:
+        description: 'docs section to update'
+        type: choice
+        options:
+          - stable
+          - develop
 
 jobs:
   generate-and-sync-docs:
@@ -39,9 +46,9 @@ jobs:
     - name: Sync Generated Docs
       run: |
         # Copy generated docs
-        cp -rv cli-repo/gen/docs.md/. docs-repo/content/en/docs/develop/Reference/.
+        cp -rv cli-repo/gen/docs.md/. docs-repo/content/en/docs/${{ github.event.inputs.branch }}/Reference/.
 
-        ls -l docs-repo/content/en/docs/develop/Reference/
+        ls -l docs-repo/content/en/docs/${{ github.event.inputs.branch }}/Reference/
 
     - name: Commit and Push Changes
       working-directory: docs-repo
@@ -50,5 +57,5 @@ jobs:
       run: |
         git config user.name github-actions
         git config user.email github-actions@github.com
-        git add docs-repo/content/en/docs/develop/Reference
+        git add content/en/docs/${{ github.event.inputs.branch }}/Reference
         git diff --quiet && git diff --staged --quiet || (git commit -m "chore(cicd): Update CLI documentation" && git push)
