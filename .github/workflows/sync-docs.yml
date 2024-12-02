@@ -34,6 +34,7 @@ jobs:
     - name: Generate Documentation
       working-directory: cli-repo
       run: |
+        mkdir -p gen/docs.md
         make gen-docs
 
     - name: Sync Generated Docs
