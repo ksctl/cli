@@ -56,4 +56,4 @@ jobs:
         git add content/en/docs/Reference
         git remote -v
         git branch -v
-        git diff --quiet && git diff --staged --quiet || (git commit -m "chore(cicd): Update CLI documentation" && git push docs dev)
+        git diff --quiet && git diff --staged --quiet || (git commit -sm "chore(cicd): Update CLI documentation" && git push docs dev)
