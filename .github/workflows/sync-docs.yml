@@ -6,7 +6,6 @@ on:
       - main
     paths:
       - 'cli/**'  # Adjust this to match your CLI code structure
-      - 'gen/docs.md/**'  # If the generator is in a separate directory
       - '.github/workflows/sync-docs.yml'
   
   workflow_dispatch:
@@ -40,8 +39,12 @@ jobs:
     - name: Sync Generated Docs
       run: |
         # Copy generated docs
+        cp docs-repo/content/en/docs/Reference/_index.md /tmp/_index.md
+        rm -rf docs-repo/content/en/docs/Reference
+        mkdir -p docs-repo/content/en/docs/Reference
+        cp /tmp/_index.md docs-repo/content/en/docs/Reference/_index.md
         cp -rv cli-repo/gen/docs.md/. docs-repo/content/en/docs/Reference/.
-        ls -l docs-repo/content/en/docs/Reference/
+        ls -lha docs-repo/content/en/docs/Reference/
 
     - name: Commit and Push Changes
       working-directory: docs-repo
