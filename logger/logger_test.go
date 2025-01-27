@@ -7,9 +7,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ksctl/ksctl/pkg/helpers/consts"
-	"github.com/ksctl/ksctl/pkg/types"
-	"github.com/ksctl/ksctl/pkg/types/controllers/cloud"
+	"github.com/ksctl/ksctl/v2/pkg/helpers/consts"
+	"github.com/ksctl/ksctl/v2/pkg/types"
+	"github.com/ksctl/ksctl/v2/pkg/types/controllers/cloud"
 )
 
 var (

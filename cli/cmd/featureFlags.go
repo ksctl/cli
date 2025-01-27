@@ -4,8 +4,8 @@ import (
 	"context"
 	"strings"
 
-	"github.com/ksctl/ksctl/pkg/helpers/consts"
-	"github.com/ksctl/ksctl/pkg/types"
+	"github.com/ksctl/ksctl/v2/pkg/helpers/consts"
+	"github.com/ksctl/ksctl/v2/pkg/types"
 	"github.com/spf13/cobra"
 )
 

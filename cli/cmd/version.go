@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/ksctl/ksctl/commons"
+	"github.com/ksctl/ksctl/v2/commons"
 
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"

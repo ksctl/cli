@@ -6,7 +6,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
-	"github.com/ksctl/ksctl/poller"
+	"github.com/ksctl/ksctl/v2/poller"
 	"github.com/rogpeppe/go-internal/semver"
 	"io"
 	"net/http"

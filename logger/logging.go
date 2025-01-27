@@ -4,8 +4,8 @@ import (
 	"context"
 	"strings"
 
-	"github.com/ksctl/ksctl/pkg/helpers/consts"
-	"github.com/ksctl/ksctl/pkg/helpers/utilities"
+	"github.com/ksctl/ksctl/v2/pkg/helpers/consts"
+	"github.com/ksctl/ksctl/v2/pkg/helpers/utilities"
 )
 
 func getPackageName(ctx context.Context) string {

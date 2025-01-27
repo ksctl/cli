@@ -12,12 +12,12 @@ import (
 
 	box "github.com/Delta456/box-cli-maker/v2"
 	"github.com/fatih/color"
-	cloudController "github.com/ksctl/ksctl/pkg/types/controllers/cloud"
+	cloudController "github.com/ksctl/ksctl/v2/pkg/types/controllers/cloud"
 	"github.com/rodaine/table"
 
 	"time"
 
-	"github.com/ksctl/ksctl/pkg/helpers/consts"
+	"github.com/ksctl/ksctl/v2/pkg/helpers/consts"
 )
 
 type GeneralLog struct {

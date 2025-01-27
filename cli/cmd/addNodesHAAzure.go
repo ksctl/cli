@@ -4,12 +4,12 @@ import (
 	"os"
 
 	"github.com/ksctl/cli/logger"
-	"github.com/ksctl/ksctl/pkg/controllers"
-	"github.com/ksctl/ksctl/pkg/types"
+	"github.com/ksctl/ksctl/v2/pkg/controllers"
+	"github.com/ksctl/ksctl/v2/pkg/types"
 
 	"github.com/spf13/cobra"
 
-	"github.com/ksctl/ksctl/pkg/helpers/consts"
+	"github.com/ksctl/ksctl/v2/pkg/helpers/consts"
 )
 
 var addMoreWorkerNodesHAAzure = &cobra.Command{
