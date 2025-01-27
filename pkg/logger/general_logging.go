@@ -1,3 +1,17 @@
+// Copyright 2025 Ksctl Authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package logger
 
 import (
@@ -12,12 +26,10 @@ import (
 
 	box "github.com/Delta456/box-cli-maker/v2"
 	"github.com/fatih/color"
-	cloudController "github.com/ksctl/ksctl/v2/pkg/types/controllers/cloud"
+	"github.com/ksctl/ksctl/v2/pkg/logger"
 	"github.com/rodaine/table"
 
 	"time"
-
-	"github.com/ksctl/ksctl/v2/pkg/helpers/consts"
 )
 
 type GeneralLog struct {
@@ -26,11 +38,11 @@ type GeneralLog struct {
 	level   uint
 }
 
-func (l *GeneralLog) ExternalLogHandler(ctx context.Context, msgType consts.CustomExternalLogLevel, message string) {
+func (l *GeneralLog) ExternalLogHandler(ctx context.Context, msgType logger.CustomExternalLogLevel, message string) {
 	l.log(false, false, ctx, msgType, message)
 }
 
-func (l *GeneralLog) ExternalLogHandlerf(ctx context.Context, msgType consts.CustomExternalLogLevel, format string, args ...interface{}) {
+func (l *GeneralLog) ExternalLogHandlerf(ctx context.Context, msgType logger.CustomExternalLogLevel, format string, args ...interface{}) {
 	l.log(false, false, ctx, msgType, format, args...)
 }
 
@@ -69,8 +81,8 @@ func formGroups(disableContext bool, ctx context.Context, v ...any) (format stri
 	return
 }
 
-func isLogEnabled(level uint, msgType consts.CustomExternalLogLevel) bool {
-	if msgType == consts.LogDebug {
+func isLogEnabled(level uint, msgType logger.CustomExternalLogLevel) bool {
+	if msgType == logger.LogDebug {
 		return level >= 9
 	}
 	return true
@@ -80,7 +92,7 @@ func (l *GeneralLog) logErrorf(disableContext bool, disablePrefix bool, ctx cont
 	l.mu.Lock()
 	defer l.mu.Unlock()
 	if !disablePrefix {
-		prefix := fmt.Sprintf("%s%s ", getTime(l.level), consts.LogError)
+		prefix := fmt.Sprintf("%s%s ", getTime(l.level), logger.LogError)
 		msg = prefix + msg
 	}
 	format, _args := formGroups(disableContext, ctx, args...)
@@ -95,7 +107,7 @@ func (l *GeneralLog) logErrorf(disableContext bool, disablePrefix bool, ctx cont
 	return errMsg
 }
 
-func (l *GeneralLog) log(disableContext bool, useGroupFormer bool, ctx context.Context, msgType consts.CustomExternalLogLevel, msg string, args ...any) {
+func (l *GeneralLog) log(disableContext bool, useGroupFormer bool, ctx context.Context, msgType logger.CustomExternalLogLevel, msg string, args ...any) {
 	if !isLogEnabled(l.level, msgType) {
 		return
 	}
@@ -107,14 +119,14 @@ func (l *GeneralLog) log(disableContext bool, useGroupFormer bool, ctx context.C
 		msg = prefix + msg
 		format, _args := formGroups(disableContext, ctx, args...)
 		if _args == nil {
-			if disableContext && msgType == consts.LogError {
+			if disableContext && msgType == logger.LogError {
 				l.boxBox(
 					"Error", msg+" "+format, "Red")
 				return
 			}
 			fmt.Fprint(l.writter, msg+" "+format)
 		} else {
-			if disableContext && msgType == consts.LogError {
+			if disableContext && msgType == logger.LogError {
 				l.boxBox(
 					"Error", fmt.Sprintf(msg+" "+format, _args...), "Red")
 				return
@@ -148,23 +160,23 @@ func NewLogger(verbose int, out io.Writer) *GeneralLog {
 }
 
 func (l *GeneralLog) Print(ctx context.Context, msg string, args ...any) {
-	l.log(false, true, ctx, consts.LogInfo, msg, args...)
+	l.log(false, true, ctx, logger.LogInfo, msg, args...)
 }
 
 func (l *GeneralLog) Success(ctx context.Context, msg string, args ...any) {
-	l.log(false, true, ctx, consts.LogSuccess, msg, args...)
+	l.log(false, true, ctx, logger.LogSuccess, msg, args...)
 }
 
 func (l *GeneralLog) Note(ctx context.Context, msg string, args ...any) {
-	l.log(false, true, ctx, consts.LogNote, msg, args...)
+	l.log(false, true, ctx, logger.LogNote, msg, args...)
 }
 
 func (l *GeneralLog) Debug(ctx context.Context, msg string, args ...any) {
-	l.log(false, true, ctx, consts.LogDebug, msg, args...)
+	l.log(false, true, ctx, logger.LogDebug, msg, args...)
 }
 
 func (l *GeneralLog) Error(msg string, args ...any) {
-	l.log(true, true, nil, consts.LogError, msg, args...)
+	l.log(true, true, nil, logger.LogError, msg, args...)
 }
 
 func (l *GeneralLog) NewError(ctx context.Context, msg string, args ...any) error {
@@ -172,14 +184,14 @@ func (l *GeneralLog) NewError(ctx context.Context, msg string, args ...any) erro
 }
 
 func (l *GeneralLog) Warn(ctx context.Context, msg string, args ...any) {
-	l.log(false, true, ctx, consts.LogWarning, msg, args...)
+	l.log(false, true, ctx, logger.LogWarning, msg, args...)
 }
 
-func (l *GeneralLog) Table(ctx context.Context, op consts.LogClusterDetail, data []cloudController.AllClusterData) {
+func (l *GeneralLog) Table(ctx context.Context, op logger.LogClusterDetail, data []logger.ClusterDataForLogging) {
 	headerFmt := color.New(color.FgGreen, color.Underline).SprintfFunc()
 	columnFmt := color.New(color.FgYellow).SprintfFunc()
 
-	if op == consts.LoggingGetClusters {
+	if op == logger.LoggingGetClusters {
 		tbl := table.New("ClusterName", "Region", "ClusterType", "CloudProvider", "BootStrap", "WorkerPlaneNodes", "ControlPlaneNodes", "EtcdNodes", "CloudManagedNodes")
 		tbl.WithHeaderFormatter(headerFmt).WithFirstColumnFormatter(columnFmt)
 
@@ -197,7 +209,7 @@ func (l *GeneralLog) Table(ctx context.Context, op consts.LogClusterDetail, data
 		tbl.Print()
 		println()
 		println()
-	} else if op == consts.LoggingInfoCluster {
+	} else if op == logger.LoggingInfoCluster {
 		a, err := json.MarshalIndent(data[0], "", " ")
 		if err != nil {
 			panic(err)

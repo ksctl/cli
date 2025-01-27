@@ -1,3 +1,17 @@
+// Copyright 2025 Ksctl Authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package logger
 
 import (
@@ -7,13 +21,11 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ksctl/ksctl/v2/pkg/helpers/consts"
-	"github.com/ksctl/ksctl/v2/pkg/types"
-	"github.com/ksctl/ksctl/v2/pkg/types/controllers/cloud"
+	"github.com/ksctl/ksctl/v2/pkg/logger"
 )
 
 var (
-	gL       types.LoggerFactory
+	gL       logger.Logger
 	dummyCtx = context.TODO()
 )
 
@@ -64,8 +76,8 @@ func TestPrinters(t *testing.T) {
 
 	t.Run("Table", func(t *testing.T) {
 		gL.Table(dummyCtx,
-			consts.LoggingGetClusters,
-			[]cloud.AllClusterData{
+			logger.LoggingGetClusters,
+			[]logger.ClusterDataForLogging{
 				{
 					Name:          "fake-demo",
 					CloudProvider: "fake",
@@ -73,7 +85,7 @@ func TestPrinters(t *testing.T) {
 				},
 			})
 
-		gL.Table(dummyCtx, consts.LoggingGetClusters, nil)
+		gL.Table(dummyCtx, logger.LoggingGetClusters, nil)
 	})
 
 	t.Run("Box", func(t *testing.T) {
@@ -84,7 +96,7 @@ func TestPrinters(t *testing.T) {
 	})
 
 	t.Run("external", func(t *testing.T) {
-		gL.ExternalLogHandler(dummyCtx, consts.LogSuccess, "cdcc")
-		gL.ExternalLogHandlerf(dummyCtx, consts.LogSuccess, "cdcc", "Reason", fmt.Errorf("Error"))
+		gL.ExternalLogHandler(dummyCtx, logger.LogSuccess, "cdcc")
+		gL.ExternalLogHandlerf(dummyCtx, logger.LogSuccess, "cdcc", "Reason", fmt.Errorf("Error"))
 	})
 }
