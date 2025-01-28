@@ -28,7 +28,8 @@ import (
 
 type KsctlCommand struct {
 	Ctx          context.Context
-	Log          logger.Logger
+	CliLog       logger.Logger
+	l            logger.Logger
 	ksctlStorage storage.Storage
 	root         *cobra.Command
 	verbose      int
@@ -52,7 +53,7 @@ func New() (*KsctlCommand, error) {
 
 	k.root = k.NewRootCmd()
 
-	k.Log = cLogger.NewLogger(k.verbose, os.Stdout)
+	k.CliLog = cLogger.NewLogger(0, os.Stdout)
 
 	return k, nil
 }

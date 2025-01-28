@@ -43,13 +43,13 @@ func (k *KsctlCommand) NewRootCmd() *cobra.Command {
 				)
 			}
 
-			k.Log = cLogger.NewLogger(k.verbose, os.Stdout)
+			k.l = cLogger.NewLogger(k.verbose, os.Stdout)
 		},
 	}
 
 	cmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 	cli.AddDryRunFlag(cmd, &k.dryRun)
-	// cli.AddVerboseFlag(cmd, &k.verbose)
+	cli.AddVerboseFlag(cmd, &k.verbose)
 
 	return cmd
 }

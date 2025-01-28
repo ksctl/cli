@@ -24,16 +24,16 @@ import (
 func main() {
 	c, err := cmd.New()
 	if err != nil {
-		c.Log.Error("cli initialization failed", "Reason", err)
+		c.CliLog.Error("cli initialization failed", "Reason", err)
 		os.Exit(1)
 	}
 
 	timer := time.Now()
-	defer c.Log.Print(c.Ctx, "Time Took", "time", time.Since(timer).String())
+	defer c.CliLog.Print(c.Ctx, "Time Took", "time", time.Since(timer).String())
 
 	err = c.Execute()
 	if err != nil {
-		c.Log.Error("command execution failed", "Reason", err)
+		c.CliLog.Error("command execution failed", "Reason", err)
 		os.Exit(1)
 	}
 }

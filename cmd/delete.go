@@ -15,7 +15,6 @@
 package cmd
 
 import (
-	"github.com/gookit/goutil/dump"
 	"github.com/spf13/cobra"
 )
 
@@ -30,12 +29,11 @@ ksctl delete --help
 		Long:  "It is used to delete cluster with the given name from user",
 
 		Run: func(cmd *cobra.Command, args []string) {
-			l := k.Log
+			l := k.l
 			ctx := k.Ctx
 
 			l.Box(ctx, "delete", "delete cluster")
 			l.Print(ctx, "info", "args", args)
-			dump.Println(ctx)
 		},
 	}
 

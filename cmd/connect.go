@@ -15,7 +15,6 @@
 package cmd
 
 import (
-	"github.com/gookit/goutil/dump"
 	"github.com/spf13/cobra"
 )
 
@@ -30,12 +29,11 @@ ksctl connect --help
 		Long:  "It is used to connect to existing cluster",
 
 		Run: func(cmd *cobra.Command, args []string) {
-			l := k.Log
+			l := k.l
 			ctx := k.Ctx
 
 			l.Box(ctx, "connect", "connect cluster")
 			l.Print(ctx, "info", "args", args)
-			dump.Println(ctx)
 		},
 	}
 
