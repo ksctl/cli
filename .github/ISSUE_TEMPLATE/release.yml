@@ -17,7 +17,7 @@ body:
       placeholder: Short and descriptive title
     validations:
       required: true
-    
+
   - type: input
     id: release-url
     attributes:
@@ -53,5 +53,3 @@ body:
       options:
         - label: I agree to engage in constructive discussion and follow the Contribution Guidelines.
           required: true
-
-

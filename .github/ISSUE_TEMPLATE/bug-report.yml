@@ -50,7 +50,7 @@ body:
     attributes:
       label: Environment
       description: Include details like the ksctl version, operating system, and the version of the software in which the bug occurred.
-      placeholder: e.g., ksctl cli on Windows 10, version 1.3 
+      placeholder: e.g., ksctl cli on Windows 10, version 1.3
     validations:
       required: true
 
@@ -92,4 +92,3 @@ body:
       options:
         - label: I agree to engage in constructive discussion and follow the Contribution Guidelines.
           required: true
-

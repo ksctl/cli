@@ -72,5 +72,3 @@ body:
       options:
         - label: I agree to engage in constructive discussion and follow the Contribution Guidelines.
           required: true
-
-

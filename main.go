@@ -29,7 +29,9 @@ func main() {
 	}
 
 	timer := time.Now()
-	defer c.CliLog.Print(c.Ctx, "Time Took", "time", time.Since(timer).String())
+	defer func() {
+		c.CliLog.Print(c.Ctx, "Time Took", "time", time.Since(timer).String())
+	}()
 
 	err = c.Execute()
 	if err != nil {

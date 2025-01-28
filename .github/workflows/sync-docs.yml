@@ -7,7 +7,7 @@ on:
   #   paths:
   #     - 'cli/**'  # Adjust this to match your CLI code structure
   #     - 'gen/docs.md/**'  # If the generator is in a separate directory
-  
+
   workflow_dispatch:
     inputs:
       branch:

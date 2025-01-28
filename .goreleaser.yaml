@@ -21,7 +21,7 @@ signs:
     certificate: '${artifact}.cert'
     args:
       - sign-blob
-      - '--output-certificate=${certificate}' 
+      - '--output-certificate=${certificate}'
       - '--output-signature=${signature}'
       - '${artifact}'
       - --yes
