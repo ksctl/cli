@@ -47,6 +47,13 @@ func LoadConfig(c *Config) (errC error) {
 
 	file, err := os.Open(configFile)
 	if err != nil {
+		if os.IsNotExist(err) {
+			// NOTE: writing default config
+			c = &Config{
+				PreferedStateStore: consts.StoreLocal,
+			}
+			return SaveConfig(c)
+		}
 		return fmt.Errorf("failed to open file %s: %v", configFile, err)
 	}
 	defer file.Close()

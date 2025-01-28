@@ -18,9 +18,16 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// for the newController we should be able to pass some option fields for control more things
+// for example whther it is a dry-run for testing
+
 func NewRootCmd() *cobra.Command {
 
-	cmd := &cobra.Command{}
+	cmd := &cobra.Command{
+		Use:   "ksctl",
+		Short: "CLI tool for managing multiple K8s clusters",
+		Long:  LongMessage("CLI tool which can manage multiple K8s clusters from local clusters to cloud provider specific clusters."),
+	}
 
 	cmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 

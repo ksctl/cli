@@ -15,10 +15,12 @@
 package cmd
 
 import (
+	"context"
 	"os"
 
 	"github.com/ksctl/cli/pkg/cli"
 	cLogger "github.com/ksctl/cli/pkg/logger"
+	"github.com/ksctl/ksctl/v2/pkg/consts"
 	"github.com/ksctl/ksctl/v2/pkg/logger"
 	"github.com/ksctl/ksctl/v2/pkg/storage"
 	"github.com/spf13/cobra"
@@ -43,5 +45,21 @@ func New() (*KsctlCommand, error) {
 }
 
 func (k *KsctlCommand) Execute() error {
+	ctx := context.WithValue(
+		context.Background(),
+		consts.KsctlModuleNameKey,
+		"cli",
+	)
+	ctx = context.WithValue(
+		ctx, consts.KsctlContextUserID, "cli",
+	)
+	// get this from the dry-run flag
+	if _, ok := os.LookupEnv("KSCTL_FAKE_FLAG_ENABLED"); ok {
+		ctx = context.WithValue(
+			ctx,
+			consts.KsctlTestFlagKey,
+			"true",
+		)
+	}
 	return k.root.Execute()
 }
