@@ -49,7 +49,7 @@ func LoadConfig(c *Config) (errC error) {
 	if err != nil {
 		if os.IsNotExist(err) {
 			// NOTE: writing default config
-			c = &Config{
+			*c = Config{
 				PreferedStateStore: consts.StoreLocal,
 			}
 			return SaveConfig(c)

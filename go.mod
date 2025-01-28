@@ -7,6 +7,7 @@ toolchain go1.23.4
 require (
 	github.com/Delta456/box-cli-maker/v2 v2.3.0
 	github.com/fatih/color v1.18.0
+	github.com/gookit/goutil v0.6.18
 	github.com/ksctl/ksctl/v2 v2.0.0-rc.3
 	github.com/rodaine/table v1.2.0
 	github.com/spf13/cobra v1.8.1
@@ -27,4 +28,5 @@ require (
 	golang.org/x/exp v0.0.0-20230905200255-921286631fa9 // indirect
 	golang.org/x/sys v0.28.0 // indirect
 	golang.org/x/term v0.27.0 // indirect
+	golang.org/x/text v0.21.0 // indirect
 )

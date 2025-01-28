@@ -18,7 +18,7 @@ import (
 	"context"
 	"os"
 
-	"github.com/ksctl/cli/pkg/cli"
+	"github.com/ksctl/cli/pkg/config"
 	cLogger "github.com/ksctl/cli/pkg/logger"
 	"github.com/ksctl/ksctl/v2/pkg/consts"
 	"github.com/ksctl/ksctl/v2/pkg/logger"
@@ -27,39 +27,45 @@ import (
 )
 
 type KsctlCommand struct {
+	Ctx          context.Context
 	Log          logger.Logger
 	ksctlStorage storage.Storage
 	root         *cobra.Command
 	verbose      int
+	dryRun       bool
+	KsctlConfig  *config.Config
 }
 
 func New() (*KsctlCommand, error) {
 	k := new(KsctlCommand)
+	k.KsctlConfig = new(config.Config)
 
-	k.root = NewRootCmd()
+	k.Ctx = context.WithValue(
+		context.WithValue(
+			context.Background(),
+			consts.KsctlModuleNameKey,
+			"cli",
+		),
+		consts.KsctlContextUserID,
+		"cli",
+	)
 
-	cli.AddVerboseFlag(k.root, &k.verbose)
+	k.root = k.NewRootCmd()
+
 	k.Log = cLogger.NewLogger(k.verbose, os.Stdout)
 
 	return k, nil
 }
 
 func (k *KsctlCommand) Execute() error {
-	ctx := context.WithValue(
-		context.Background(),
-		consts.KsctlModuleNameKey,
-		"cli",
-	)
-	ctx = context.WithValue(
-		ctx, consts.KsctlContextUserID, "cli",
-	)
-	// get this from the dry-run flag
-	if _, ok := os.LookupEnv("KSCTL_FAKE_FLAG_ENABLED"); ok {
-		ctx = context.WithValue(
-			ctx,
-			consts.KsctlTestFlagKey,
-			"true",
-		)
+
+	if err := config.LoadConfig(k.KsctlConfig); err != nil {
+		return err
 	}
+
+	if err := k.CommandMapping(); err != nil {
+		return err
+	}
+
 	return k.root.Execute()
 }

@@ -15,21 +15,41 @@
 package cmd
 
 import (
+	"context"
+	"os"
+
+	"github.com/ksctl/cli/pkg/cli"
+	"github.com/ksctl/ksctl/v2/pkg/consts"
+
+	cLogger "github.com/ksctl/cli/pkg/logger"
 	"github.com/spf13/cobra"
 )
 
 // for the newController we should be able to pass some option fields for control more things
 // for example whther it is a dry-run for testing
 
-func NewRootCmd() *cobra.Command {
+func (k *KsctlCommand) NewRootCmd() *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "ksctl",
 		Short: "CLI tool for managing multiple K8s clusters",
-		Long:  LongMessage("CLI tool which can manage multiple K8s clusters from local clusters to cloud provider specific clusters."),
+		Long:  "CLI tool which can manage multiple K8s clusters from local clusters to cloud provider specific clusters.",
+		PersistentPreRun: func(cmd *cobra.Command, args []string) {
+			if k.dryRun {
+				k.Ctx = context.WithValue(
+					k.Ctx,
+					consts.KsctlTestFlagKey,
+					"true",
+				)
+			}
+
+			k.Log = cLogger.NewLogger(k.verbose, os.Stdout)
+		},
 	}
 
 	cmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	cli.AddDryRunFlag(cmd, &k.dryRun)
+	// cli.AddVerboseFlag(cmd, &k.verbose)
 
 	return cmd
 }

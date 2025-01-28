@@ -12,28 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package main
+package cmd
 
-import (
-	"os"
-	"time"
+import "github.com/ksctl/cli/pkg/cli"
 
-	"github.com/ksctl/cli/cmd"
-)
-
-func main() {
-	c, err := cmd.New()
-	if err != nil {
-		c.Log.Error("cli initialization failed", "Reason", err)
-		os.Exit(1)
-	}
-
-	timer := time.Now()
-	defer c.Log.Print(c.Ctx, "Time Took", "time", time.Since(timer).String())
-
-	err = c.Execute()
-	if err != nil {
-		c.Log.Error("command execution failed", "Reason", err)
-		os.Exit(1)
-	}
+func (k *KsctlCommand) CommandMapping() error {
+	cli.RegisterCommand(
+		k.root,
+		k.Create(),
+		k.Delete(),
+		k.Connect(),
+	)
+	return nil
 }

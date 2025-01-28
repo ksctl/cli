@@ -12,28 +12,32 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package main
+package cmd
 
 import (
-	"os"
-	"time"
-
-	"github.com/ksctl/cli/cmd"
+	"github.com/gookit/goutil/dump"
+	"github.com/spf13/cobra"
 )
 
-func main() {
-	c, err := cmd.New()
-	if err != nil {
-		c.Log.Error("cli initialization failed", "Reason", err)
-		os.Exit(1)
+func (k *KsctlCommand) Connect() *cobra.Command {
+
+	cmd := &cobra.Command{
+		Use: "connect",
+		Example: `
+ksctl connect --help
+		`,
+		Short: "Connect to existing cluster",
+		Long:  "It is used to connect to existing cluster",
+
+		Run: func(cmd *cobra.Command, args []string) {
+			l := k.Log
+			ctx := k.Ctx
+
+			l.Box(ctx, "connect", "connect cluster")
+			l.Print(ctx, "info", "args", args)
+			dump.Println(ctx)
+		},
 	}
 
-	timer := time.Now()
-	defer c.Log.Print(c.Ctx, "Time Took", "time", time.Since(timer).String())
-
-	err = c.Execute()
-	if err != nil {
-		c.Log.Error("command execution failed", "Reason", err)
-		os.Exit(1)
-	}
+	return cmd
 }
