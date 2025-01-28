@@ -14,35 +14,21 @@
 
 package cmd
 
-import (
-	"github.com/spf13/cobra"
-)
+import "github.com/spf13/cobra"
 
-func (k *KsctlCommand) Modify() *cobra.Command {
+func (k *KsctlCommand) Version() *cobra.Command {
 
 	cmd := &cobra.Command{
-		Use: "update",
+		Use: "version",
 		Example: `
-ksctl update --help
+ksctl version --help
 		`,
-		Short: "Use to update/modify/edit a cluster",
-		Long:  "It is used to update/modify/edit a cluster",
-
+		Short: "ksctl version",
+		Long:  "To get version for ksctl components",
 		Run: func(cmd *cobra.Command, args []string) {
-			l := k.l
-			ctx := k.Ctx
-
-			l.Box(ctx, "update", "update cluster")
-			l.Print(ctx, "info", "args", args)
+			k.l.Box(k.Ctx, "Version", "cli: dev\nksctl: dev")
 		},
 	}
 
-	return cmd
-}
-
-func (k *KsctlCommand) ScaleUp() *cobra.Command {
-	cmd := &cobra.Command{
-		Use: "scaleup",
-	}
 	return cmd
 }

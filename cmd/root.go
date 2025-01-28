@@ -53,3 +53,17 @@ func (k *KsctlCommand) NewRootCmd() *cobra.Command {
 
 	return cmd
 }
+
+func (k *KsctlCommand) Cluster() *cobra.Command {
+
+	cmd := &cobra.Command{
+		Use: "cluster",
+		Example: `
+ksctl cluster --help
+		`,
+		Short: "Use to work with clusters",
+		Long:  "It is used to work with cluster",
+	}
+
+	return cmd
+}

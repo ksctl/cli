@@ -17,11 +17,22 @@ package cmd
 import "github.com/ksctl/cli/pkg/cli"
 
 func (k *KsctlCommand) CommandMapping() error {
+	c := k.Cluster()
+
 	cli.RegisterCommand(
 		k.root,
+		c,
+		k.Version(),
+		k.Configure(),
+	)
+	cli.RegisterCommand(
+		c,
 		k.Create(),
 		k.Delete(),
 		k.Connect(),
+		k.ScaleUp(),
+		k.ScaleDown(),
 	)
+
 	return nil
 }
