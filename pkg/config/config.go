@@ -23,8 +23,8 @@ import (
 	"github.com/ksctl/ksctl/v2/pkg/consts"
 )
 
-// ksctl config in ~/.config/ksctl/config.json
-// ksctl credentials in ~/.config/ksctl/creds/(aws|azure|mongodb).json (encrypted)
+// ksctl config in ~/.config/ksctl/config.json (handled by ksctl:cli)
+// ksctl credentials in ~/.config/ksctl/creds/(aws|azure|mongodb).json (handled by ksctl:cli)
 // ksctl state in ~/.ksctl/state/..... (handled by the ksctl:core:storage)
 
 // NOTE
