@@ -15,6 +15,10 @@
 package cmd
 
 import (
+	"os"
+
+	"github.com/ksctl/cli/pkg/cli"
+	"github.com/ksctl/ksctl/v2/pkg/consts"
 	"github.com/spf13/cobra"
 )
 
@@ -29,11 +33,41 @@ ksctl create --help
 		Long:  "It is used to create cluster with the given name from user",
 
 		Run: func(cmd *cobra.Command, args []string) {
-			l := k.l
-			ctx := k.Ctx
+			if v, err := cli.TextInput("Enter Cluster Name"); err != nil {
+				k.l.Error("Failed to get userinput", "Reason", err)
+				os.Exit(1)
+			} else {
+				k.l.Note(k.Ctx, "Text input", "clusterName", v)
+			}
 
-			l.Box(ctx, "create", "create cluster")
-			l.Print(ctx, "info", "args", args)
+			if v, err := cli.DropDown(
+				"Select the cloud provider",
+				map[string]string{
+					"Amazon Web Services": string(consts.CloudAws),
+					"Azure":               string(consts.CloudAzure),
+					"Kind":                string(consts.CloudLocal),
+				},
+				string(k.KsctlConfig.DefaultProvider),
+			); err != nil {
+				k.l.Error("Failed to get userinput", "Reason", err)
+				os.Exit(1)
+			} else {
+				k.l.Note(k.Ctx, "DropDown input", "cloudProvider", v)
+			}
+
+			if v, err := cli.DropDown(
+				"Select the Storage Driver",
+				map[string]string{
+					"MongoDb": string(consts.StoreExtMongo),
+					"Local":   string(consts.StoreLocal),
+				},
+				string(k.KsctlConfig.DefaultProvider),
+			); err != nil {
+				k.l.Error("Failed to get userinput", "Reason", err)
+				os.Exit(1)
+			} else {
+				k.l.Note(k.Ctx, "DropDown input", "storageDriver", v)
+			}
 		},
 	}
 

@@ -15,13 +15,11 @@
 package cmd
 
 import (
-	"context"
 	"os"
 
+	"github.com/ksctl/cli/pkg/cli"
 	"github.com/ksctl/cli/pkg/config"
 	"github.com/ksctl/ksctl/v2/pkg/consts"
-	"github.com/ksctl/ksctl/v2/pkg/logger"
-	"github.com/pterm/pterm"
 	"github.com/spf13/cobra"
 )
 
@@ -33,14 +31,13 @@ func (k *KsctlCommand) Configure() *cobra.Command {
 		Short: "Configure ksctl cli",
 		Long:  "It will help you to configure the ksctl cli",
 		Run: func(cmd *cobra.Command, args []string) {
-			if v, err := DropDown(
-				k.Ctx,
-				k.l,
+			if v, err := cli.DropDown(
+				"What should be your default storageDriver?",
 				map[string]string{
 					"MongoDb": string(consts.StoreExtMongo),
 					"Local":   string(consts.StoreLocal),
 				},
-				"What should be your default storageDriver?",
+				"Local",
 			); err != nil {
 				k.l.Error("Failed to get the storageDriver", "Reason", err)
 				os.Exit(1)
@@ -50,36 +47,29 @@ func (k *KsctlCommand) Configure() *cobra.Command {
 				_ = config.SaveConfig(k.KsctlConfig)
 			}
 
-			if v, err := DropDown(
-				k.Ctx,
-				k.l,
-				map[string]string{
-					"Amazon Web Services": string(consts.CloudAws),
-					"Azure":               string(consts.CloudAzure),
-				},
-				"Credentials",
-			); err != nil {
-				k.l.Error("Failed to get the credentials", "Reason", err)
+			v, err := cli.Confirmation("Do you want to add/modify credentials", "no")
+			if err != nil {
+				k.l.Error("Failed to get the confirmation", "Reason", err)
 				os.Exit(1)
-			} else {
-				k.l.Note(k.Ctx, "DropDown", "selected", v)
+			}
+			k.l.Note(k.Ctx, "Confirmation", "selected", v)
+			if v {
+				if v, err := cli.DropDown(
+					"Credentials",
+					map[string]string{
+						"Amazon Web Services": string(consts.CloudAws),
+						"Azure":               string(consts.CloudAzure),
+					},
+					"",
+				); err != nil {
+					k.l.Error("Failed to get the credentials", "Reason", err)
+					os.Exit(1)
+				} else {
+					k.l.Note(k.Ctx, "DropDown", "selected", v)
+				}
 			}
 		},
 	}
 
 	return cmd
-}
-
-func DropDown(ctx context.Context, l logger.Logger, options map[string]string, prompt string) (string, error) {
-	var _options []string
-	for k := range options {
-		_options = append(_options, k)
-	}
-	l.Print(ctx, prompt)
-
-	if v, err := pterm.DefaultInteractiveSelect.WithOptions(_options).Show(); err != nil {
-		return "", err
-	} else {
-		return options[v], nil
-	}
 }
