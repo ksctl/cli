@@ -17,8 +17,10 @@ package cmd
 import (
 	"os"
 
+	"github.com/gookit/goutil/dump"
 	"github.com/ksctl/cli/pkg/cli"
 	"github.com/ksctl/ksctl/v2/pkg/consts"
+	"github.com/ksctl/ksctl/v2/pkg/handler/cluster/controller"
 	"github.com/spf13/cobra"
 )
 
@@ -33,11 +35,15 @@ ksctl create --help
 		Long:  "It is used to create cluster with the given name from user",
 
 		Run: func(cmd *cobra.Command, args []string) {
+
+			meta := controller.Metadata{}
+
 			if v, err := cli.TextInput("Enter Cluster Name"); err != nil {
 				k.l.Error("Failed to get userinput", "Reason", err)
 				os.Exit(1)
 			} else {
-				k.l.Note(k.Ctx, "Text input", "clusterName", v)
+				k.l.Debug(k.Ctx, "Text input", "clusterName", v)
+				meta.ClusterName = v
 			}
 
 			if v, err := cli.DropDown(
@@ -52,7 +58,8 @@ ksctl create --help
 				k.l.Error("Failed to get userinput", "Reason", err)
 				os.Exit(1)
 			} else {
-				k.l.Note(k.Ctx, "DropDown input", "cloudProvider", v)
+				k.l.Debug(k.Ctx, "DropDown input", "cloudProvider", v)
+				meta.Provider = consts.KsctlCloud(v)
 			}
 
 			if v, err := cli.DropDown(
@@ -66,8 +73,11 @@ ksctl create --help
 				k.l.Error("Failed to get userinput", "Reason", err)
 				os.Exit(1)
 			} else {
-				k.l.Note(k.Ctx, "DropDown input", "storageDriver", v)
+				k.l.Debug(k.Ctx, "DropDown input", "storageDriver", v)
+				meta.StateLocation = consts.KsctlStore(v)
 			}
+
+			dump.Println(meta)
 		},
 	}
 
