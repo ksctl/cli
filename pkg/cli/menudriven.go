@@ -40,8 +40,6 @@ func DropDown(prompt string, options map[string]string, defaultOption string) (s
 		_options = append(_options, k)
 	}
 
-	pterm.Println()
-	defer pterm.Println()
 	x := pterm.DefaultInteractiveSelect.WithOptions(_options)
 	if len(defaultOption) != 0 {
 		for k, v := range options {
@@ -56,6 +54,8 @@ func DropDown(prompt string, options map[string]string, defaultOption string) (s
 	if v, err := x.Show(prompt); err != nil {
 		return "", err
 	} else {
+		// pterm.DefaultArea.Clear()
 		return options[v], nil
 	}
+
 }
