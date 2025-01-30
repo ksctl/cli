@@ -35,7 +35,6 @@ import (
 
 type Config struct {
 	PreferedStateStore consts.KsctlStore `json:"preferedStateStore"`
-	DefaultProvider    consts.KsctlCloud `json:"defaultCloud"`
 }
 
 func LoadConfig(c *Config) (errC error) {

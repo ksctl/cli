@@ -18,10 +18,6 @@ import (
 	"github.com/pterm/pterm"
 )
 
-// https://github.com/pterm/pterm?tab=readme-ov-file#interactive_continuedemo
-// https://github.com/pterm/pterm?tab=readme-ov-file#interactive_textinputdemo
-// https://github.com/pterm/pterm?tab=readme-ov-file#interactive_textinputpassword
-
 func Confirmation(prompt, defaultOption string) (proceed bool, err error) {
 	x := pterm.DefaultInteractiveConfirm
 	if len(defaultOption) != 0 {
@@ -32,6 +28,11 @@ func Confirmation(prompt, defaultOption string) (proceed bool, err error) {
 
 func TextInput(prompt string) (string, error) {
 	return pterm.DefaultInteractiveTextInput.Show(prompt)
+}
+
+func TextInputPassword(prompt string) (string, error) {
+	x := pterm.DefaultInteractiveTextInput.WithMask("*")
+	return x.Show(prompt)
 }
 
 func DropDown(prompt string, options map[string]string, defaultOption string) (string, error) {

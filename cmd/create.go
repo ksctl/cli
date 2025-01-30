@@ -53,7 +53,7 @@ ksctl create --help
 					"Azure":               string(consts.CloudAzure),
 					"Kind":                string(consts.CloudLocal),
 				},
-				string(k.KsctlConfig.DefaultProvider),
+				"",
 			); err != nil {
 				k.l.Error("Failed to get userinput", "Reason", err)
 				os.Exit(1)
@@ -68,7 +68,7 @@ ksctl create --help
 					"MongoDb": string(consts.StoreExtMongo),
 					"Local":   string(consts.StoreLocal),
 				},
-				string(k.KsctlConfig.DefaultProvider),
+				string(k.KsctlConfig.PreferedStateStore),
 			); err != nil {
 				k.l.Error("Failed to get userinput", "Reason", err)
 				os.Exit(1)
