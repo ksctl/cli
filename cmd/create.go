@@ -38,39 +38,19 @@ ksctl create --help
 
 			meta := controller.Metadata{}
 
-			if v, err := cli.TextInput("Enter Cluster Name"); err != nil {
-				k.l.Error("Failed to get userinput", "Reason", err)
+			if v, ok := k.getClusterName(); !ok {
 				os.Exit(1)
 			} else {
-				k.l.Debug(k.Ctx, "Text input", "clusterName", v)
 				meta.ClusterName = v
 			}
 
-			if v, err := cli.DropDown(
-				"Select the cloud provider",
-				map[string]string{
-					"Amazon Web Services": string(consts.CloudAws),
-					"Azure":               string(consts.CloudAzure),
-					"Kind":                string(consts.CloudLocal),
-				},
-				"",
-			); err != nil {
-				k.l.Error("Failed to get userinput", "Reason", err)
+			if v, ok := k.getSelectedCloudProvider(); !ok {
 				os.Exit(1)
 			} else {
-				k.l.Debug(k.Ctx, "DropDown input", "cloudProvider", v)
-				meta.Provider = consts.KsctlCloud(v)
+				meta.Provider = v
 			}
 
-			if v, err := cli.DropDown(
-				"Select the Storage Driver",
-				map[string]string{
-					"MongoDb": string(consts.StoreExtMongo),
-					"Local":   string(consts.StoreLocal),
-				},
-				string(k.KsctlConfig.PreferedStateStore),
-			); err != nil {
-				k.l.Error("Failed to get userinput", "Reason", err)
+			if v, ok := k.getSelectedStorageDriver(); !ok {
 				os.Exit(1)
 			} else {
 				k.l.Debug(k.Ctx, "DropDown input", "storageDriver", v)
@@ -82,4 +62,72 @@ ksctl create --help
 	}
 
 	return cmd
+}
+
+func (k *KsctlCommand) getClusterName() (string, bool) {
+	v, err := cli.TextInput("Enter Cluster Name")
+	if err != nil {
+		k.l.Error("Failed to get userinput", "Reason", err)
+		return "", false
+	}
+	if len(v) == 0 {
+		k.l.Error("Cluster name cannot be empty")
+		return "", false
+	}
+	k.l.Debug(k.Ctx, "Text input", "clusterName", v)
+	return v, true
+}
+
+func (k *KsctlCommand) getSelectedCloudProvider() (consts.KsctlCloud, bool) {
+	if v, err := cli.DropDown(
+		"Select the cloud provider",
+		map[string]string{
+			"Amazon Web Services": string(consts.CloudAws),
+			"Azure":               string(consts.CloudAzure),
+			"Kind":                string(consts.CloudLocal),
+		},
+		"",
+	); err != nil {
+		k.l.Error("Failed to get userinput", "Reason", err)
+		return "", false
+	} else {
+		k.l.Debug(k.Ctx, "DropDown input", "cloudProvider", v)
+
+		switch consts.KsctlCloud(v) {
+		case consts.CloudAws:
+			if errC := k.loadAwsCredentials(); errC != nil {
+				k.l.Error("Failed to load the AWS credentials", "Reason", errC)
+				return "", false
+			}
+		case consts.CloudAzure:
+			if errC := k.loadAzureCredentials(); errC != nil {
+				k.l.Error("Failed to load the Azure credentials", "Reason", errC)
+				return "", false
+			}
+		}
+
+		return consts.KsctlCloud(v), true
+	}
+}
+
+func (k *KsctlCommand) getSelectedStorageDriver() (consts.KsctlStore, bool) {
+	if v, err := cli.DropDown(
+		"Select the Storage Driver",
+		map[string]string{
+			"MongoDb": string(consts.StoreExtMongo),
+			"Local":   string(consts.StoreLocal),
+		},
+		string(k.KsctlConfig.PreferedStateStore),
+	); err != nil {
+		k.l.Error("Failed to get userinput", "Reason", err)
+		return "", false
+	} else {
+		k.l.Debug(k.Ctx, "DropDown input", "storageDriver", v)
+		if errS := k.loadMongoCredentials(); errS != nil {
+			k.l.Error("Failed to load the MongoDB credentials", "Reason", errS)
+			return "", false
+		}
+
+		return consts.KsctlStore(v), true
+	}
 }

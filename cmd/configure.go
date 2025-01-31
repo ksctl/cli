@@ -35,22 +35,36 @@ func (k *KsctlCommand) Configure() *cobra.Command {
 
 		Short: "Configure ksctl cli",
 		Long:  "It will help you to configure the ksctl cli",
-		Run: func(cmd *cobra.Command, args []string) {
+	}
 
+	return cmd
+}
+
+func (k *KsctlCommand) ConfigureStorage() *cobra.Command {
+	cmd := &cobra.Command{
+		Use: "storage",
+
+		Short: "Configure storage",
+		Long:  "It will help you to configure the storage",
+		Run: func(cmd *cobra.Command, args []string) {
 			if ok := k.handleStorageConfig(); !ok {
 				os.Exit(1)
 			}
+		},
+	}
 
-			v, err := cli.Confirmation("Do you want to add/modify credentials", "no")
-			if err != nil {
-				k.l.Error("Failed to get the confirmation", "Reason", err)
+	return cmd
+}
+
+func (k *KsctlCommand) ConfigureCloud() *cobra.Command {
+	cmd := &cobra.Command{
+		Use: "cloud",
+
+		Short: "Configure cloud",
+		Long:  "It will help you to configure the cloud",
+		Run: func(cmd *cobra.Command, args []string) {
+			if ok := k.handleCloudConfig(); !ok {
 				os.Exit(1)
-			}
-
-			if v {
-				if ok := k.handleCloudConfig(); !ok {
-					os.Exit(1)
-				}
 			}
 		},
 	}

@@ -18,12 +18,13 @@ import "github.com/ksctl/cli/pkg/cli"
 
 func (k *KsctlCommand) CommandMapping() error {
 	c := k.Cluster()
+	cr := k.Configure()
 
 	cli.RegisterCommand(
 		k.root,
 		c,
 		k.Version(),
-		k.Configure(),
+		cr,
 	)
 	cli.RegisterCommand(
 		c,
@@ -32,6 +33,11 @@ func (k *KsctlCommand) CommandMapping() error {
 		k.Connect(),
 		k.ScaleUp(),
 		k.ScaleDown(),
+	)
+	cli.RegisterCommand(
+		cr,
+		k.ConfigureStorage(),
+		k.ConfigureCloud(),
 	)
 
 	return nil
