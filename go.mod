@@ -8,13 +8,11 @@ require (
 	github.com/Delta456/box-cli-maker/v2 v2.3.0
 	github.com/fatih/color v1.18.0
 	github.com/gookit/goutil v0.6.18
-	github.com/ksctl/ksctl/v2 v2.0.0-rc.3
+	github.com/ksctl/ksctl/v2 v2.0.0-rc.4
 	github.com/pterm/pterm v0.12.80
 	github.com/rodaine/table v1.2.0
 	github.com/spf13/cobra v1.8.1
 )
-
-replace github.com/ksctl/ksctl/v2 => ../ksctl
 
 require (
 	atomicgo.dev/cursor v0.2.0 // indirect
