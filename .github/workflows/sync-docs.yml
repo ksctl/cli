@@ -14,8 +14,8 @@ on:
         description: 'docs section to update'
         type: choice
         options:
-          - stable
-          - develop
+          - main
+          - dev
 
 concurrency:
   group: sync-docs
@@ -34,9 +34,9 @@ jobs:
         git clone https://github.com/ksctl/docs.git docs-repo
 
     - name: Set up Go
-      uses: actions/setup-go@v4
+      uses: actions/setup-go@v5
       with:
-        go-version: 'stable'
+        go-version-file: 'cli-repo/go.mod'
 
     - name: Generate Documentation
       working-directory: cli-repo
@@ -46,7 +46,7 @@ jobs:
     - name: Sync Generated Docs
       run: |
         # Copy generated docs
-        cp -rv cli-repo/gen/docs.md/. docs-repo/content/en/docs/${{ github.event.inputs.branch }}/Reference/.
+        cp -rv cli-repo/gen/docs/. docs-repo/content/en/docs/${{ github.event.inputs.branch }}/Reference/.
         ls -l docs-repo/content/en/docs/${{ github.event.inputs.branch }}/Reference/
 
     - name: Commit and Push Changes

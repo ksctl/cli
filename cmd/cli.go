@@ -58,6 +58,14 @@ func New() (*KsctlCommand, error) {
 	return k, nil
 }
 
+func (k *KsctlCommand) ForDocs() (*cobra.Command, error) {
+	if err := k.CommandMapping(); err != nil {
+		return nil, err
+	}
+
+	return k.root, nil
+}
+
 func (k *KsctlCommand) Execute() error {
 
 	if err := config.LoadConfig(k.KsctlConfig); err != nil {

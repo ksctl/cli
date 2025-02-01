@@ -16,7 +16,7 @@ help: ## Display this help.
 ##@ Generate
 .PHONY: gen-docs
 gen-docs: ## Generates docs
-	go run gen_docs.go
+	go run gen/docs.go
 
 ##@ Install (Dev)
 
