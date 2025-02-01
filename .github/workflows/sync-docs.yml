@@ -32,6 +32,8 @@ jobs:
     - name: checkout docs repo
       run: |
         git clone https://github.com/ksctl/docs.git docs-repo
+        cd docs-repo
+        git checkout ${{ github.event.inputs.branch }}
 
     - name: Set up Go
       uses: actions/setup-go@v5
@@ -46,8 +48,8 @@ jobs:
     - name: Sync Generated Docs
       run: |
         # Copy generated docs
-        cp -rv cli-repo/gen/docs/. docs-repo/content/en/docs/${{ github.event.inputs.branch }}/Reference/.
-        ls -l docs-repo/content/en/docs/${{ github.event.inputs.branch }}/Reference/
+        cp -rv cli-repo/gen/docs/. docs-repo/content/en/docs/Reference/.
+        ls -l docs-repo/content/en/docs/Reference/
 
     - name: Commit and Push Changes
       working-directory: docs-repo
@@ -57,7 +59,7 @@ jobs:
         git config user.name "Dipankar Das"
         git config user.email "65275144+dipankardas011@users.noreply.github.com"
         git remote add docs https://${{ secrets.PAT_SYNC_CLI_DOCS_TO_DOCS_REPO }}@github.com/ksctl/docs.git
-        git add content/en/docs/${{ github.event.inputs.branch }}/Reference
+        git add content/en/docs/Reference
         git remote -v
         git branch -v
         git diff --quiet && git diff --staged --quiet || (git commit -m "chore(cicd): Update CLI documentation" && git push docs main)
