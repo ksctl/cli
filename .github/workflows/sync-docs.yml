@@ -44,7 +44,7 @@ jobs:
         rm -rf docs-repo/content/en/docs/Reference
         mkdir -p docs-repo/content/en/docs/Reference
         cp /tmp/_index.md docs-repo/content/en/docs/Reference/_index.md
-        cp -rv cli-repo/gen/docs.md/. docs-repo/content/en/docs/Reference/.
+        cp -rv cli-repo/gen/docs/. docs-repo/content/en/docs/Reference/.
         ls -lha docs-repo/content/en/docs/Reference/
 
     - name: Commit and Push Changes
