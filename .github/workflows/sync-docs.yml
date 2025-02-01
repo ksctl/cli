@@ -1,21 +1,14 @@
 name: Generate and Sync CLI Docs
 
 on:
-  # push:
-  #   branches:
-  #     - main
-  #   paths:
-  #     - 'cli/**'  # Adjust this to match your CLI code structure
-  #     - 'gen/docs.md/**'  # If the generator is in a separate directory
+  push:
+    branches:
+      - main
+    paths:
+      - 'cmd/**'  # Adjust this to match your CLI code structure
+      - '.github/workflows/sync-docs.yml'
 
   workflow_dispatch:
-    inputs:
-      branch:
-        description: 'docs section to update'
-        type: choice
-        options:
-          - main
-          - dev
 
 concurrency:
   group: sync-docs
@@ -31,9 +24,7 @@ jobs:
 
     - name: checkout docs repo
       run: |
-        git clone https://github.com/ksctl/docs.git docs-repo
-        cd docs-repo
-        git checkout ${{ github.event.inputs.branch }}
+        git clone --branch dev https://github.com/ksctl/docs.git docs-repo
 
     - name: Set up Go
       uses: actions/setup-go@v5
@@ -43,23 +34,26 @@ jobs:
     - name: Generate Documentation
       working-directory: cli-repo
       run: |
+        mkdir -p gen/docs
         make gen-docs
 
     - name: Sync Generated Docs
       run: |
         # Copy generated docs
-        cp -rv cli-repo/gen/docs/. docs-repo/content/en/docs/Reference/.
-        ls -l docs-repo/content/en/docs/Reference/
+        cp docs-repo/content/en/docs/Reference/_index.md /tmp/_index.md
+        rm -rf docs-repo/content/en/docs/Reference
+        mkdir -p docs-repo/content/en/docs/Reference
+        cp /tmp/_index.md docs-repo/content/en/docs/Reference/_index.md
+        cp -rv cli-repo/gen/docs.md/. docs-repo/content/en/docs/Reference/.
+        ls -lha docs-repo/content/en/docs/Reference/
 
     - name: Commit and Push Changes
       working-directory: docs-repo
-      # env:
-      #   GITHUB_TOKEN: ${{ secrets.PAT_SYNC_CLI_DOCS_TO_DOCS_REPO }}
       run: |
-        git config user.name "Dipankar Das"
-        git config user.email "65275144+dipankardas011@users.noreply.github.com"
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions@github.com"
         git remote add docs https://${{ secrets.PAT_SYNC_CLI_DOCS_TO_DOCS_REPO }}@github.com/ksctl/docs.git
         git add content/en/docs/Reference
         git remote -v
         git branch -v
-        git diff --quiet && git diff --staged --quiet || (git commit -m "chore(cicd): Update CLI documentation" && git push docs main)
+        git diff --quiet && git diff --staged --quiet || (git commit -sm "chore(cicd): Update CLI documentation" && git push docs dev)
