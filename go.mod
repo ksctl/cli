@@ -14,6 +14,8 @@ require (
 	github.com/spf13/cobra v1.8.1
 )
 
+replace github.com/ksctl/ksctl/v2 => ../ksctl
+
 require (
 	atomicgo.dev/cursor v0.2.0 // indirect
 	atomicgo.dev/keyboard v0.2.9 // indirect
