@@ -17,11 +17,10 @@ package cmd
 import (
 	"os"
 
-	"github.com/gookit/goutil/dump"
 	"github.com/ksctl/cli/pkg/cli"
 	"github.com/ksctl/ksctl/v2/pkg/consts"
-	controllerCommon "github.com/ksctl/ksctl/v2/pkg/handler/cluster/common"
 	"github.com/ksctl/ksctl/v2/pkg/handler/cluster/controller"
+	controllerMeta "github.com/ksctl/ksctl/v2/pkg/handler/cluster/metadata"
 	"github.com/ksctl/ksctl/v2/pkg/provider"
 
 	"github.com/spf13/cobra"
@@ -38,6 +37,7 @@ ksctl create --help
 		Long:  "It is used to create cluster with the given name from user",
 
 		Run: func(cmd *cobra.Command, args []string) {
+			// we need to collect the cloud provider, and clusterType for the metadata to work
 
 			meta := controller.Metadata{}
 
@@ -45,6 +45,12 @@ ksctl create --help
 				os.Exit(1)
 			} else {
 				meta.ClusterName = v
+			}
+
+			if v, ok := k.getSelectedClusterType(); !ok {
+				os.Exit(1)
+			} else {
+				meta.ClusterType = v
 			}
 
 			if v, ok := k.getSelectedCloudProvider(); !ok {
@@ -60,7 +66,7 @@ ksctl create --help
 				meta.StateLocation = consts.KsctlStore(v)
 			}
 
-			managerClient, err := controllerCommon.NewController(
+			managerClient, err := controllerMeta.NewController(
 				k.Ctx,
 				k.l,
 				&controller.Client{
@@ -72,7 +78,7 @@ ksctl create --help
 				os.Exit(1)
 			}
 
-			regions, err := managerClient.SyncMetadata()
+			regions, err := managerClient.ListAllRegions()
 			if err != nil {
 				k.l.Error("Failed to sync the metadata", "Reason", err)
 				os.Exit(1)
@@ -83,8 +89,6 @@ ksctl create --help
 			} else {
 				meta.Region = v
 			}
-
-			dump.Println(meta)
 
 		},
 	}
@@ -111,7 +115,6 @@ func (k *KsctlCommand) getSelectedRegion(regions []provider.RegionOutput) (strin
 	for _, r := range regions {
 		vr[r.Name] = r.Sku
 	}
-	dump.Println(vr)
 
 	if v, err := cli.DropDown(
 		"Select the region",
@@ -123,6 +126,23 @@ func (k *KsctlCommand) getSelectedRegion(regions []provider.RegionOutput) (strin
 	} else {
 		k.l.Debug(k.Ctx, "DropDown input", "region", v)
 		return v, true
+	}
+}
+
+func (k *KsctlCommand) getSelectedClusterType() (consts.KsctlClusterType, bool) {
+	if v, err := cli.DropDown(
+		"Select the cluster type",
+		map[string]string{
+			"Cloud Managed (For ex. EKS, AKS, GKE)":    string(consts.ClusterTypeMang),
+			"Self Managed (For example, K3s, Kubeadm)": string(consts.ClusterTypeSelfMang),
+		},
+		string(consts.ClusterTypeMang),
+	); err != nil {
+		k.l.Error("Failed to get userinput", "Reason", err)
+		return "", false
+	} else {
+		k.l.Debug(k.Ctx, "DropDown input", "clusterType", v)
+		return consts.KsctlClusterType(v), true
 	}
 }
 
