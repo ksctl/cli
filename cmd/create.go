@@ -20,7 +20,10 @@ import (
 	"github.com/gookit/goutil/dump"
 	"github.com/ksctl/cli/pkg/cli"
 	"github.com/ksctl/ksctl/v2/pkg/consts"
+	controllerCommon "github.com/ksctl/ksctl/v2/pkg/handler/cluster/common"
 	"github.com/ksctl/ksctl/v2/pkg/handler/cluster/controller"
+	"github.com/ksctl/ksctl/v2/pkg/provider"
+
 	"github.com/spf13/cobra"
 )
 
@@ -57,7 +60,32 @@ ksctl create --help
 				meta.StateLocation = consts.KsctlStore(v)
 			}
 
+			managerClient, err := controllerCommon.NewController(
+				k.Ctx,
+				k.l,
+				&controller.Client{
+					Metadata: meta,
+				},
+			)
+			if err != nil {
+				k.l.Error("Failed to create the controller", "Reason", err)
+				os.Exit(1)
+			}
+
+			regions, err := managerClient.SyncMetadata()
+			if err != nil {
+				k.l.Error("Failed to sync the metadata", "Reason", err)
+				os.Exit(1)
+			}
+
+			if v, ok := k.getSelectedRegion(regions); !ok {
+				os.Exit(1)
+			} else {
+				meta.Region = v
+			}
+
 			dump.Println(meta)
+
 		},
 	}
 
@@ -76,6 +104,26 @@ func (k *KsctlCommand) getClusterName() (string, bool) {
 	}
 	k.l.Debug(k.Ctx, "Text input", "clusterName", v)
 	return v, true
+}
+
+func (k *KsctlCommand) getSelectedRegion(regions []provider.RegionOutput) (string, bool) {
+	vr := make(map[string]string, len(regions))
+	for _, r := range regions {
+		vr[r.Name] = r.Sku
+	}
+	dump.Println(vr)
+
+	if v, err := cli.DropDown(
+		"Select the region",
+		vr,
+		"",
+	); err != nil {
+		k.l.Error("Failed to get userinput", "Reason", err)
+		return "", false
+	} else {
+		k.l.Debug(k.Ctx, "DropDown input", "region", v)
+		return v, true
+	}
 }
 
 func (k *KsctlCommand) getSelectedCloudProvider() (consts.KsctlCloud, bool) {
