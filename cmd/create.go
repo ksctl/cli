@@ -17,6 +17,7 @@ package cmd
 import (
 	"os"
 
+	"github.com/gookit/goutil/dump"
 	"github.com/ksctl/cli/pkg/cli"
 	"github.com/ksctl/ksctl/v2/pkg/consts"
 	"github.com/ksctl/ksctl/v2/pkg/handler/cluster/controller"
@@ -90,6 +91,20 @@ ksctl create --help
 				meta.Region = v
 			}
 
+			vms, err := managerClient.ListAllInstances(meta.Region)
+			if err != nil {
+				k.l.Error("Failed to sync the metadata", "Reason", err)
+				os.Exit(1)
+			}
+
+			if v, ok := k.getSelectedInstanceType(vms); !ok {
+				os.Exit(1)
+			} else {
+				meta.ManagedNodeType = v
+			}
+
+			dump.Println(meta)
+
 		},
 	}
 
@@ -125,6 +140,25 @@ func (k *KsctlCommand) getSelectedRegion(regions []provider.RegionOutput) (strin
 		return "", false
 	} else {
 		k.l.Debug(k.Ctx, "DropDown input", "region", v)
+		return v, true
+	}
+}
+
+func (k *KsctlCommand) getSelectedInstanceType(vms []provider.InstanceRegionOutput) (string, bool) {
+	vr := make(map[string]string, len(vms))
+	for _, r := range vms {
+		vr[r.Description] = r.Sku
+	}
+
+	if v, err := cli.DropDown(
+		"Select the instance type",
+		vr,
+		"",
+	); err != nil {
+		k.l.Error("Failed to get userinput", "Reason", err)
+		return "", false
+	} else {
+		k.l.Debug(k.Ctx, "DropDown input", "instanceType", v)
 		return v, true
 	}
 }
