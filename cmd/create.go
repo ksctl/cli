@@ -15,6 +15,7 @@
 package cmd
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/gookit/goutil/dump"
@@ -23,6 +24,7 @@ import (
 	"github.com/ksctl/ksctl/v2/pkg/handler/cluster/controller"
 	controllerMeta "github.com/ksctl/ksctl/v2/pkg/handler/cluster/metadata"
 	"github.com/ksctl/ksctl/v2/pkg/provider"
+	"github.com/pterm/pterm"
 
 	"github.com/spf13/cobra"
 )
@@ -90,17 +92,27 @@ ksctl create --help
 			} else {
 				meta.Region = v
 			}
-
-			vms, err := managerClient.ListAllInstances(meta.Region)
+			spinner := pterm.DefaultSpinner
+			// give me the snake spinnner here
+			spinner.Sequence = []string{"⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"}
+			ss, err := spinner.Start("Please wait, fetching the instance types")
 			if err != nil {
-				k.l.Error("Failed to sync the metadata", "Reason", err)
+				k.l.Error("Failed to start the spinner", "Reason", err)
 				os.Exit(1)
 			}
 
+			vms, err := managerClient.ListAllInstances(meta.Region)
+			if err != nil {
+				ss.Fail(fmt.Sprintf("Unable to get instance_type list: %v", err))
+				k.l.Error("Failed to sync the metadata", "Reason", err)
+				os.Exit(1)
+			}
+			ss.Success("Fetched the instance type list")
 			if v, ok := k.getSelectedInstanceType(vms); !ok {
 				os.Exit(1)
 			} else {
 				meta.ManagedNodeType = v
+				dump.Println(vms[v])
 			}
 
 			dump.Println(meta)
@@ -144,10 +156,29 @@ func (k *KsctlCommand) getSelectedRegion(regions []provider.RegionOutput) (strin
 	}
 }
 
-func (k *KsctlCommand) getSelectedInstanceType(vms []provider.InstanceRegionOutput) (string, bool) {
+func (k *KsctlCommand) getSelectedInstanceType(vms map[string]provider.InstanceRegionOutput) (string, bool) {
 	vr := make(map[string]string, len(vms))
-	for _, r := range vms {
-		vr[r.Description] = r.Sku
+	for sku, vm := range vms {
+		if vm.CpuArch == provider.ArchAmd64 {
+			displayName := fmt.Sprintf("%s (vCPUs: %d, Memory: %dGB)",
+				vm.Description,
+				vm.VCpus,
+				vm.Memory,
+			)
+			cost := 0.0
+			if vm.Price.HourlyPrice != nil {
+				cost = *vm.Price.HourlyPrice * 730
+			}
+			if vm.Price.MonthlyPrice != nil { // it overrides the hourly rate if its there
+				cost = *vm.Price.MonthlyPrice
+			}
+			displayName += fmt.Sprintf(", Price: %.2f %s/month",
+				cost,
+				vm.Price.Currency,
+			)
+
+			vr[displayName] = sku
+		}
 	}
 
 	if v, err := cli.DropDown(
