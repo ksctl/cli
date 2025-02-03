@@ -15,7 +15,10 @@
 package cli
 
 import (
+	"fmt"
 	"github.com/pterm/pterm"
+	"os"
+	"strings"
 )
 
 type Spinner struct {
@@ -38,6 +41,11 @@ func (s *Spinner) Start(msg ...any) {
 
 func (s *Spinner) StopWithSuccess(msg ...any) {
 	s.s.Success(msg...)
+}
+
+func (s *Spinner) Stop() {
+	_, _ = fmt.Fprint(os.Stderr, "\r"+strings.Repeat(" ", pterm.GetTerminalWidth())) // Clear the spinner
+	_ = s.s.Stop()
 }
 
 func (s *Spinner) StopWithFailure(msg ...any) {

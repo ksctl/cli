@@ -16,15 +16,13 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/ksctl/ksctl/v2/pkg/provider"
 	"os"
 
-	"github.com/gookit/goutil/dump"
 	"github.com/ksctl/cli/pkg/cli"
 	"github.com/ksctl/ksctl/v2/pkg/consts"
 	"github.com/ksctl/ksctl/v2/pkg/handler/cluster/controller"
 	controllerMeta "github.com/ksctl/ksctl/v2/pkg/handler/cluster/metadata"
-	"github.com/ksctl/ksctl/v2/pkg/provider"
-
 	"github.com/spf13/cobra"
 )
 
@@ -83,15 +81,15 @@ ksctl create --help
 			ss := cli.GetSpinner()
 			ss.Start("Fetching the region list")
 
-			regions, err := managerClient.ListAllRegions()
+			listOfRegions, err := managerClient.ListAllRegions()
 			if err != nil {
 				ss.StopWithFailure("Failed to fetch the region list", "Reason", err)
 				k.l.Error("Failed to sync the metadata", "Reason", err)
 				os.Exit(1)
 			}
-			ss.StopWithSuccess("Fetched the region list")
+			ss.Stop()
 
-			if v, ok := k.getSelectedRegion(regions); !ok {
+			if v, ok := k.getSelectedRegion(listOfRegions); !ok {
 				os.Exit(1)
 			} else {
 				meta.Region = v
@@ -99,166 +97,99 @@ ksctl create --help
 			ss = cli.GetSpinner()
 			ss.Start("Fetching the instance type list")
 
-			vms, err := managerClient.ListAllInstances(meta.Region)
+			listOfVMs, err := managerClient.ListAllInstances(meta.Region)
 			if err != nil {
 				ss.StopWithFailure("Failed to fetch the instance type list", "Reason", err)
 				k.l.Error("Failed to sync the metadata", "Reason", err)
 				os.Exit(1)
 			}
-			ss.StopWithSuccess("Fetched the instance type list")
-			if v, ok := k.getSelectedInstanceType(vms); !ok {
-				os.Exit(1)
-			} else {
-				meta.ManagedNodeType = v
-				dump.Println(vms[v])
+			ss.Stop()
+
+			if meta.ClusterType == consts.ClusterTypeMang {
+				if !k.handleManagedCluster(managerClient, &meta, listOfVMs) {
+					os.Exit(1)
+				}
 			}
 
-			dump.Println(meta)
+			if ok, _ := cli.Confirmation("Do you want to proceed with the cluster creation", "no"); !ok {
+				os.Exit(1)
+			}
 
+			k.l.Success(k.Ctx, "Created the cluster", "Name", meta.ClusterName)
 		},
 	}
 
 	return cmd
 }
 
-func (k *KsctlCommand) getClusterName() (string, bool) {
-	v, err := cli.TextInput("Enter Cluster Name")
+func (k *KsctlCommand) handleManagedCluster(
+	managerClient *controllerMeta.Controller,
+	meta *controller.Metadata,
+	listOfVMs map[string]provider.InstanceRegionOutput,
+) bool {
+	if v, ok := k.getSelectedInstanceType("Select instance_type for Managed Nodes", listOfVMs); !ok {
+		return false
+	} else {
+		meta.ManagedNodeType = v
+	}
+
+	if v, ok := k.getCounterValue("Enter the number of Managed Nodes", func(v int) bool {
+		return v > 0
+	}); !ok {
+		return false
+	} else {
+		meta.NoMP = v
+	}
+
+	ss := cli.GetSpinner()
+	ss.Start("Fetching the managed cluster offerings")
+
+	listOfOfferings, err := managerClient.ListAllManagedClusterManagementOfferings(meta.Region)
 	if err != nil {
-		k.l.Error("Failed to get userinput", "Reason", err)
-		return "", false
+		ss.StopWithFailure("Failed to fetch the managed cluster offerings", "Reason", err)
+		k.l.Error("Failed to sync the metadata", "Reason", err)
+		os.Exit(1)
 	}
-	if len(v) == 0 {
-		k.l.Error("Cluster name cannot be empty")
-		return "", false
-	}
-	k.l.Debug(k.Ctx, "Text input", "clusterName", v)
-	return v, true
-}
+	ss.Stop()
 
-func (k *KsctlCommand) getSelectedRegion(regions []provider.RegionOutput) (string, bool) {
-	vr := make(map[string]string, len(regions))
-	for _, r := range regions {
-		vr[r.Name] = r.Sku
-	}
-
-	if v, err := cli.DropDown(
-		"Select the region",
-		vr,
-		"",
-	); err != nil {
-		k.l.Error("Failed to get userinput", "Reason", err)
-		return "", false
-	} else {
-		k.l.Debug(k.Ctx, "DropDown input", "region", v)
-		return v, true
-	}
-}
-
-func (k *KsctlCommand) getSelectedInstanceType(vms map[string]provider.InstanceRegionOutput) (string, bool) {
-	vr := make(map[string]string, len(vms))
-	for sku, vm := range vms {
-		if vm.CpuArch == provider.ArchAmd64 {
-			displayName := fmt.Sprintf("%s (vCPUs: %d, Memory: %dGB)",
-				vm.Description,
-				vm.VCpus,
-				vm.Memory,
-			)
-			cost := 0.0
-			if vm.Price.HourlyPrice != nil {
-				cost = *vm.Price.HourlyPrice * 730
-			}
-			if vm.Price.MonthlyPrice != nil { // it overrides the hourly rate if its there
-				cost = *vm.Price.MonthlyPrice
-			}
-			displayName += fmt.Sprintf(", Price: %.2f %s/month",
-				cost,
-				vm.Price.Currency,
-			)
-
-			vr[displayName] = sku
+	var offeringSelected provider.ManagedClusterOutput
+	for _, v := range listOfOfferings {
+		if v.Tier == "Standard" {
+			offeringSelected = v
+			break
 		}
 	}
+	k.l.Print(k.Ctx, "Managed Cluster Offering", "Name", offeringSelected.Sku, "Cost", offeringSelected.GetCost())
 
-	if v, err := cli.DropDown(
-		"Select the instance type",
-		vr,
-		"",
-	); err != nil {
-		k.l.Error("Failed to get userinput", "Reason", err)
-		return "", false
-	} else {
-		k.l.Debug(k.Ctx, "DropDown input", "instanceType", v)
-		return v, true
+	//if v, ok := k.getSelectedManagedClusterOffering("Select the managed cluster offering", listOfOfferings); !ok {
+	//	return false
+	//} else {
+	//	meta.ManagedNodeType = v
+	//}
+	priceCalculator, err := managerClient.PriceCalculator(
+		controllerMeta.PriceCalculatorInput{
+			ManagedControlPlaneMachine: offeringSelected,
+			NoOfWorkerNodes:            meta.NoMP,
+			WorkerMachine:              listOfVMs[meta.ManagedNodeType],
+		})
+	if err != nil {
+		k.l.Error("Failed to calculate the price", "Reason", err)
+		return false
 	}
-}
 
-func (k *KsctlCommand) getSelectedClusterType() (consts.KsctlClusterType, bool) {
-	if v, err := cli.DropDown(
-		"Select the cluster type",
-		map[string]string{
-			"Cloud Managed (For ex. EKS, AKS, GKE)":    string(consts.ClusterTypeMang),
-			"Self Managed (For example, K3s, Kubeadm)": string(consts.ClusterTypeSelfMang),
-		},
-		string(consts.ClusterTypeMang),
-	); err != nil {
-		k.l.Error("Failed to get userinput", "Reason", err)
-		return "", false
-	} else {
-		k.l.Debug(k.Ctx, "DropDown input", "clusterType", v)
-		return consts.KsctlClusterType(v), true
-	}
-}
+	priceOfVM := listOfVMs[meta.ManagedNodeType].GetCost() * float64(meta.NoMP)
+	curr := listOfVMs[meta.ManagedNodeType].Price.Currency
 
-func (k *KsctlCommand) getSelectedCloudProvider() (consts.KsctlCloud, bool) {
-	if v, err := cli.DropDown(
-		"Select the cloud provider",
-		map[string]string{
-			"Amazon Web Services": string(consts.CloudAws),
-			"Azure":               string(consts.CloudAzure),
-			"Kind":                string(consts.CloudLocal),
-		},
-		"",
-	); err != nil {
-		k.l.Error("Failed to get userinput", "Reason", err)
-		return "", false
-	} else {
-		k.l.Debug(k.Ctx, "DropDown input", "cloudProvider", v)
+	k.l.Box(k.Ctx, "Cost Summary", fmt.Sprintf(`
+Managed Node(s) Cost = %.2f X %d = %.2f %s
+Management Offering = %.2f %s
+Total Cost = %.2f %s
+`,
+		listOfVMs[meta.ManagedNodeType].GetCost(), meta.NoMP, priceOfVM, curr,
+		offeringSelected.GetCost(), curr,
+		priceCalculator, curr,
+	),
+	)
 
-		switch consts.KsctlCloud(v) {
-		case consts.CloudAws:
-			if errC := k.loadAwsCredentials(); errC != nil {
-				k.l.Error("Failed to load the AWS credentials", "Reason", errC)
-				return "", false
-			}
-		case consts.CloudAzure:
-			if errC := k.loadAzureCredentials(); errC != nil {
-				k.l.Error("Failed to load the Azure credentials", "Reason", errC)
-				return "", false
-			}
-		}
-
-		return consts.KsctlCloud(v), true
-	}
-}
-
-func (k *KsctlCommand) getSelectedStorageDriver() (consts.KsctlStore, bool) {
-	if v, err := cli.DropDown(
-		"Select the Storage Driver",
-		map[string]string{
-			"MongoDb": string(consts.StoreExtMongo),
-			"Local":   string(consts.StoreLocal),
-		},
-		string(k.KsctlConfig.PreferedStateStore),
-	); err != nil {
-		k.l.Error("Failed to get userinput", "Reason", err)
-		return "", false
-	} else {
-		k.l.Debug(k.Ctx, "DropDown input", "storageDriver", v)
-		if errS := k.loadMongoCredentials(); errS != nil {
-			k.l.Error("Failed to load the MongoDB credentials", "Reason", errS)
-			return "", false
-		}
-
-		return consts.KsctlStore(v), true
-	}
+	return true
 }
