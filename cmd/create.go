@@ -24,7 +24,6 @@ import (
 	"github.com/ksctl/ksctl/v2/pkg/handler/cluster/controller"
 	controllerMeta "github.com/ksctl/ksctl/v2/pkg/handler/cluster/metadata"
 	"github.com/ksctl/ksctl/v2/pkg/provider"
-	"github.com/pterm/pterm"
 
 	"github.com/spf13/cobra"
 )
@@ -81,33 +80,32 @@ ksctl create --help
 				os.Exit(1)
 			}
 
+			ss := cli.GetSpinner()
+			ss.Start("Fetching the region list")
+
 			regions, err := managerClient.ListAllRegions()
 			if err != nil {
+				ss.StopWithFailure("Failed to fetch the region list", "Reason", err)
 				k.l.Error("Failed to sync the metadata", "Reason", err)
 				os.Exit(1)
 			}
+			ss.StopWithSuccess("Fetched the region list")
 
 			if v, ok := k.getSelectedRegion(regions); !ok {
 				os.Exit(1)
 			} else {
 				meta.Region = v
 			}
-			spinner := pterm.DefaultSpinner
-			// give me the snake spinnner here
-			spinner.Sequence = []string{"⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"}
-			ss, err := spinner.Start("Please wait, fetching the instance types")
-			if err != nil {
-				k.l.Error("Failed to start the spinner", "Reason", err)
-				os.Exit(1)
-			}
+			ss = cli.GetSpinner()
+			ss.Start("Fetching the instance type list")
 
 			vms, err := managerClient.ListAllInstances(meta.Region)
 			if err != nil {
-				ss.Fail(fmt.Sprintf("Unable to get instance_type list: %v", err))
+				ss.StopWithFailure("Failed to fetch the instance type list", "Reason", err)
 				k.l.Error("Failed to sync the metadata", "Reason", err)
 				os.Exit(1)
 			}
-			ss.Success("Fetched the instance type list")
+			ss.StopWithSuccess("Fetched the instance type list")
 			if v, ok := k.getSelectedInstanceType(vms); !ok {
 				os.Exit(1)
 			} else {

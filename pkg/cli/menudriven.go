@@ -18,6 +18,32 @@ import (
 	"github.com/pterm/pterm"
 )
 
+type Spinner struct {
+	c pterm.SpinnerPrinter
+	s *pterm.SpinnerPrinter
+}
+
+func GetSpinner() *Spinner {
+	spinner := pterm.DefaultSpinner
+	spinner.Sequence = []string{"⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"}
+
+	return &Spinner{
+		c: spinner,
+	}
+}
+
+func (s *Spinner) Start(msg ...any) {
+	s.s, _ = s.c.Start(msg...)
+}
+
+func (s *Spinner) StopWithSuccess(msg ...any) {
+	s.s.Success(msg...)
+}
+
+func (s *Spinner) StopWithFailure(msg ...any) {
+	s.s.Fail(msg...)
+}
+
 func Confirmation(prompt, defaultOption string) (proceed bool, err error) {
 	x := pterm.DefaultInteractiveConfirm
 	if len(defaultOption) != 0 {
