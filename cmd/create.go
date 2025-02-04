@@ -15,9 +15,12 @@
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
-	"github.com/ksctl/ksctl/v2/pkg/provider"
 	"os"
+
+	"github.com/gookit/goutil/dump"
+	"github.com/ksctl/ksctl/v2/pkg/provider"
 
 	"github.com/ksctl/cli/pkg/cli"
 	"github.com/ksctl/ksctl/v2/pkg/consts"
@@ -37,8 +40,6 @@ ksctl create --help
 		Long:  "It is used to create cluster with the given name from user",
 
 		Run: func(cmd *cobra.Command, args []string) {
-			// we need to collect the cloud provider, and clusterType for the metadata to work
-
 			meta := controller.Metadata{}
 
 			if v, ok := k.getClusterName(); !ok {
@@ -83,7 +84,7 @@ ksctl create --help
 
 			listOfRegions, err := managerClient.ListAllRegions()
 			if err != nil {
-				ss.StopWithFailure("Failed to fetch the region list", "Reason", err)
+				ss.Stop()
 				k.l.Error("Failed to sync the metadata", "Reason", err)
 				os.Exit(1)
 			}
@@ -99,7 +100,7 @@ ksctl create --help
 
 			listOfVMs, err := managerClient.ListAllInstances(meta.Region)
 			if err != nil {
-				ss.StopWithFailure("Failed to fetch the instance type list", "Reason", err)
+				ss.Stop()
 				k.l.Error("Failed to sync the metadata", "Reason", err)
 				os.Exit(1)
 			}
@@ -127,6 +128,12 @@ func (k *KsctlCommand) handleManagedCluster(
 	meta *controller.Metadata,
 	listOfVMs map[string]provider.InstanceRegionOutput,
 ) bool {
+
+	{
+		v, _ := json.Marshal(listOfVMs)
+		_ = os.WriteFile("/tmp/vms.json", v, 0644)
+	}
+
 	if v, ok := k.getSelectedInstanceType("Select instance_type for Managed Nodes", listOfVMs); !ok {
 		return false
 	} else {
@@ -141,12 +148,14 @@ func (k *KsctlCommand) handleManagedCluster(
 		meta.NoMP = v
 	}
 
+	dump.Println(listOfVMs[meta.ManagedNodeType])
+
 	ss := cli.GetSpinner()
 	ss.Start("Fetching the managed cluster offerings")
 
 	listOfOfferings, err := managerClient.ListAllManagedClusterManagementOfferings(meta.Region)
 	if err != nil {
-		ss.StopWithFailure("Failed to fetch the managed cluster offerings", "Reason", err)
+		ss.Stop()
 		k.l.Error("Failed to sync the metadata", "Reason", err)
 		os.Exit(1)
 	}
