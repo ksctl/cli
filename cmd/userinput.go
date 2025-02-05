@@ -16,10 +16,11 @@ package cmd
 
 import (
 	"fmt"
+	"strconv"
+
 	"github.com/ksctl/cli/pkg/cli"
 	"github.com/ksctl/ksctl/v2/pkg/consts"
 	"github.com/ksctl/ksctl/v2/pkg/provider"
-	"strconv"
 )
 
 func (k *KsctlCommand) getClusterName() (string, bool) {
@@ -77,6 +78,25 @@ func (k *KsctlCommand) getSelectedRegion(regions []provider.RegionOutput) (strin
 	}
 }
 
+func (k *KsctlCommand) getSelectedK8sVersion(prompt string, vers []string) (string, bool) {
+	options := make(map[string]string, len(vers))
+	for _, v := range vers {
+		options[v] = v
+	}
+
+	if v, err := cli.DropDown(
+		prompt,
+		options,
+		"",
+	); err != nil {
+		k.l.Error("Failed to get userinput", "Reason", err)
+		return "", false
+	} else {
+		k.l.Debug(k.Ctx, "DropDown input", "k8sVersion", v)
+		return v, true
+	}
+}
+
 func (k *KsctlCommand) getSelectedInstanceType(
 	prompt string,
 	vms map[string]provider.InstanceRegionOutput,
@@ -118,7 +138,7 @@ func (k *KsctlCommand) getSelectedManagedClusterOffering(
 	vr := make(map[string]string, len(offerings))
 	for _, o := range offerings {
 		displayName := fmt.Sprintf("%s, Price: %.2f %s/month",
-			o.Sku,
+			o.Description,
 			o.GetCost(),
 			o.Price.Currency,
 		)

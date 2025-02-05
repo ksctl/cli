@@ -7,7 +7,6 @@ toolchain go1.23.4
 require (
 	github.com/Delta456/box-cli-maker/v2 v2.3.0
 	github.com/fatih/color v1.18.0
-	github.com/gookit/goutil v0.6.18
 	github.com/ksctl/ksctl/v2 v2.0.0-rc.4
 	github.com/pterm/pterm v0.12.80
 	github.com/rodaine/table v1.2.0
@@ -37,6 +36,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.6.26 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/ini v1.8.1 // indirect
 	github.com/aws/aws-sdk-go-v2/service/ec2 v1.198.1 // indirect
+	github.com/aws/aws-sdk-go-v2/service/eks v1.56.0 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding v1.12.1 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.12.7 // indirect
 	github.com/aws/aws-sdk-go-v2/service/pricing v1.32.8 // indirect
@@ -64,6 +64,7 @@ require (
 	github.com/gookit/color v1.5.4 // indirect
 	github.com/huandu/xstrings v1.5.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
+	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/klauspost/compress v1.16.7 // indirect

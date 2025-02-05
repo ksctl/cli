@@ -15,16 +15,15 @@
 package cmd
 
 import (
-	"encoding/json"
 	"fmt"
 	"os"
 
-	"github.com/gookit/goutil/dump"
 	"github.com/ksctl/ksctl/v2/pkg/provider"
 
 	"github.com/ksctl/cli/pkg/cli"
 	"github.com/ksctl/ksctl/v2/pkg/consts"
 	"github.com/ksctl/ksctl/v2/pkg/handler/cluster/controller"
+
 	controllerMeta "github.com/ksctl/ksctl/v2/pkg/handler/cluster/metadata"
 	"github.com/spf13/cobra"
 )
@@ -63,7 +62,6 @@ ksctl create --help
 			if v, ok := k.getSelectedStorageDriver(); !ok {
 				os.Exit(1)
 			} else {
-				k.l.Debug(k.Ctx, "DropDown input", "storageDriver", v)
 				meta.StateLocation = consts.KsctlStore(v)
 			}
 
@@ -129,11 +127,6 @@ func (k *KsctlCommand) handleManagedCluster(
 	listOfVMs map[string]provider.InstanceRegionOutput,
 ) bool {
 
-	{
-		v, _ := json.Marshal(listOfVMs)
-		_ = os.WriteFile("/tmp/vms.json", v, 0644)
-	}
-
 	if v, ok := k.getSelectedInstanceType("Select instance_type for Managed Nodes", listOfVMs); !ok {
 		return false
 	} else {
@@ -148,12 +141,10 @@ func (k *KsctlCommand) handleManagedCluster(
 		meta.NoMP = v
 	}
 
-	dump.Println(listOfVMs[meta.ManagedNodeType])
-
 	ss := cli.GetSpinner()
 	ss.Start("Fetching the managed cluster offerings")
 
-	listOfOfferings, err := managerClient.ListAllManagedClusterManagementOfferings(meta.Region)
+	listOfOfferings, err := managerClient.ListAllManagedClusterManagementOfferings(meta.Region, nil)
 	if err != nil {
 		ss.Stop()
 		k.l.Error("Failed to sync the metadata", "Reason", err)
@@ -161,23 +152,34 @@ func (k *KsctlCommand) handleManagedCluster(
 	}
 	ss.Stop()
 
-	var offeringSelected provider.ManagedClusterOutput
-	for _, v := range listOfOfferings {
-		if v.Tier == "Standard" {
-			offeringSelected = v
-			break
-		}
-	}
-	k.l.Print(k.Ctx, "Managed Cluster Offering", "Name", offeringSelected.Sku, "Cost", offeringSelected.GetCost())
+	ss = cli.GetSpinner()
+	ss.Start("Fetching the managed cluster k8s versions")
 
-	//if v, ok := k.getSelectedManagedClusterOffering("Select the managed cluster offering", listOfOfferings); !ok {
-	//	return false
-	//} else {
-	//	meta.ManagedNodeType = v
-	//}
+	listOfK8sVersions, err := managerClient.ListAllManagedClusterK8sVersions(meta.Region)
+	if err != nil {
+		ss.Stop()
+		k.l.Error("Failed to sync the metadata", "Reason", err)
+		os.Exit(1)
+	}
+	ss.Stop()
+
+	if v, ok := k.getSelectedK8sVersion("Select the k8s version for Managed Cluster", listOfK8sVersions); !ok {
+		return false
+	} else {
+		meta.K8sVersion = v
+	}
+
+	offeringSelected := ""
+
+	if v, ok := k.getSelectedManagedClusterOffering("Select the managed cluster offering", listOfOfferings); !ok {
+		return false
+	} else {
+		offeringSelected = v
+	}
+
 	priceCalculator, err := managerClient.PriceCalculator(
 		controllerMeta.PriceCalculatorInput{
-			ManagedControlPlaneMachine: offeringSelected,
+			ManagedControlPlaneMachine: listOfOfferings[offeringSelected],
 			NoOfWorkerNodes:            meta.NoMP,
 			WorkerMachine:              listOfVMs[meta.ManagedNodeType],
 		})
@@ -195,7 +197,7 @@ Management Offering = %.2f %s
 Total Cost = %.2f %s
 `,
 		listOfVMs[meta.ManagedNodeType].GetCost(), meta.NoMP, priceOfVM, curr,
-		offeringSelected.GetCost(), curr,
+		listOfOfferings[offeringSelected].GetCost(), curr,
 		priceCalculator, curr,
 	),
 	)
