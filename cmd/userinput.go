@@ -79,15 +79,11 @@ func (k *KsctlCommand) getSelectedRegion(regions []provider.RegionOutput) (strin
 }
 
 func (k *KsctlCommand) getSelectedK8sVersion(prompt string, vers []string) (string, bool) {
-	options := make(map[string]string, len(vers))
-	for _, v := range vers {
-		options[v] = v
-	}
 
-	if v, err := cli.DropDown(
+	if v, err := cli.DropDownList(
 		prompt,
-		options,
-		"",
+		vers,
+		vers[0],
 	); err != nil {
 		k.l.Error("Failed to get userinput", "Reason", err)
 		return "", false

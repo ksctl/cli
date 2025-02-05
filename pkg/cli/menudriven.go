@@ -94,3 +94,17 @@ func DropDown(prompt string, options map[string]string, defaultOption string) (s
 	}
 
 }
+
+func DropDownList(prompt string, options []string, defaultOption string) (string, error) {
+
+	x := pterm.DefaultInteractiveSelect.WithOptions(options)
+	if len(defaultOption) != 0 {
+		x = x.WithDefaultOption(defaultOption)
+	}
+
+	if v, err := x.Show(prompt); err != nil {
+		return "", err
+	} else {
+		return v, nil
+	}
+}

@@ -16,12 +16,12 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/gookit/goutil/dump"
 	"os"
 
-	"github.com/ksctl/ksctl/v2/pkg/provider"
+	"github.com/ksctl/ksctl/v2/pkg/consts"
 
 	"github.com/ksctl/cli/pkg/cli"
-	"github.com/ksctl/ksctl/v2/pkg/consts"
 	"github.com/ksctl/ksctl/v2/pkg/handler/cluster/controller"
 
 	controllerMeta "github.com/ksctl/ksctl/v2/pkg/handler/cluster/metadata"
@@ -41,78 +41,17 @@ ksctl create --help
 		Run: func(cmd *cobra.Command, args []string) {
 			meta := controller.Metadata{}
 
-			if v, ok := k.getClusterName(); !ok {
-				os.Exit(1)
-			} else {
-				meta.ClusterName = v
-			}
-
-			if v, ok := k.getSelectedClusterType(); !ok {
-				os.Exit(1)
-			} else {
-				meta.ClusterType = v
-			}
-
-			if v, ok := k.getSelectedCloudProvider(); !ok {
-				os.Exit(1)
-			} else {
-				meta.Provider = v
-			}
-
-			if v, ok := k.getSelectedStorageDriver(); !ok {
-				os.Exit(1)
-			} else {
-				meta.StateLocation = consts.KsctlStore(v)
-			}
-
-			managerClient, err := controllerMeta.NewController(
-				k.Ctx,
-				k.l,
-				&controller.Client{
-					Metadata: meta,
-				},
-			)
-			if err != nil {
-				k.l.Error("Failed to create the controller", "Reason", err)
-				os.Exit(1)
-			}
-
-			ss := cli.GetSpinner()
-			ss.Start("Fetching the region list")
-
-			listOfRegions, err := managerClient.ListAllRegions()
-			if err != nil {
-				ss.Stop()
-				k.l.Error("Failed to sync the metadata", "Reason", err)
-				os.Exit(1)
-			}
-			ss.Stop()
-
-			if v, ok := k.getSelectedRegion(listOfRegions); !ok {
-				os.Exit(1)
-			} else {
-				meta.Region = v
-			}
-			ss = cli.GetSpinner()
-			ss.Start("Fetching the instance type list")
-
-			listOfVMs, err := managerClient.ListAllInstances(meta.Region)
-			if err != nil {
-				ss.Stop()
-				k.l.Error("Failed to sync the metadata", "Reason", err)
-				os.Exit(1)
-			}
-			ss.Stop()
+			k.BaseMetadataFields(&meta)
 
 			if meta.ClusterType == consts.ClusterTypeMang {
-				if !k.handleManagedCluster(managerClient, &meta, listOfVMs) {
-					os.Exit(1)
-				}
+				k.handleManagedCluster(&meta)
 			}
 
 			if ok, _ := cli.Confirmation("Do you want to proceed with the cluster creation", "no"); !ok {
 				os.Exit(1)
 			}
+
+			dump.Println(meta)
 
 			k.l.Success(k.Ctx, "Created the cluster", "Name", meta.ClusterName)
 		},
@@ -122,85 +61,81 @@ ksctl create --help
 }
 
 func (k *KsctlCommand) handleManagedCluster(
-	managerClient *controllerMeta.Controller,
 	meta *controller.Metadata,
-	listOfVMs map[string]provider.InstanceRegionOutput,
-) bool {
-
-	if v, ok := k.getSelectedInstanceType("Select instance_type for Managed Nodes", listOfVMs); !ok {
-		return false
-	} else {
-		meta.ManagedNodeType = v
+) {
+	metaClient, err := controllerMeta.NewController(
+		k.Ctx,
+		k.l,
+		&controller.Client{
+			Metadata: *meta,
+		},
+	)
+	if err != nil {
+		k.l.Error("Failed to create the controller", "Reason", err)
+		os.Exit(1)
 	}
 
 	if v, ok := k.getCounterValue("Enter the number of Managed Nodes", func(v int) bool {
 		return v > 0
 	}); !ok {
-		return false
+		k.l.Error("Failed to get the number of managed nodes")
+		os.Exit(1)
 	} else {
 		meta.NoMP = v
 	}
 
-	ss := cli.GetSpinner()
-	ss.Start("Fetching the managed cluster offerings")
+	if meta.Provider != consts.CloudLocal {
+		k.handleRegionSelection(metaClient, meta)
+		vm := k.handleInstanceTypeSelection(metaClient, meta)
+		meta.ManagedNodeType = vm.Sku
 
-	listOfOfferings, err := managerClient.ListAllManagedClusterManagementOfferings(meta.Region, nil)
-	if err != nil {
+		ss := cli.GetSpinner()
+		ss.Start("Fetching the managed cluster offerings")
+
+		listOfOfferings, err := metaClient.ListAllManagedClusterManagementOfferings(meta.Region, nil)
+		if err != nil {
+			ss.Stop()
+			k.l.Error("Failed to sync the metadata", "Reason", err)
+			os.Exit(1)
+		}
 		ss.Stop()
-		k.l.Error("Failed to sync the metadata", "Reason", err)
-		os.Exit(1)
-	}
-	ss.Stop()
 
-	ss = cli.GetSpinner()
-	ss.Start("Fetching the managed cluster k8s versions")
+		offeringSelected := ""
 
-	listOfK8sVersions, err := managerClient.ListAllManagedClusterK8sVersions(meta.Region)
-	if err != nil {
-		ss.Stop()
-		k.l.Error("Failed to sync the metadata", "Reason", err)
-		os.Exit(1)
-	}
-	ss.Stop()
+		if v, ok := k.getSelectedManagedClusterOffering("Select the managed cluster offering", listOfOfferings); !ok {
+			k.l.Error("Failed to get the managed cluster offering")
+			os.Exit(1)
+		} else {
+			offeringSelected = v
+		}
 
-	if v, ok := k.getSelectedK8sVersion("Select the k8s version for Managed Cluster", listOfK8sVersions); !ok {
-		return false
-	} else {
-		meta.K8sVersion = v
-	}
+		priceCalculator, err := metaClient.PriceCalculator(
+			controllerMeta.PriceCalculatorInput{
+				ManagedControlPlaneMachine: listOfOfferings[offeringSelected],
+				NoOfWorkerNodes:            meta.NoMP,
+				WorkerMachine:              vm,
+			})
+		if err != nil {
+			k.l.Error("Failed to calculate the price", "Reason", err)
+			os.Exit(1)
+		}
 
-	offeringSelected := ""
+		priceOfVM := vm.GetCost() * float64(meta.NoMP)
+		curr := vm.Price.Currency
 
-	if v, ok := k.getSelectedManagedClusterOffering("Select the managed cluster offering", listOfOfferings); !ok {
-		return false
-	} else {
-		offeringSelected = v
-	}
-
-	priceCalculator, err := managerClient.PriceCalculator(
-		controllerMeta.PriceCalculatorInput{
-			ManagedControlPlaneMachine: listOfOfferings[offeringSelected],
-			NoOfWorkerNodes:            meta.NoMP,
-			WorkerMachine:              listOfVMs[meta.ManagedNodeType],
-		})
-	if err != nil {
-		k.l.Error("Failed to calculate the price", "Reason", err)
-		return false
-	}
-
-	priceOfVM := listOfVMs[meta.ManagedNodeType].GetCost() * float64(meta.NoMP)
-	curr := listOfVMs[meta.ManagedNodeType].Price.Currency
-
-	k.l.Box(k.Ctx, "Cost Summary", fmt.Sprintf(`
+		k.l.Box(k.Ctx, "Cost Summary", fmt.Sprintf(`
 Managed Node(s) Cost = %.2f X %d = %.2f %s
 Management Offering = %.2f %s
 Total Cost = %.2f %s
 `,
-		listOfVMs[meta.ManagedNodeType].GetCost(), meta.NoMP, priceOfVM, curr,
-		listOfOfferings[offeringSelected].GetCost(), curr,
-		priceCalculator, curr,
-	),
-	)
+			vm.GetCost(), meta.NoMP, priceOfVM, curr,
+			listOfOfferings[offeringSelected].GetCost(), curr,
+			priceCalculator, curr,
+		),
+		)
+	}
 
-	return true
+	k.handleManagedK8sVersion(metaClient, meta)
+
+	return
 }
