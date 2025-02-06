@@ -16,17 +16,19 @@ package logger
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"io"
 	"math"
 	"reflect"
+	"strconv"
 	"strings"
 	"sync"
 
 	box "github.com/Delta456/box-cli-maker/v2"
 	"github.com/fatih/color"
+	"github.com/ksctl/ksctl/v2/pkg/consts"
 	"github.com/ksctl/ksctl/v2/pkg/logger"
+	"github.com/ksctl/ksctl/v2/pkg/provider"
 	"github.com/rodaine/table"
 
 	"time"
@@ -209,36 +211,31 @@ func (l *GeneralLog) Warn(ctx context.Context, msg string, args ...any) {
 	l.log(false, true, ctx, LogWarning, msg, args...)
 }
 
-func (l *GeneralLog) Table(ctx context.Context, op logger.LogClusterDetail, data []logger.ClusterDataForLogging) {
+func (l *GeneralLog) Table(ctx context.Context, headers []string, data [][]string) {
 	headerFmt := color.New(color.FgGreen, color.Underline).SprintfFunc()
 	columnFmt := color.New(color.FgYellow).SprintfFunc()
 
-	if op == logger.LoggingGetClusters {
-		tbl := table.New("ClusterName", "Region", "ClusterType", "CloudProvider", "BootStrap", "WorkerPlaneNodes", "ControlPlaneNodes", "EtcdNodes", "CloudManagedNodes")
-		tbl.WithHeaderFormatter(headerFmt).WithFirstColumnFormatter(columnFmt)
-
-		for _, row := range data {
-			tbl.AddRow(row.Name,
-				row.Region,
-				string(row.ClusterType),
-				string(row.CloudProvider),
-				string(row.K8sDistro),
-				row.NoWP, row.NoCP, row.NoDS, row.NoMgt,
-			)
+	var dataToPrint [][]interface{} = make([][]interface{}, 0, len(data))
+	for _, v := range data {
+		var row []interface{}
+		for _, vv := range v {
+			row = append(row, vv)
 		}
-
-		println()
-		tbl.Print()
-		println()
-		println()
-	} else if op == logger.LoggingInfoCluster {
-		a, err := json.MarshalIndent(data[0], "", " ")
-		if err != nil {
-			panic(err)
-		}
-		l.Box(ctx, "Cluster Data", string(a))
+		dataToPrint = append(dataToPrint, row)
 	}
 
+	var header []interface{}
+	for _, v := range headers {
+		header = append(header, v)
+	}
+
+	tbl := table.New(header...)
+	tbl.WithHeaderFormatter(headerFmt).WithFirstColumnFormatter(columnFmt)
+
+	for _, row := range dataToPrint {
+		tbl.AddRow(row...)
+	}
+	tbl.Print()
 }
 
 func (l *GeneralLog) boxBox(title, lines string, color string) {
@@ -265,4 +262,69 @@ func (l *GeneralLog) Box(ctx context.Context, title string, lines string) {
 	l.Debug(ctx, "PostUpdate Box", "title", len(title), "lines", len(lines))
 
 	l.boxBox(title, lines, "Yellow")
+}
+
+func HandleTableOutputListAll(ctx context.Context, l logger.Logger, data []provider.ClusterData) {
+	headers := []string{"Name", "Region", "Cloud", "ClusterType", "K8sDistro"}
+	var dataToPrint [][]string = make([][]string, 0, len(data))
+	for _, v := range data {
+		var row []string
+		row = append(
+			row,
+			v.Name,
+			v.Region,
+			string(v.CloudProvider),
+			string(v.ClusterType),
+			string(v.K8sDistro),
+		)
+		dataToPrint = append(dataToPrint, row)
+	}
+
+	l.Table(ctx, headers, dataToPrint)
+}
+
+func handleTableOutputGet(ctx context.Context, l logger.Logger, data provider.ClusterData) {
+
+	headers := []string{"Attributes", "Values"}
+	dataToPrint := [][]string{
+		{"ClusterName", data.Name},
+		{"Region", data.Region},
+		{"CloudProvider", string(data.CloudProvider)},
+		{"ClusterType", string(data.ClusterType)},
+	}
+
+	if data.ClusterType == consts.ClusterTypeSelfMang {
+		nodes := func(vm []provider.VMData) string {
+			slice := make([]string, 0, len(vm))
+			for _, v := range vm {
+				slice = append(slice, v.VMSize)
+			}
+			return strings.Join(slice, ",")
+		}
+
+		dataToPrint = append(
+			dataToPrint,
+			[]string{"BootstrapProvider", string(data.K8sDistro)},
+			[]string{"BootstrapKubernetesVersion", data.K8sVersion},
+			[]string{"ControlPlaneNodes", nodes(data.CP)},
+			[]string{"WorkerPlaneNodes", nodes(data.WP)},
+			[]string{"EtcdNodes", nodes(data.DS)},
+			[]string{"LoadBalancer", data.LB.VMSize},
+			[]string{"EtcdVersion", data.EtcdVersion},
+			[]string{"HaProxyVersion", data.LB.VMSize},
+		)
+	} else {
+		dataToPrint = append(
+			dataToPrint,
+			[]string{"ManagedNodes", strconv.Itoa(data.NoMgt) + " X " + data.Mgt.VMSize},
+			[]string{"ManagedK8sVersion", data.K8sVersion},
+		)
+	}
+
+	dataToPrint = append(dataToPrint,
+		[]string{"Addons", strings.Join(data.Apps, ",")},
+		[]string{"CNI", data.Cni},
+	)
+
+	l.Table(ctx, headers, dataToPrint)
 }

@@ -74,20 +74,6 @@ func TestPrinters(t *testing.T) {
 		gL.Print(dummyCtx, "FAKE", "type", "print")
 	})
 
-	t.Run("Table", func(t *testing.T) {
-		gL.Table(dummyCtx,
-			logger.LoggingGetClusters,
-			[]logger.ClusterDataForLogging{
-				{
-					Name:          "fake-demo",
-					CloudProvider: "fake",
-					Region:        "fake-reg",
-				},
-			})
-
-		gL.Table(dummyCtx, logger.LoggingGetClusters, nil)
-	})
-
 	t.Run("Box", func(t *testing.T) {
 		gL.Box(dummyCtx, "Abcd", "1")
 		gL.Box(dummyCtx, "Abcddedefe", "1")
