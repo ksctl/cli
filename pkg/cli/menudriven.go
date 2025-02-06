@@ -29,7 +29,7 @@ type Spinner struct {
 
 func GetSpinner() *Spinner {
 	spinner := pterm.DefaultSpinner
-	spinner.Sequence = []string{"⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"}
+	spinner.Sequence = []string{"⡏", "⡟", "⡿", "⢿", "⣻", "⣽", "⣾", "⣷", "⣯", "⣏"}
 
 	return &Spinner{
 		c: spinner,
