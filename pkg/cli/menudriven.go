@@ -16,9 +16,10 @@ package cli
 
 import (
 	"fmt"
-	"github.com/pterm/pterm"
 	"os"
 	"strings"
+
+	"github.com/pterm/pterm"
 )
 
 type Spinner struct {
@@ -60,8 +61,12 @@ func Confirmation(prompt, defaultOption string) (proceed bool, err error) {
 	return x.Show(prompt)
 }
 
-func TextInput(prompt string) (string, error) {
-	return pterm.DefaultInteractiveTextInput.Show(prompt)
+func TextInput(prompt string, defaultValue string) (string, error) {
+	if len(defaultValue) == 0 {
+		return pterm.DefaultInteractiveTextInput.Show(prompt)
+	}
+	x := pterm.DefaultInteractiveTextInput.WithDefaultValue(defaultValue)
+	return x.Show(prompt)
 }
 
 func TextInputPassword(prompt string) (string, error) {

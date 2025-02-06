@@ -16,8 +16,9 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/gookit/goutil/dump"
 	"os"
+
+	"github.com/gookit/goutil/dump"
 
 	"github.com/ksctl/ksctl/v2/pkg/consts"
 
@@ -41,10 +42,12 @@ ksctl create --help
 		Run: func(cmd *cobra.Command, args []string) {
 			meta := controller.Metadata{}
 
-			k.BaseMetadataFields(&meta)
+			k.baseMetadataFields(&meta)
 
 			if meta.ClusterType == consts.ClusterTypeMang {
-				k.handleManagedCluster(&meta)
+				k.metadataForManagedCluster(&meta)
+			} else {
+				k.metadataForSelfManagedCluster(&meta)
 			}
 
 			if ok, _ := cli.Confirmation("Do you want to proceed with the cluster creation", "no"); !ok {
@@ -60,7 +63,62 @@ ksctl create --help
 	return cmd
 }
 
-func (k *KsctlCommand) handleManagedCluster(
+func (k *KsctlCommand) metadataForSelfManagedCluster(
+	meta *controller.Metadata,
+) {
+	metaClient, err := controllerMeta.NewController(
+		k.Ctx,
+		k.l,
+		&controller.Client{
+			Metadata: *meta,
+		},
+	)
+	if err != nil {
+		k.l.Error("Failed to create the controller", "Reason", err)
+		os.Exit(1)
+	}
+
+	k.handleRegionSelection(metaClient, meta)
+
+	cp := k.handleInstanceTypeSelection(metaClient, meta, "Select instance_type for Control Plane")
+	wp := k.handleInstanceTypeSelection(metaClient, meta, "Select instance_type for Worker Nodes")
+	etcd := k.handleInstanceTypeSelection(metaClient, meta, "Select instance_type for Etcd Nodes")
+	lb := k.handleInstanceTypeSelection(metaClient, meta, "Select instance_type for Load Balancer")
+
+	meta.ControlPlaneNodeType = cp.Sku
+	meta.WorkerPlaneNodeType = wp.Sku
+	meta.DataStoreNodeType = etcd.Sku
+	meta.LoadBalancerNodeType = lb.Sku
+
+	if v, ok := k.getCounterValue("Enter the number of Control Plane Nodes", func(v int) bool {
+		return v >= 3
+	}, 3); !ok {
+		k.l.Error("Failed to get the number of control plane nodes")
+		os.Exit(1)
+	} else {
+		meta.NoCP = v
+	}
+
+	if v, ok := k.getCounterValue("Enter the number of Worker Nodes", func(v int) bool {
+		return v > 0
+	}, 1); !ok {
+		k.l.Error("Failed to get the number of worker nodes")
+		os.Exit(1)
+	} else {
+		meta.NoWP = v
+	}
+
+	if v, ok := k.getCounterValue("Enter the number of Etcd Nodes", func(v int) bool {
+		return v >= 3
+	}, 3); !ok {
+		k.l.Error("Failed to get the number of etcd nodes")
+		os.Exit(1)
+	} else {
+		meta.NoDS = v
+	}
+}
+
+func (k *KsctlCommand) metadataForManagedCluster(
 	meta *controller.Metadata,
 ) {
 	metaClient, err := controllerMeta.NewController(
@@ -77,7 +135,7 @@ func (k *KsctlCommand) handleManagedCluster(
 
 	if v, ok := k.getCounterValue("Enter the number of Managed Nodes", func(v int) bool {
 		return v > 0
-	}); !ok {
+	}, 1); !ok {
 		k.l.Error("Failed to get the number of managed nodes")
 		os.Exit(1)
 	} else {
@@ -86,7 +144,7 @@ func (k *KsctlCommand) handleManagedCluster(
 
 	if meta.Provider != consts.CloudLocal {
 		k.handleRegionSelection(metaClient, meta)
-		vm := k.handleInstanceTypeSelection(metaClient, meta)
+		vm := k.handleInstanceTypeSelection(metaClient, meta, "Select instance_type for Managed Nodes")
 		meta.ManagedNodeType = vm.Sku
 
 		ss := cli.GetSpinner()

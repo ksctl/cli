@@ -24,7 +24,7 @@ import (
 )
 
 func (k *KsctlCommand) getClusterName() (string, bool) {
-	v, err := cli.TextInput("Enter Cluster Name")
+	v, err := cli.TextInput("Enter Cluster Name", "")
 	if err != nil {
 		k.l.Error("Failed to get userinput", "Reason", err)
 		return "", false
@@ -37,10 +37,27 @@ func (k *KsctlCommand) getClusterName() (string, bool) {
 	return v, true
 }
 
+func (k *KsctlCommand) getBootstrap() (consts.KsctlKubernetes, bool) {
+	v, err := cli.DropDown(
+		"Select the bootstrap type",
+		map[string]string{
+			"Kubeadm": string(consts.K8sKubeadm),
+			"K3s":     string(consts.K8sK3s),
+		},
+		string(consts.K8sK3s),
+	)
+	if err != nil {
+		k.l.Error("Failed to get userinput", "Reason", err)
+		return "", false
+	}
+	k.l.Debug(k.Ctx, "DropDown input", "bootstrapType", v)
+	return consts.KsctlKubernetes(v), true
+}
+
 type userInputValidation func(int) bool
 
-func (k *KsctlCommand) getCounterValue(prompt string, validate userInputValidation) (int, bool) {
-	v, err := cli.TextInput(prompt)
+func (k *KsctlCommand) getCounterValue(prompt string, validate userInputValidation, defaultVal int) (int, bool) {
+	v, err := cli.TextInput(prompt, strconv.Itoa(defaultVal))
 	if err != nil {
 		k.l.Error("Failed to get userinput", "Reason", err)
 		return 0, false
@@ -65,6 +82,8 @@ func (k *KsctlCommand) getSelectedRegion(regions []provider.RegionOutput) (strin
 		vr[r.Name] = r.Sku
 	}
 
+	k.l.Debug(k.Ctx, "Regions", "regions", vr)
+
 	if v, err := cli.DropDown(
 		"Select the region",
 		vr,
@@ -79,6 +98,7 @@ func (k *KsctlCommand) getSelectedRegion(regions []provider.RegionOutput) (strin
 }
 
 func (k *KsctlCommand) getSelectedK8sVersion(prompt string, vers []string) (string, bool) {
+	k.l.Debug(k.Ctx, "List of k8s versions", "versions", vers)
 
 	if v, err := cli.DropDownList(
 		prompt,
@@ -114,6 +134,8 @@ func (k *KsctlCommand) getSelectedInstanceType(
 		}
 	}
 
+	k.l.Debug(k.Ctx, "Instance types", "vms", vr)
+
 	if v, err := cli.DropDown(
 		prompt,
 		vr,
@@ -141,6 +163,8 @@ func (k *KsctlCommand) getSelectedManagedClusterOffering(
 
 		vr[displayName] = o.Sku
 	}
+
+	k.l.Debug(k.Ctx, "Offerings", "offerings", vr)
 
 	if v, err := cli.DropDown(
 		prompt,
@@ -172,14 +196,19 @@ func (k *KsctlCommand) getSelectedClusterType() (consts.KsctlClusterType, bool) 
 	}
 }
 
-func (k *KsctlCommand) getSelectedCloudProvider() (consts.KsctlCloud, bool) {
+func (k *KsctlCommand) getSelectedCloudProvider(v consts.KsctlClusterType) (consts.KsctlCloud, bool) {
+	options := map[string]string{
+		"Amazon Web Services": string(consts.CloudAws),
+		"Azure":               string(consts.CloudAzure),
+	}
+
+	if v == consts.ClusterTypeMang {
+		options["Kind"] = string(consts.CloudLocal)
+	}
+
 	if v, err := cli.DropDown(
 		"Select the cloud provider",
-		map[string]string{
-			"Amazon Web Services": string(consts.CloudAws),
-			"Azure":               string(consts.CloudAzure),
-			"Kind":                string(consts.CloudLocal),
-		},
+		options,
 		"",
 	); err != nil {
 		k.l.Error("Failed to get userinput", "Reason", err)

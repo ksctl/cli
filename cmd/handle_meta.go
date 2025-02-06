@@ -24,7 +24,7 @@ import (
 	"github.com/ksctl/ksctl/v2/pkg/provider"
 )
 
-func (k *KsctlCommand) BaseMetadataFields(m *controller.Metadata) {
+func (k *KsctlCommand) baseMetadataFields(m *controller.Metadata) {
 	if v, ok := k.getClusterName(); !ok {
 		os.Exit(1)
 	} else {
@@ -37,7 +37,7 @@ func (k *KsctlCommand) BaseMetadataFields(m *controller.Metadata) {
 		m.ClusterType = v
 	}
 
-	if v, ok := k.getSelectedCloudProvider(); !ok {
+	if v, ok := k.getSelectedCloudProvider(m.ClusterType); !ok {
 		os.Exit(1)
 	} else {
 		m.Provider = v
@@ -47,6 +47,14 @@ func (k *KsctlCommand) BaseMetadataFields(m *controller.Metadata) {
 		os.Exit(1)
 	} else {
 		m.StateLocation = consts.KsctlStore(v)
+	}
+
+	if m.ClusterType == consts.ClusterTypeSelfMang {
+		if v, ok := k.getBootstrap(); ok {
+			m.K8sDistro = v
+		} else {
+			os.Exit(1)
+		}
 	}
 }
 
@@ -69,24 +77,27 @@ func (k *KsctlCommand) handleRegionSelection(meta *controllerMeta.Controller, m 
 	}
 }
 
-func (k *KsctlCommand) handleInstanceTypeSelection(meta *controllerMeta.Controller, m *controller.Metadata) provider.InstanceRegionOutput {
-	ss := cli.GetSpinner()
-	ss.Start("Fetching the instance type list")
+func (k *KsctlCommand) handleInstanceTypeSelection(meta *controllerMeta.Controller, m *controller.Metadata, prompt string) provider.InstanceRegionOutput {
+	if len(k.inMemInstanceTypesInReg) == 0 {
+		ss := cli.GetSpinner()
+		ss.Start("Fetching the instance type list")
 
-	listOfVMs, err := meta.ListAllInstances(m.Region)
-	if err != nil {
+		listOfVMs, err := meta.ListAllInstances(m.Region)
+		if err != nil {
+			ss.Stop()
+			k.l.Error("Failed to sync the metadata", "Reason", err)
+			os.Exit(1)
+		}
 		ss.Stop()
-		k.l.Error("Failed to sync the metadata", "Reason", err)
-		os.Exit(1)
+		k.inMemInstanceTypesInReg = listOfVMs
 	}
-	ss.Stop()
 
-	v, ok := k.getSelectedInstanceType("Select instance_type for Managed Nodes", listOfVMs)
+	v, ok := k.getSelectedInstanceType(prompt, k.inMemInstanceTypesInReg)
 	if !ok {
 		k.l.Error("Failed to get the instance type")
 		os.Exit(1)
 	}
-	return listOfVMs[v]
+	return k.inMemInstanceTypesInReg[v]
 }
 
 func (k *KsctlCommand) handleManagedK8sVersion(meta *controllerMeta.Controller, m *controller.Metadata) {
@@ -100,7 +111,6 @@ func (k *KsctlCommand) handleManagedK8sVersion(meta *controllerMeta.Controller, 
 		os.Exit(1)
 	}
 	ss.Stop()
-	k.l.Debug(k.Ctx, "List of k8s versions", "versions", listOfK8sVersions)
 
 	if v, ok := k.getSelectedK8sVersion("Select the k8s version for Managed Cluster", listOfK8sVersions); !ok {
 		k.l.Error("Failed to get the k8s version")

@@ -22,19 +22,21 @@ import (
 	cLogger "github.com/ksctl/cli/pkg/logger"
 	"github.com/ksctl/ksctl/v2/pkg/consts"
 	"github.com/ksctl/ksctl/v2/pkg/logger"
+	"github.com/ksctl/ksctl/v2/pkg/provider"
 	"github.com/ksctl/ksctl/v2/pkg/storage"
 	"github.com/spf13/cobra"
 )
 
 type KsctlCommand struct {
-	Ctx          context.Context
-	CliLog       logger.Logger
-	l            logger.Logger
-	ksctlStorage storage.Storage
-	root         *cobra.Command
-	verbose      int
-	dryRun       bool
-	KsctlConfig  *config.Config
+	Ctx                     context.Context
+	CliLog                  logger.Logger
+	l                       logger.Logger
+	ksctlStorage            storage.Storage
+	root                    *cobra.Command
+	verbose                 int
+	dryRun                  bool
+	KsctlConfig             *config.Config
+	inMemInstanceTypesInReg map[string]provider.InstanceRegionOutput
 }
 
 func New() (*KsctlCommand, error) {

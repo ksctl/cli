@@ -203,7 +203,7 @@ func (k *KsctlCommand) storeMongoCredentials() (err error) {
 	}
 	c.SRV = srv
 
-	c.Domain, err = cli.TextInput("Enter your MongoDB URI")
+	c.Domain, err = cli.TextInput("Enter your MongoDB URI", "")
 	if err != nil {
 		return err
 	}
@@ -216,7 +216,7 @@ func (k *KsctlCommand) storeMongoCredentials() (err error) {
 		return err
 	}
 	port := ""
-	if port, err = cli.TextInput("Enter your MongoDB Port"); err != nil {
+	if port, err = cli.TextInput("Enter your MongoDB Port", ""); err != nil {
 		return err
 	}
 	if len(port) != 0 {
