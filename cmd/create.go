@@ -140,8 +140,44 @@ func (k *KsctlCommand) metadataForSelfManagedCluster(
 		os.Exit(1)
 	} else {
 		k.l.Debug(k.Ctx, "Selected etcd version", "Version", v)
-		// meta.EtcdVersion = v
+		meta.EtcdVersion = v
 	}
+
+	priceCalculator, err := metaClient.PriceCalculator(
+		controllerMeta.PriceCalculatorInput{
+			NoOfWorkerNodes:       meta.NoWP,
+			NoOfControlPlaneNodes: meta.NoCP,
+			NoOfEtcdNodes:         meta.NoDS,
+			ControlPlaneMachine:   cp,
+			WorkerMachine:         wp,
+			EtcdMachine:           etcd,
+			LoadBalancerMachine:   lb,
+		})
+	if err != nil {
+		k.l.Error("Failed to calculate the price", "Reason", err)
+		os.Exit(1)
+	}
+
+	priceOfCP := cp.GetCost() * float64(meta.NoCP)
+	priceOfWP := wp.GetCost() * float64(meta.NoWP)
+	priceOfDS := etcd.GetCost() * float64(meta.NoDS)
+	priceOfLB := lb.GetCost()
+	curr := cp.Price.Currency
+
+	k.l.Box(k.Ctx, "Cost Summary", fmt.Sprintf(`
+Control Plane Node(s) Cost = %.2f X %d = %.2f %s
+Worker Node(s) Cost = %.2f X %d = %.2f %s
+Etcd Node(s) Cost = %.2f X %d = %.2f %s
+Load Balancer Node(s) Cost = %.2f X %d = %.2f %s
+Total Cost = %.2f %s
+`,
+		cp.GetCost(), meta.NoCP, priceOfCP, curr,
+		wp.GetCost(), meta.NoWP, priceOfWP, curr,
+		etcd.GetCost(), meta.NoDS, priceOfDS, curr,
+		lb.GetCost(), 1, priceOfLB, curr,
+		priceCalculator, curr,
+	),
+	)
 
 	return
 }
