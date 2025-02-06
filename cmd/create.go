@@ -116,6 +116,34 @@ func (k *KsctlCommand) metadataForSelfManagedCluster(
 	} else {
 		meta.NoDS = v
 	}
+
+	bootstrapVers, err := metaClient.ListAllBootstrapVersions()
+	if err != nil {
+		k.l.Error("Failed to get the list of bootstrap versions", "Reason", err)
+		os.Exit(1)
+	}
+	if v, err := cli.DropDownList("Select the bootstrap version", bootstrapVers, bootstrapVers[0]); err != nil {
+		k.l.Error("Failed to get the bootstrap version", "Reason", err)
+		os.Exit(1)
+	} else {
+		k.l.Debug(k.Ctx, "Selected bootstrap version", "Version", v)
+		meta.K8sVersion = v
+	}
+
+	etcdVers, err := metaClient.ListAllEtcdVersions()
+	if err != nil {
+		k.l.Error("Failed to get the list of etcd versions", "Reason", err)
+		os.Exit(1)
+	}
+	if v, err := cli.DropDownList("Select the etcd version", etcdVers, etcdVers[0]); err != nil {
+		k.l.Error("Failed to get the etcd version", "Reason", err)
+		os.Exit(1)
+	} else {
+		k.l.Debug(k.Ctx, "Selected etcd version", "Version", v)
+		// meta.EtcdVersion = v
+	}
+
+	return
 }
 
 func (k *KsctlCommand) metadataForManagedCluster(
