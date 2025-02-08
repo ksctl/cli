@@ -212,8 +212,8 @@ func (l *GeneralLog) Warn(ctx context.Context, msg string, args ...any) {
 }
 
 func (l *GeneralLog) Table(ctx context.Context, headers []string, data [][]string) {
-	headerFmt := color.New(color.FgGreen, color.Underline).SprintfFunc()
-	columnFmt := color.New(color.FgYellow).SprintfFunc()
+	headerFmt := color.New(color.FgHiBlack, color.Underline).SprintfFunc()
+	columnFmt := color.New(color.FgHiGreen).SprintfFunc()
 
 	var dataToPrint [][]interface{} = make([][]interface{}, 0, len(data))
 	for _, v := range data {
