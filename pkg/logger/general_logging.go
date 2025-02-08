@@ -20,15 +20,12 @@ import (
 	"io"
 	"math"
 	"reflect"
-	"strconv"
 	"strings"
 	"sync"
 
 	box "github.com/Delta456/box-cli-maker/v2"
 	"github.com/fatih/color"
-	"github.com/ksctl/ksctl/v2/pkg/consts"
 	"github.com/ksctl/ksctl/v2/pkg/logger"
-	"github.com/ksctl/ksctl/v2/pkg/provider"
 	"github.com/rodaine/table"
 
 	"time"
@@ -41,10 +38,22 @@ type GeneralLog struct {
 }
 
 func (l *GeneralLog) ExternalLogHandler(ctx context.Context, msgType logger.CustomExternalLogLevel, message string) {
+	if msgType == logger.LogDebug {
+		msgType = LogDebug
+	}
+	if msgType == logger.LogInfo {
+		msgType = LogInfo
+	}
 	l.log(false, false, ctx, msgType, message)
 }
 
 func (l *GeneralLog) ExternalLogHandlerf(ctx context.Context, msgType logger.CustomExternalLogLevel, format string, args ...interface{}) {
+	if msgType == logger.LogDebug {
+		msgType = LogDebug
+	}
+	if msgType == logger.LogInfo {
+		msgType = LogInfo
+	}
 	l.log(false, false, ctx, msgType, format, args...)
 }
 
@@ -59,7 +68,7 @@ func formGroups(disableContext bool, ctx context.Context, v ...any) (format stri
 	}()
 	if !disableContext {
 		_format.WriteString(color.HiBlackString("component=") + "%s ")
-		vals = append(vals, getPackageName(ctx))
+		vals = append(vals, color.HiBlackString(getPackageName(ctx)))
 	}
 	i := 0
 	for ; i+1 < len(v); i += 2 {
@@ -130,6 +139,8 @@ func (l *GeneralLog) log(disableContext bool, useGroupFormer bool, ctx context.C
 			msgColored = color.HiCyanString(msg)
 		case LogInfo:
 			msgColored = color.HiBlueString(msg)
+		case LogError:
+			msgColored = color.HiRedString(msg)
 		}
 		msg = prefix + msgColored
 		format, _args := formGroups(disableContext, ctx, args...)
@@ -149,7 +160,7 @@ func (l *GeneralLog) log(disableContext bool, useGroupFormer bool, ctx context.C
 			fmt.Fprintf(l.writter, msg+" "+format, _args...)
 		}
 	} else {
-		args = append([]any{getPackageName(ctx)}, args...)
+		args = append([]any{color.HiBlackString(getPackageName(ctx))}, args...)
 		fmt.Fprintf(l.writter, prefix+color.HiBlackString("component=")+"%s "+msg+"\n", args...)
 	}
 }
@@ -262,69 +273,4 @@ func (l *GeneralLog) Box(ctx context.Context, title string, lines string) {
 	l.Debug(ctx, "PostUpdate Box", "title", len(title), "lines", len(lines))
 
 	l.boxBox(title, lines, "Yellow")
-}
-
-func HandleTableOutputListAll(ctx context.Context, l logger.Logger, data []provider.ClusterData) {
-	headers := []string{"Name", "Region", "Cloud", "ClusterType", "K8sDistro"}
-	var dataToPrint [][]string = make([][]string, 0, len(data))
-	for _, v := range data {
-		var row []string
-		row = append(
-			row,
-			v.Name,
-			v.Region,
-			string(v.CloudProvider),
-			string(v.ClusterType),
-			string(v.K8sDistro),
-		)
-		dataToPrint = append(dataToPrint, row)
-	}
-
-	l.Table(ctx, headers, dataToPrint)
-}
-
-func handleTableOutputGet(ctx context.Context, l logger.Logger, data provider.ClusterData) {
-
-	headers := []string{"Attributes", "Values"}
-	dataToPrint := [][]string{
-		{"ClusterName", data.Name},
-		{"Region", data.Region},
-		{"CloudProvider", string(data.CloudProvider)},
-		{"ClusterType", string(data.ClusterType)},
-	}
-
-	if data.ClusterType == consts.ClusterTypeSelfMang {
-		nodes := func(vm []provider.VMData) string {
-			slice := make([]string, 0, len(vm))
-			for _, v := range vm {
-				slice = append(slice, v.VMSize)
-			}
-			return strings.Join(slice, ",")
-		}
-
-		dataToPrint = append(
-			dataToPrint,
-			[]string{"BootstrapProvider", string(data.K8sDistro)},
-			[]string{"BootstrapKubernetesVersion", data.K8sVersion},
-			[]string{"ControlPlaneNodes", nodes(data.CP)},
-			[]string{"WorkerPlaneNodes", nodes(data.WP)},
-			[]string{"EtcdNodes", nodes(data.DS)},
-			[]string{"LoadBalancer", data.LB.VMSize},
-			[]string{"EtcdVersion", data.EtcdVersion},
-			[]string{"HaProxyVersion", data.LB.VMSize},
-		)
-	} else {
-		dataToPrint = append(
-			dataToPrint,
-			[]string{"ManagedNodes", strconv.Itoa(data.NoMgt) + " X " + data.Mgt.VMSize},
-			[]string{"ManagedK8sVersion", data.K8sVersion},
-		)
-	}
-
-	dataToPrint = append(dataToPrint,
-		[]string{"Addons", strings.Join(data.Apps, ",")},
-		[]string{"CNI", data.Cni},
-	)
-
-	l.Table(ctx, headers, dataToPrint)
 }

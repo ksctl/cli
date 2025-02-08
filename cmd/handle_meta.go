@@ -17,6 +17,7 @@ package cmd
 import (
 	"os"
 
+	"github.com/gookit/goutil/dump"
 	"github.com/ksctl/cli/pkg/cli"
 	"github.com/ksctl/ksctl/v2/pkg/consts"
 	"github.com/ksctl/ksctl/v2/pkg/handler/cluster/controller"
@@ -118,4 +119,9 @@ func (k *KsctlCommand) handleManagedK8sVersion(meta *controllerMeta.Controller, 
 	} else {
 		m.K8sVersion = v
 	}
+}
+
+func metadataSummary(meta controller.Metadata) {
+	x := dump.NewWithOptions(dump.WithoutType(), dump.WithoutPosition())
+	x.Println(meta)
 }

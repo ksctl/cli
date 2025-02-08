@@ -234,23 +234,15 @@ func (k *KsctlCommand) getSelectedCloudProvider(v consts.KsctlClusterType) (cons
 }
 
 func (k *KsctlCommand) getSelectedStorageDriver() (consts.KsctlStore, bool) {
-	if v, err := cli.DropDown(
-		"Select the Storage Driver",
-		map[string]string{
-			"MongoDb": string(consts.StoreExtMongo),
-			"Local":   string(consts.StoreLocal),
-		},
-		string(k.KsctlConfig.PreferedStateStore),
-	); err != nil {
-		k.l.Error("Failed to get userinput", "Reason", err)
+	if k.KsctlConfig.PreferedStateStore != consts.StoreExtMongo && k.KsctlConfig.PreferedStateStore != consts.StoreLocal {
+		k.l.Error("Failed to determine StorageDriver", "message", "Please use $ksctl configure to set the storage driver", "currentSetValue", k.KsctlConfig.PreferedStateStore)
 		return "", false
-	} else {
-		k.l.Debug(k.Ctx, "DropDown input", "storageDriver", v)
-		if errS := k.loadMongoCredentials(); errS != nil {
-			k.l.Error("Failed to load the MongoDB credentials", "Reason", errS)
-			return "", false
-		}
-
-		return consts.KsctlStore(v), true
 	}
+
+	if errS := k.loadMongoCredentials(); errS != nil {
+		k.l.Error("Failed to load the MongoDB credentials", "Reason", errS)
+		return "", false
+	}
+
+	return k.KsctlConfig.PreferedStateStore, true
 }

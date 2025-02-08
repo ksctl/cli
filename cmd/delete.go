@@ -15,6 +15,17 @@
 package cmd
 
 import (
+	"fmt"
+	"os"
+	"strconv"
+	"strings"
+
+	"github.com/ksctl/cli/pkg/cli"
+	"github.com/ksctl/ksctl/v2/pkg/consts"
+	"github.com/ksctl/ksctl/v2/pkg/handler/cluster/controller"
+	"github.com/ksctl/ksctl/v2/pkg/handler/cluster/managed"
+	"github.com/ksctl/ksctl/v2/pkg/handler/cluster/selfmanaged"
+	"github.com/ksctl/ksctl/v2/pkg/provider"
 	"github.com/spf13/cobra"
 )
 
@@ -29,13 +40,103 @@ ksctl delete --help
 		Long:  "It is used to delete cluster with the given name from user",
 
 		Run: func(cmd *cobra.Command, args []string) {
-			l := k.l
-			ctx := k.Ctx
+			// get the list of cluster and give users a select option to remove them!!!
+			// as with those you can ask for conformation and go ahead for deletion
 
-			l.Box(ctx, "delete", "delete cluster")
-			l.Print(ctx, "info", "args", args)
+			clusters, err := k.fetchAllClusters()
+			if err != nil {
+				k.l.Error("Error in fetching the clusters", "Error", err)
+				os.Exit(1)
+			}
+
+			if len(clusters) == 0 {
+				k.l.Error("No clusters found to delete")
+				os.Exit(1)
+			}
+
+			selectDisplay := make(map[string]string, len(clusters))
+			valueMaping := make(map[string]controller.Metadata, len(clusters))
+
+			for idx, cluster := range clusters {
+				selectDisplay[makeHumanReadableList(cluster)] = strconv.Itoa(idx)
+				valueMaping[strconv.Itoa(idx)] = controller.Metadata{
+					ClusterName:   cluster.Name,
+					ClusterType:   cluster.ClusterType,
+					Provider:      cluster.CloudProvider,
+					Region:        cluster.Region,
+					StateLocation: k.KsctlConfig.PreferedStateStore,
+				}
+			}
+
+			selectedCluster, err := cli.DropDown(
+				"Select the cluster to delete",
+				selectDisplay,
+				"",
+			)
+			if err != nil {
+				k.l.Error("Failed to get userinput", "Reason", err)
+				os.Exit(1)
+			}
+
+			m := valueMaping[selectedCluster]
+
+			if ok, _ := cli.Confirmation("Do you want to proceed with the cluster deletion", "no"); !ok {
+				os.Exit(1)
+			}
+
+			if m.ClusterType == consts.ClusterTypeMang {
+				c, err := managed.NewController(
+					k.Ctx,
+					k.l,
+					&controller.Client{
+						Metadata: m,
+					},
+				)
+				if err != nil {
+					k.l.Error("Failed to create the controller", "Reason", err)
+					os.Exit(1)
+				}
+
+				if err := c.Delete(); err != nil {
+					k.l.Error("Failed to delete your managed cluster", "Reason", err)
+					os.Exit(1)
+				}
+
+			} else {
+				c, err := selfmanaged.NewController(
+					k.Ctx,
+					k.l,
+					&controller.Client{
+						Metadata: m,
+					},
+				)
+				if err != nil {
+					k.l.Error("Failed to create the controller", "Reason", err)
+					os.Exit(1)
+				}
+
+				if err := c.Delete(); err != nil {
+					k.l.Error("Failed to delete your selfmanaged cluster", "Reason", err)
+					os.Exit(1)
+				}
+			}
+
+			k.l.Success(k.Ctx, "Deleted your cluster", "Name", m.ClusterName)
 		},
 	}
 
 	return cmd
+}
+
+func makeHumanReadableList(m provider.ClusterData) string {
+	fields := []string{"%s", "[%s]", "=>"}
+	args := []any{m.Name, m.ClusterType}
+	if m.CloudProvider == consts.CloudLocal {
+		fields = append(fields, "local")
+	} else {
+		fields = append(fields, "%s ⟨%s⟩")
+		args = append(args, m.CloudProvider, m.Region)
+	}
+
+	return fmt.Sprintf(strings.Join(fields, " "), args...)
 }

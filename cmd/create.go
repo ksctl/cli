@@ -15,16 +15,14 @@
 package cmd
 
 import (
-	"fmt"
 	"os"
-
-	"github.com/gookit/goutil/dump"
 
 	"github.com/ksctl/ksctl/v2/pkg/consts"
 
 	"github.com/ksctl/cli/pkg/cli"
 	"github.com/ksctl/ksctl/v2/pkg/handler/cluster/controller"
 
+	controllerManaged "github.com/ksctl/ksctl/v2/pkg/handler/cluster/managed"
 	controllerMeta "github.com/ksctl/ksctl/v2/pkg/handler/cluster/metadata"
 	"github.com/spf13/cobra"
 )
@@ -49,12 +47,6 @@ ksctl create --help
 			} else {
 				k.metadataForSelfManagedCluster(&meta)
 			}
-
-			if ok, _ := cli.Confirmation("Do you want to proceed with the cluster creation", "no"); !ok {
-				os.Exit(1)
-			}
-
-			dump.Println(meta)
 
 			k.l.Success(k.Ctx, "Created the cluster", "Name", meta.ClusterName)
 		},
@@ -143,14 +135,9 @@ func (k *KsctlCommand) metadataForSelfManagedCluster(
 		meta.EtcdVersion = v
 	}
 
-	curr := "$"
-	if cp.Price.Currency != "USD" {
-		curr = cp.Price.Currency
-	}
-
 	_, err = metaClient.PriceCalculator(
 		controllerMeta.PriceCalculatorInput{
-			Currency:              curr,
+			Currency:              cp.Price.Currency,
 			NoOfWorkerNodes:       meta.NoWP,
 			NoOfControlPlaneNodes: meta.NoCP,
 			NoOfEtcdNodes:         meta.NoDS,
@@ -161,6 +148,12 @@ func (k *KsctlCommand) metadataForSelfManagedCluster(
 		})
 	if err != nil {
 		k.l.Error("Failed to calculate the price", "Reason", err)
+		os.Exit(1)
+	}
+
+	metadataSummary(*meta)
+
+	if ok, _ := cli.Confirmation("Do you want to proceed with the cluster creation", "no"); !ok {
 		os.Exit(1)
 	}
 
@@ -216,7 +209,7 @@ func (k *KsctlCommand) metadataForManagedCluster(
 			offeringSelected = v
 		}
 
-		priceCalculator, err := metaClient.PriceCalculator(
+		_, err = metaClient.PriceCalculator(
 			controllerMeta.PriceCalculatorInput{
 				ManagedControlPlaneMachine: listOfOfferings[offeringSelected],
 				NoOfWorkerNodes:            meta.NoMP,
@@ -226,23 +219,32 @@ func (k *KsctlCommand) metadataForManagedCluster(
 			k.l.Error("Failed to calculate the price", "Reason", err)
 			os.Exit(1)
 		}
-
-		priceOfVM := vm.GetCost() * float64(meta.NoMP)
-		curr := vm.Price.Currency
-
-		k.l.Box(k.Ctx, "Cost Summary", fmt.Sprintf(`
-Managed Node(s) Cost = %.2f X %d = %.2f %s
-Management Offering = %.2f %s
-Total Cost = %.2f %s
-`,
-			vm.GetCost(), meta.NoMP, priceOfVM, curr,
-			listOfOfferings[offeringSelected].GetCost(), curr,
-			priceCalculator, curr,
-		),
-		)
 	}
 
 	k.handleManagedK8sVersion(metaClient, meta)
+
+	metadataSummary(*meta)
+
+	if ok, _ := cli.Confirmation("Do you want to proceed with the cluster creation", "no"); !ok {
+		os.Exit(1)
+	}
+
+	c, err := controllerManaged.NewController(
+		k.Ctx,
+		k.l,
+		&controller.Client{
+			Metadata: *meta,
+		},
+	)
+	if err != nil {
+		k.l.Error("Failed to create the controller", "Reason", err)
+		os.Exit(1)
+	}
+
+	if err := c.Create(); err != nil {
+		k.l.Error("Failed to create the cluster", "Reason", err)
+		os.Exit(1)
+	}
 
 	return
 }
