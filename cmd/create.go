@@ -17,6 +17,7 @@ package cmd
 import (
 	"os"
 
+	"github.com/ksctl/ksctl/v2/pkg/addons"
 	"github.com/ksctl/ksctl/v2/pkg/consts"
 
 	"github.com/ksctl/cli/pkg/cli"
@@ -265,4 +266,8 @@ func (k *KsctlCommand) metadataForManagedCluster(
 	}
 
 	return
+}
+
+func (k *KsctlCommand) processAddons() (_ addons.ClusterAddons, _ error) {
+	return nil, nil
 }

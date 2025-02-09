@@ -183,7 +183,7 @@ func (k *KsctlCommand) getSelectedClusterType() (consts.KsctlClusterType, bool) 
 	if v, err := cli.DropDown(
 		"Select the cluster type",
 		map[string]string{
-			"Cloud Managed (For ex. EKS, AKS, GKE)":    string(consts.ClusterTypeMang),
+			"Cloud Managed (For ex. EKS, AKS, Kind)":   string(consts.ClusterTypeMang),
 			"Self Managed (For example, K3s, Kubeadm)": string(consts.ClusterTypeSelfMang),
 		},
 		string(consts.ClusterTypeMang),

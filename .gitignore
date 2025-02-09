@@ -25,3 +25,5 @@ go.work
 gen/docs/
 
 kubeconfig
+# Added by goreleaser init:
+dist/

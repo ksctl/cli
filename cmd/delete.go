@@ -40,9 +40,6 @@ ksctl delete --help
 		Long:  "It is used to delete cluster with the given name from user",
 
 		Run: func(cmd *cobra.Command, args []string) {
-			// get the list of cluster and give users a select option to remove them!!!
-			// as with those you can ask for conformation and go ahead for deletion
-
 			clusters, err := k.fetchAllClusters()
 			if err != nil {
 				k.l.Error("Error in fetching the clusters", "Error", err)

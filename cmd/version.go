@@ -14,9 +14,27 @@
 
 package cmd
 
-import "github.com/spf13/cobra"
+import (
+	"strings"
+
+	"github.com/fatih/color"
+	"github.com/spf13/cobra"
+)
+
+// change this using ldflags
+var Version string = "dev"
+
+var BuildDate string
 
 func (k *KsctlCommand) Version() *cobra.Command {
+
+	logoKsctl := `
+░  ░░░░  ░░░      ░░░░      ░░░        ░░  ░░░░░░░
+▒  ▒▒▒  ▒▒▒  ▒▒▒▒▒▒▒▒  ▒▒▒▒  ▒▒▒▒▒  ▒▒▒▒▒  ▒▒▒▒▒▒▒
+▓     ▓▓▓▓▓▓      ▓▓▓  ▓▓▓▓▓▓▓▓▓▓▓  ▓▓▓▓▓  ▓▓▓▓▓▓▓
+▓  ▓▓▓  ▓▓▓▓▓▓▓▓▓  ▓▓  ▓▓▓▓  ▓▓▓▓▓  ▓▓▓▓▓  ▓▓▓▓▓▓▓
+█  ████  ███      ████      ██████  █████        █
+`
 
 	cmd := &cobra.Command{
 		Use: "version",
@@ -26,7 +44,12 @@ ksctl version --help
 		Short: "ksctl version",
 		Long:  "To get version for ksctl components",
 		Run: func(cmd *cobra.Command, args []string) {
-			k.l.Box(k.Ctx, "Version", "cli: dev\nksctl: dev")
+			// color.New(color.BgHiGreen).Add(color.FgHiBlack).Println(logoKsctl)
+			for _, line := range strings.Split(logoKsctl, "\n") {
+				color.New(color.FgHiGreen).Add(color.BgBlack).Println(line)
+			}
+			k.l.Note(k.Ctx, "Components", color.HiGreenString("ksctl:cli"), color.HiBlueString(Version), color.HiGreenString("ksctl:core"), color.HiBlueString("v2"))
+			k.l.Note(k.Ctx, "Build Information", "date", BuildDate)
 		},
 	}
 
