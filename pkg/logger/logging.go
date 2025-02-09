@@ -47,8 +47,8 @@ func addLineTerminationForLongStrings(str string) string {
 			return _str
 		}
 
-		x := string(utilities.DeepCopySlice[byte]([]byte(_str[:limitCol])))
-		y := string(utilities.DeepCopySlice[byte]([]byte(helper(_str[limitCol:]))))
+		x := string(utilities.DeepCopySlice([]byte(_str[:limitCol])))
+		y := string(utilities.DeepCopySlice([]byte(helper(_str[limitCol:]))))
 
 		// ks
 		// ^^

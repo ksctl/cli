@@ -38,22 +38,10 @@ type GeneralLog struct {
 }
 
 func (l *GeneralLog) ExternalLogHandler(ctx context.Context, msgType logger.CustomExternalLogLevel, message string) {
-	if msgType == logger.LogDebug {
-		msgType = LogDebug
-	}
-	if msgType == logger.LogInfo {
-		msgType = LogInfo
-	}
 	l.log(false, false, ctx, msgType, message)
 }
 
 func (l *GeneralLog) ExternalLogHandlerf(ctx context.Context, msgType logger.CustomExternalLogLevel, format string, args ...interface{}) {
-	if msgType == logger.LogDebug {
-		msgType = LogDebug
-	}
-	if msgType == logger.LogInfo {
-		msgType = LogInfo
-	}
 	l.log(false, false, ctx, msgType, format, args...)
 }
 
@@ -93,7 +81,7 @@ func formGroups(disableContext bool, ctx context.Context, v ...any) (format stri
 }
 
 func isLogEnabled(level uint, msgType logger.CustomExternalLogLevel) bool {
-	if msgType == LogDebug {
+	if msgType == logger.LogDebug {
 		return level >= 9
 	}
 	return true
@@ -103,7 +91,7 @@ func (l *GeneralLog) logErrorf(disableContext bool, disablePrefix bool, ctx cont
 	l.mu.Lock()
 	defer l.mu.Unlock()
 	if !disablePrefix {
-		prefix := fmt.Sprintf("%s%s ", getTime(l.level), LogError)
+		prefix := fmt.Sprintf("%s%s ", getTime(l.level), logger.LogError)
 		msg = prefix + msg
 	}
 	format, _args := formGroups(disableContext, ctx, args...)
@@ -129,30 +117,30 @@ func (l *GeneralLog) log(disableContext bool, useGroupFormer bool, ctx context.C
 	if useGroupFormer {
 		msgColored := ""
 		switch msgType {
-		case LogSuccess:
+		case logger.LogSuccess:
 			msgColored = color.HiGreenString(msg)
-		case LogWarning:
+		case logger.LogWarning:
 			msgColored = color.HiYellowString(msg)
-		case LogDebug:
+		case logger.LogDebug:
 			msgColored = color.HiMagentaString(msg)
-		case LogNote:
+		case logger.LogNote:
 			msgColored = color.HiCyanString(msg)
-		case LogInfo:
+		case logger.LogInfo:
 			msgColored = color.HiBlueString(msg)
-		case LogError:
+		case logger.LogError:
 			msgColored = color.HiRedString(msg)
 		}
 		msg = prefix + msgColored
 		format, _args := formGroups(disableContext, ctx, args...)
 		if _args == nil {
-			if disableContext && msgType == LogError {
+			if disableContext && msgType == logger.LogError {
 				l.boxBox(
 					"Error", msg+" "+format, "Red")
 				return
 			}
 			fmt.Fprint(l.writter, msg+" "+format)
 		} else {
-			if disableContext && msgType == LogError {
+			if disableContext && msgType == logger.LogError {
 				l.boxBox(
 					"Error", fmt.Sprintf(msg+" "+format, _args...), "Red")
 				return
@@ -185,33 +173,24 @@ func NewLogger(verbose int, out io.Writer) *GeneralLog {
 	}
 }
 
-var (
-	LogWarning = logger.CustomExternalLogLevel(color.New(color.FgBlack, color.BgYellow).Sprintf("WARN"))
-	LogInfo    = logger.CustomExternalLogLevel(color.New(color.FgBlack, color.BgBlue).Sprintf("INFO"))
-	LogNote    = logger.CustomExternalLogLevel(color.New(color.FgBlack, color.BgCyan).Sprintf("NOTE"))
-	LogDebug   = logger.CustomExternalLogLevel(color.New(color.FgBlack, color.BgMagenta).Sprintf("DEBUG"))
-	LogSuccess = logger.CustomExternalLogLevel(color.New(color.FgBlack, color.BgGreen).Sprintf("SUCC"))
-	LogError   = logger.CustomExternalLogLevel(color.New(color.FgBlack, color.BgRed).Sprintf("ERR"))
-)
-
 func (l *GeneralLog) Print(ctx context.Context, msg string, args ...any) {
-	l.log(false, true, ctx, LogInfo, msg, args...)
+	l.log(false, true, ctx, logger.LogInfo, msg, args...)
 }
 
 func (l *GeneralLog) Success(ctx context.Context, msg string, args ...any) {
-	l.log(false, true, ctx, LogSuccess, msg, args...)
+	l.log(false, true, ctx, logger.LogSuccess, msg, args...)
 }
 
 func (l *GeneralLog) Note(ctx context.Context, msg string, args ...any) {
-	l.log(false, true, ctx, LogNote, msg, args...)
+	l.log(false, true, ctx, logger.LogNote, msg, args...)
 }
 
 func (l *GeneralLog) Debug(ctx context.Context, msg string, args ...any) {
-	l.log(false, true, ctx, LogDebug, msg, args...)
+	l.log(false, true, ctx, logger.LogDebug, msg, args...)
 }
 
 func (l *GeneralLog) Error(msg string, args ...any) {
-	l.log(true, true, nil, LogError, msg, args...)
+	l.log(true, true, nil, logger.LogError, msg, args...)
 }
 
 func (l *GeneralLog) NewError(ctx context.Context, msg string, args ...any) error {
@@ -219,7 +198,7 @@ func (l *GeneralLog) NewError(ctx context.Context, msg string, args ...any) erro
 }
 
 func (l *GeneralLog) Warn(ctx context.Context, msg string, args ...any) {
-	l.log(false, true, ctx, LogWarning, msg, args...)
+	l.log(false, true, ctx, logger.LogWarning, msg, args...)
 }
 
 func (l *GeneralLog) Table(ctx context.Context, headers []string, data [][]string) {

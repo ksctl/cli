@@ -17,8 +17,6 @@ package cmd
 import (
 	"context"
 	"os"
-	"strconv"
-	"strings"
 
 	"github.com/ksctl/ksctl/v2/pkg/consts"
 	"github.com/ksctl/ksctl/v2/pkg/errors"
@@ -118,7 +116,7 @@ func HandleTableOutputListAll(ctx context.Context, l logger.Logger, data []provi
 	for _, v := range data {
 		var row []string
 		row = append(row, v.Name, string(v.ClusterType), string(v.CloudProvider))
-		if v.Region == "" || v.Region == "LOCAL" {
+		if v.CloudProvider == consts.CloudLocal {
 			row = append(row, "")
 		} else {
 			row = append(row, v.Region)
@@ -129,52 +127,6 @@ func HandleTableOutputListAll(ctx context.Context, l logger.Logger, data []provi
 		)
 		dataToPrint = append(dataToPrint, row)
 	}
-
-	l.Table(ctx, headers, dataToPrint)
-}
-
-func handleTableOutputGet(ctx context.Context, l logger.Logger, data provider.ClusterData) {
-
-	headers := []string{"Attributes", "Values"}
-	dataToPrint := [][]string{
-		{"ClusterName", data.Name},
-		{"Region", data.Region},
-		{"CloudProvider", string(data.CloudProvider)},
-		{"ClusterType", string(data.ClusterType)},
-	}
-
-	if data.ClusterType == consts.ClusterTypeSelfMang {
-		nodes := func(vm []provider.VMData) string {
-			slice := make([]string, 0, len(vm))
-			for _, v := range vm {
-				slice = append(slice, v.VMSize)
-			}
-			return strings.Join(slice, ",")
-		}
-
-		dataToPrint = append(
-			dataToPrint,
-			[]string{"BootstrapProvider", string(data.K8sDistro)},
-			[]string{"BootstrapKubernetesVersion", data.K8sVersion},
-			[]string{"ControlPlaneNodes", nodes(data.CP)},
-			[]string{"WorkerPlaneNodes", nodes(data.WP)},
-			[]string{"EtcdNodes", nodes(data.DS)},
-			[]string{"LoadBalancer", data.LB.VMSize},
-			[]string{"EtcdVersion", data.EtcdVersion},
-			[]string{"HaProxyVersion", data.LB.VMSize},
-		)
-	} else {
-		dataToPrint = append(
-			dataToPrint,
-			[]string{"ManagedNodes", strconv.Itoa(data.NoMgt) + " X " + data.Mgt.VMSize},
-			[]string{"ManagedK8sVersion", data.K8sVersion},
-		)
-	}
-
-	dataToPrint = append(dataToPrint,
-		[]string{"Addons", strings.Join(data.Apps, ",")},
-		[]string{"CNI", data.Cni},
-	)
 
 	l.Table(ctx, headers, dataToPrint)
 }

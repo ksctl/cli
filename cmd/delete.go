@@ -65,6 +65,7 @@ ksctl delete --help
 					Provider:      cluster.CloudProvider,
 					Region:        cluster.Region,
 					StateLocation: k.KsctlConfig.PreferedStateStore,
+					K8sDistro:     cluster.K8sDistro,
 				}
 			}
 

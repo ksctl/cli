@@ -24,6 +24,7 @@ import (
 
 	controllerManaged "github.com/ksctl/ksctl/v2/pkg/handler/cluster/managed"
 	controllerMeta "github.com/ksctl/ksctl/v2/pkg/handler/cluster/metadata"
+	controllerSelfManaged "github.com/ksctl/ksctl/v2/pkg/handler/cluster/selfmanaged"
 	"github.com/spf13/cobra"
 )
 
@@ -154,6 +155,23 @@ func (k *KsctlCommand) metadataForSelfManagedCluster(
 	k.metadataSummary(*meta)
 
 	if ok, _ := cli.Confirmation("Do you want to proceed with the cluster creation", "no"); !ok {
+		os.Exit(1)
+	}
+
+	c, err := controllerSelfManaged.NewController(
+		k.Ctx,
+		k.l,
+		&controller.Client{
+			Metadata: *meta,
+		},
+	)
+	if err != nil {
+		k.l.Error("Failed to create the controller", "Reason", err)
+		os.Exit(1)
+	}
+
+	if err := c.Create(); err != nil {
+		k.l.Error("Failed to create the cluster", "Reason", err)
 		os.Exit(1)
 	}
 

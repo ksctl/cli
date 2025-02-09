@@ -32,6 +32,7 @@ func (k *KsctlCommand) CommandMapping() error {
 		k.Create(),
 		k.Delete(),
 		cl,
+		k.Get(),
 		k.Connect(),
 		k.ScaleUp(),
 		k.ScaleDown(),
