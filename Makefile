@@ -22,25 +22,19 @@ gen-docs: ## Generates docs
 install_linux:  ## Install ksctl
 	@echo "Started to Install ksctl"
 	cd scripts && \
-		env GOOS=${GOOS_LINUX} GOARCH=${GOARCH_LINUX} go build -o ksctl -v ../ && \
-		sudo mv ksctl /usr/local/bin/ && \
-		ksctl version
+		env GOOS=${GOOS_LINUX} GOARCH=${GOARCH_LINUX} ./builder.sh
 
 .PHONY: install_macos
 install_macos: ## Install ksctl on macos m1,m2,..
 	@echo "Started to Install ksctl"
 	cd scripts && \
-		env GOOS=${GOOS_MACOS} GOARCH=${GOARCH_MACOS} go build -o /usr/local/bin/ksctl -v ../ && \
-		sudo mv ksctl /usr/local/bin/ && \
-		ksctl version
+		env GOOS=${GOOS_MACOS} GOARCH=${GOARCH_MACOS} ./builder.sh
 
 .PHONY: install_macos_intel
 install_macos_intel: ## Install ksctl on macos intel
 	@echo "Started to Install ksctl"
 	cd scripts && \
-		env GOOS=${GOOS_MACOS} GOARCH=${GOARCH_MACOS_INTEL} go build -o /usr/local/bin/ksctl -v ../ && \
-		sudo mv ksctl /usr/local/bin/ && \
-		ksctl version
+		env GOOS=${GOOS_MACOS} GOARCH=${GOARCH_MACOS_INTEL} ./builder.sh
 
 .PHONY: uninstall
 uninstall:  ## Uninstall ksctl
