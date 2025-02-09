@@ -108,7 +108,7 @@ func handleTableOutputGet(ctx context.Context, l logger.Logger, data provider.Cl
 			[]string{"EtcdNodes", nodes(data.DS)},
 			[]string{"LoadBalancer", data.LB.VMSize},
 			[]string{"EtcdVersion", data.EtcdVersion},
-			[]string{"HaProxyVersion", data.LB.VMSize},
+			[]string{"HaProxyVersion", data.HAProxyVersion},
 		)
 	} else {
 		dataToPrint = append(
