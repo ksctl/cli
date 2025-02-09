@@ -21,3 +21,9 @@
 go.work
 
 .idea/
+
+gen/docs/
+
+kubeconfig
+# Added by goreleaser init:
+dist/

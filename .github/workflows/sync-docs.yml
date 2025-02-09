@@ -5,9 +5,9 @@ on:
     branches:
       - main
     paths:
-      - 'cli/**'  # Adjust this to match your CLI code structure
+      - 'cmd/**'  # Adjust this to match your CLI code structure
       - '.github/workflows/sync-docs.yml'
-  
+
   workflow_dispatch:
 
 concurrency:
@@ -27,14 +27,14 @@ jobs:
         git clone --branch dev https://github.com/ksctl/docs.git docs-repo
 
     - name: Set up Go
-      uses: actions/setup-go@v4
+      uses: actions/setup-go@v5
       with:
-        go-version: 'stable'
+        go-version-file: 'cli-repo/go.mod'
 
     - name: Generate Documentation
       working-directory: cli-repo
       run: |
-        mkdir -p gen/docs.md
+        mkdir -p gen/docs
         make gen-docs
 
     - name: Sync Generated Docs
@@ -44,7 +44,7 @@ jobs:
         rm -rf docs-repo/content/en/docs/Reference
         mkdir -p docs-repo/content/en/docs/Reference
         cp /tmp/_index.md docs-repo/content/en/docs/Reference/_index.md
-        cp -rv cli-repo/gen/docs.md/. docs-repo/content/en/docs/Reference/.
+        cp -rv cli-repo/gen/docs/. docs-repo/content/en/docs/Reference/.
         ls -lha docs-repo/content/en/docs/Reference/
 
     - name: Commit and Push Changes

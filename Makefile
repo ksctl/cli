@@ -1,9 +1,7 @@
 GOOS_LINUX = linux
-GOOS_WINDOWS = windows
 GOOS_MACOS = darwin
 
 GOARCH_LINUX ?= amd64
-GOARCH_WINDOWS ?= amd64
 GOARCH_MACOS = arm64
 GOARCH_MACOS_INTEL = amd64
 
@@ -16,28 +14,9 @@ help: ## Display this help.
 ##@ Generate
 .PHONY: gen-docs
 gen-docs: ## Generates docs
-	go run gen_docs.go
+	go run gen/docs.go
 
 ##@ Install (Dev)
-
-
-.PHONY: install_linux_mock
-install_linux_mock:  ## Install ksctl
-	@echo "Started to Install ksctl"
-	cd scripts && \
-		env GOOS=${GOOS_LINUX} GOARCH=${GOARCH_LINUX} ./builder-mock.sh
-
-.PHONY: install_macos_mock
-install_macos_mock: ## Install ksctl on macos m1,m2,..
-	@echo "Started to Install ksctl"
-	cd scripts && \
-		env GOOS=${GOOS_MACOS} GOARCH=${GOARCH_MACOS} ./builder-mock.sh
-
-.PHONY: install_macos_intel_mock
-install_macos_intel_mock: ## Install ksctl on macos intel
-	@echo "Started to Install ksctl"
-	cd scripts && \
-		env GOOS=${GOOS_MACOS} GOARCH=${GOARCH_MACOS_INTEL} ./builder-mock.sh
 
 .PHONY: install_linux
 install_linux:  ## Install ksctl

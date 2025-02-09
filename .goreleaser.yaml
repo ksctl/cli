@@ -1,8 +1,23 @@
+# This is an example .goreleaser.yml file with some sensible defaults.
+# Make sure to check the documentation at https://goreleaser.com
+
+# The lines below are called `modelines`. See `:help modeline`
+# Feel free to remove those if you don't want/need to use them.
+# yaml-language-server: $schema=https://goreleaser.com/static/schema.json
+# vim: set ts=2 sw=2 tw=0 fo=cnqoj
+
+version: 2
+
 project_name: ksctl-cli
 
+before:
+  hooks:
+    - go mod tidy
+
 builds:
-  - binary: ksctl
-    main: ./cli
+  - env:
+      - CGO_ENABLED=0
+    binary: ksctl
     goos:
       - linux
       - darwin
@@ -10,20 +25,39 @@ builds:
       - amd64
       - arm64
     ldflags:
-      - -s -w -X "github.com/ksctl/cli/cli/cmd.BuildDate={{.Env.DATE}}"
-      - -s -w -X "github.com/ksctl/cli/cli/cmd.Version={{.Env.VERSION}}"
-      - -s -w -X "github.com/ksctl/ksctl/commons.OCIVersion={{.Env.OCIVERSION}}"
-    env:
-      - CGO_ENABLED=0
+      - -s -w -X "github.com/ksctl/cli/cli/v2/pkg/config.BuildDate={{.Env.DATE}}"
+      - -s -w -X "github.com/ksctl/cli/cli/v2/pkg/config.Version={{.Env.VERSION}}"
+      - -s -w -X "github.com/ksctl/ksctl/v2/pkg/config.KsctlCoreVer={{.Env.OCIVERSION}}"
 
 signs:
   - cmd: cosign
     certificate: '${artifact}.cert'
     args:
       - sign-blob
-      - '--output-certificate=${certificate}' 
+      - '--output-certificate=${certificate}'
       - '--output-signature=${signature}'
       - '${artifact}'
       - --yes
     artifacts: all
     output: true
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^scripts:"
+      - "^gen:"
+
+release:
+  draft: true
+  make_latest: true
+  header: >-
+    # 🚀 Changelog
+
+    This release contains a number of enhancements and bug fixes. For a full list of changes
+
+  footer: >-
+
+    ---
+
+    Released by [GoReleaser](https://github.com/goreleaser/goreleaser).
