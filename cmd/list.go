@@ -113,16 +113,18 @@ func (k *KsctlCommand) fetchAllClusters() ([]provider.ClusterData, error) {
 }
 
 func HandleTableOutputListAll(ctx context.Context, l logger.Logger, data []provider.ClusterData) {
-	headers := []string{"Name", "ClusterType", "Cloud", "Region", "BootstrapProvider"}
+	headers := []string{"Name", "Type", "Cloud", "Region", "BootstrapProvider"}
 	var dataToPrint [][]string = make([][]string, 0, len(data))
 	for _, v := range data {
 		var row []string
+		row = append(row, v.Name, string(v.ClusterType), string(v.CloudProvider))
+		if v.Region == "" || v.Region == "LOCAL" {
+			row = append(row, "")
+		} else {
+			row = append(row, v.Region)
+		}
 		row = append(
 			row,
-			v.Name,
-			string(v.ClusterType),
-			string(v.CloudProvider),
-			v.Region,
 			string(v.K8sDistro),
 		)
 		dataToPrint = append(dataToPrint, row)

@@ -151,7 +151,7 @@ func (k *KsctlCommand) metadataForSelfManagedCluster(
 		os.Exit(1)
 	}
 
-	metadataSummary(*meta)
+	k.metadataSummary(*meta)
 
 	if ok, _ := cli.Confirmation("Do you want to proceed with the cluster creation", "no"); !ok {
 		os.Exit(1)
@@ -223,7 +223,7 @@ func (k *KsctlCommand) metadataForManagedCluster(
 
 	k.handleManagedK8sVersion(metaClient, meta)
 
-	metadataSummary(*meta)
+	k.metadataSummary(*meta)
 
 	if ok, _ := cli.Confirmation("Do you want to proceed with the cluster creation", "no"); !ok {
 		os.Exit(1)

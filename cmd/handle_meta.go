@@ -15,9 +15,10 @@
 package cmd
 
 import (
+	"encoding/json"
 	"os"
+	"strconv"
 
-	"github.com/gookit/goutil/dump"
 	"github.com/ksctl/cli/pkg/cli"
 	"github.com/ksctl/ksctl/v2/pkg/consts"
 	"github.com/ksctl/ksctl/v2/pkg/handler/cluster/controller"
@@ -121,7 +122,85 @@ func (k *KsctlCommand) handleManagedK8sVersion(meta *controllerMeta.Controller, 
 	}
 }
 
-func metadataSummary(meta controller.Metadata) {
-	x := dump.NewWithOptions(dump.WithoutType(), dump.WithoutPosition())
-	x.Println(meta)
+func (k *KsctlCommand) metadataSummary(meta controller.Metadata) {
+	k.l.Box(k.Ctx, "Cluster Blueprint", "Here is the blueprint of the cluster")
+
+	headers := []string{"Attributes", "Values"}
+
+	{
+		k.l.Box(k.Ctx, "Ksctl Cluster Summary", "Key attributes of the cluster")
+		dd := [][]string{}
+		dd = append(dd,
+			[]string{"ClusterName", meta.ClusterName},
+			[]string{"Region", meta.Region},
+			[]string{"CloudProvider", string(meta.Provider)},
+			[]string{"ClusterType", string(meta.ClusterType)},
+		)
+
+		k.l.Table(k.Ctx, headers, dd)
+	}
+
+	println()
+
+	{
+		dd := [][]string{}
+
+		if meta.NoCP > 0 {
+			dd = append(dd, []string{"ControlPlaneNodes", strconv.Itoa(meta.NoCP) + " X " + meta.ControlPlaneNodeType})
+		}
+		if meta.NoWP > 0 {
+			dd = append(dd, []string{"WorkerPlaneNodes", strconv.Itoa(meta.NoWP) + " X " + meta.WorkerPlaneNodeType})
+		}
+		if meta.NoDS > 0 {
+			dd = append(dd, []string{"EtcdNodes", strconv.Itoa(meta.NoDS) + " X " + meta.DataStoreNodeType})
+		}
+		if meta.LoadBalancerNodeType != "" {
+			dd = append(dd, []string{"LoadBalancer", meta.LoadBalancerNodeType})
+		}
+		if len(meta.ManagedNodeType) > 0 {
+			dd = append(dd, []string{"ManagedNodes", strconv.Itoa(meta.NoMP) + " X " + meta.ManagedNodeType})
+		}
+
+		if len(dd) > 0 {
+			k.l.Box(k.Ctx, "Ksctl Cluster Summary", "Infrastructure details of the cluster")
+			k.l.Table(k.Ctx, headers, dd)
+		}
+	}
+	println()
+
+	{
+		dd := [][]string{}
+
+		if meta.K8sDistro != "" {
+			dd = append(dd, []string{"BootstrapProvider", string(meta.K8sDistro)})
+		}
+		if meta.EtcdVersion != "" {
+			dd = append(dd, []string{"EtcdVersion", meta.EtcdVersion})
+		}
+		if meta.K8sVersion != "" {
+			dd = append(dd, []string{"BootstrapKubernetesVersion", meta.K8sVersion})
+		}
+
+		if len(dd) > 0 {
+			k.l.Box(k.Ctx, "Ksctl Cluster Summary", "Bootstrap details of the cluster")
+			k.l.Table(k.Ctx, headers, dd)
+		}
+
+	}
+	println()
+
+	{
+		// Addons Summary
+		if len(meta.Addons) > 0 {
+			dd := [][]string{}
+
+			k.l.Box(k.Ctx, "Ksctl Cluster Summary", "Addons details of the cluster")
+
+			v, _ := json.MarshalIndent(meta.Addons, "", "  ")
+			dd = append(dd, []string{"Addons", string(v)})
+			k.l.Table(k.Ctx, headers, dd)
+			println()
+		}
+	}
+
 }

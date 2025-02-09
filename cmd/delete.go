@@ -84,6 +84,10 @@ ksctl delete --help
 				os.Exit(1)
 			}
 
+			if k.loadCloudProviderCreds(m.Provider) != nil {
+				os.Exit(1)
+			}
+
 			if m.ClusterType == consts.ClusterTypeMang {
 				c, err := managed.NewController(
 					k.Ctx,

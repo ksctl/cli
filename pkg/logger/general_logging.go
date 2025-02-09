@@ -272,5 +272,5 @@ func (l *GeneralLog) Box(ctx context.Context, title string, lines string) {
 
 	l.Debug(ctx, "PostUpdate Box", "title", len(title), "lines", len(lines))
 
-	l.boxBox(title, lines, "Yellow")
+	l.boxBox(title, lines, "Green")
 }

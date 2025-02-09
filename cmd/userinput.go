@@ -216,21 +216,28 @@ func (k *KsctlCommand) getSelectedCloudProvider(v consts.KsctlClusterType) (cons
 	} else {
 		k.l.Debug(k.Ctx, "DropDown input", "cloudProvider", v)
 
-		switch consts.KsctlCloud(v) {
-		case consts.CloudAws:
-			if errC := k.loadAwsCredentials(); errC != nil {
-				k.l.Error("Failed to load the AWS credentials", "Reason", errC)
-				return "", false
-			}
-		case consts.CloudAzure:
-			if errC := k.loadAzureCredentials(); errC != nil {
-				k.l.Error("Failed to load the Azure credentials", "Reason", errC)
-				return "", false
-			}
+		if err := k.loadCloudProviderCreds(consts.KsctlCloud(v)); err != nil {
+			return "", false
 		}
 
 		return consts.KsctlCloud(v), true
 	}
+}
+
+func (k *KsctlCommand) loadCloudProviderCreds(v consts.KsctlCloud) error {
+	switch v {
+	case consts.CloudAws:
+		if err := k.loadAwsCredentials(); err != nil {
+			k.l.Error("Failed to load the AWS credentials", "Reason", err)
+			return err
+		}
+	case consts.CloudAzure:
+		if err := k.loadAzureCredentials(); err != nil {
+			k.l.Error("Failed to load the Azure credentials", "Reason", err)
+			return err
+		}
+	}
+	return nil
 }
 
 func (k *KsctlCommand) getSelectedStorageDriver() (consts.KsctlStore, bool) {
