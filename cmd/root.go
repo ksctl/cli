@@ -30,6 +30,8 @@ import (
 
 func (k *KsctlCommand) NewRootCmd() *cobra.Command {
 
+	v := false
+
 	cmd := &cobra.Command{
 		Use:   "ksctl",
 		Short: "CLI tool for managing multiple K8s clusters",
@@ -43,13 +45,17 @@ func (k *KsctlCommand) NewRootCmd() *cobra.Command {
 				)
 			}
 
+			if v {
+				k.verbose = -1
+			}
+
 			k.l = cLogger.NewLogger(k.verbose, os.Stdout)
 		},
 	}
 
 	cmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 	cli.AddDryRunFlag(cmd, &k.dryRun)
-	cli.AddVerboseFlag(cmd, &k.verbose)
+	cli.AddVerboseFlag(cmd, &v)
 
 	return cmd
 }

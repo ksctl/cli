@@ -25,8 +25,8 @@ func MarkFlagsRequired(command *cobra.Command, flagNames ...string) error {
 	return nil
 }
 
-func AddVerboseFlag(command *cobra.Command, verbose *int) {
-	command.PersistentFlags().IntVarP(verbose, "verbose", "v", 0, "Enable verbose output")
+func AddVerboseFlag(command *cobra.Command, verbose *bool) {
+	command.PersistentFlags().BoolVarP(verbose, "verbose", "v", false, "Enable verbose output")
 }
 
 func AddDryRunFlag(command *cobra.Command, dryRun *bool) {
