@@ -3,26 +3,24 @@ name: ci-test-go
 on:
   push:
     paths:
-      - 'internal/**'
-      - 'pkg/**'
-      - 'cmd/cli/**'
+      - "pkg/**"
+      - "cmd/**"
     branches: [main]
   pull_request:
     paths:
-      - 'internal/**'
-      - 'pkg/**'
-      - 'cmd/cli/**'
+      - "pkg/**"
+      - "cmd/**"
     branches: [main]
 
 jobs:
   go-fmt:
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
-      - uses: actions/setup-go@v3
+      - uses: actions/setup-go@v5
         with:
-          go-version: v1.20
+          go-version-file: "go.mod"
 
       - name: check gofmt pkg dir
         working-directory: pkg
@@ -31,6 +29,7 @@ jobs:
       - name: check gofmt internal dir
         working-directory: internal
         run: gofmt -s -w -d $(find . -type f -name '*.go' -print)
+
       # TODO: Add linter
       # - name: check golint
       #   run: $#@$@

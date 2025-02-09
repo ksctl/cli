@@ -1,22 +1,48 @@
-# Tasks description
+## 🗒️ Changelog
+<!-- Provide a clear and concise overview of the changes -->
 
-```[tasklist]
-### Related Issues
-- [ ] #9999
-```
 
-# Solution
+## 🏋🏼 Issues
 
-```[tasklist]
-### Tasks
-- [ ] milestones or sub-task which needs to be coverted
-```
+### ✅ Completed Issues
+<!-- List the issues this PR completes -->
+- Fixes:
 
-<!--Add here-->
+### 📎 Related Issues
+<!-- List any related issues that might be affected by this PR -->
+- Related to:
 
-# Note to reviewers
 
-<!--Add here-->
+## 🚀 Task List
+<!-- List any sub-tasks or milestones -->
+- [ ]
+- [ ]
 
-- [ ] Ran Tests locally
-- [ ] Checked [Contribution's guidelines](https://docs.ksctl.com/docs/contribution-guidelines/)
+
+## 🔍 Review Checklist
+<!-- Mark the items you've completed -->
+- [ ] Code follows project style guidelines
+- [ ] Added/updated tests
+- [ ] Ran tests locally
+- [ ] Updated documentation
+- [ ] Checked [Contribution Guidelines](https://docs.ksctl.com/docs/contribution-guidelines/)
+
+## 📸 Screenshots/Recordings
+<!-- If applicable, add screenshots or recordings -->
+
+## 📌 Additional Notes
+<!-- Any additional information for reviewers -->
+
+---
+
+<details>
+<summary>💡 PR best practices</summary>
+
+* Keep changes focused and atomic
+* Update tests and documentation
+* Check for conflicts with main branch
+* Respond promptly to review comments
+* Follow project coding standards
+* Make sure you are using `pre-commit` for that run this command `$ pre-commit install`
+
+</details>

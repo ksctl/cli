@@ -2,59 +2,45 @@ name: Testing Build process
 on:
   push:
     paths:
-    - 'cli/**'
-    - 'go.mod'
-    - 'go.sum'
-    branches: [ main ]
+      - "cmd/**"
+      - "pkg/**"
+      - "go.mod"
+      - "go.sum"
+    branches: [main]
   pull_request:
     paths:
-    - 'cli/**'
-    - 'go.mod'
-    - 'go.sum'
-    branches: [ main ]
+      - "cmd/**"
+      - "pkg/**"
+      - "go.mod"
+      - "go.sum"
+    branches: [main]
 
 jobs:
   linux:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Set up Go
-        uses: actions/setup-go@v4
+        uses: actions/setup-go@v5
         with:
-          go-version: 1.21.0
+          go-version-file: "go.mod"
       - run: go version
       - name: Build and install the latest version
         run: |
           make install_linux
-          ksctl -h
+          ksctl version
 
   macos:
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Set up Go
-        uses: actions/setup-go@v4
+        uses: actions/setup-go@v5
         with:
-          go-version: 1.21.0
+          go-version-file: "go.mod"
       - run: go version
       # TODO: add support to check for the M1 chip as well
       - name: Build and install the latest version on intel chip
         run: |
           make install_macos_intel
-          ksctl -h
-
-  windows:
-    runs-on: windows-latest
-    steps:
-      - uses: actions/checkout@v3
-      - name: Set up Go
-        uses: actions/setup-go@v4
-        with:
-          go-version: 1.21.0
-      - run: go version
-      - name: Build and install the latest version
-        run: |
-          cd .\scripts
-          .\builder.ps1
-          cd C:\Users\runneradmin\AppData\Local\ksctl
-          .\ksctl.exe -h
+          ksctl version

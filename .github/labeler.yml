@@ -1,8 +1,0 @@
-'area/cli':
-- 'cmd/cli/*'
-- 'cmd/cli/**/*'
-
-'go':
-- '**/*.go'
-- 'go.mod'
-- 'go.sum'

@@ -1,6 +1,6 @@
 name: New Release
 description: Suggest an enhancement for an existing feature or propose a new functionality
-title: "[New Release]: "
+title: "🚀 [New Release]: "
 labels: ["triage-accepted"]
 
 body:

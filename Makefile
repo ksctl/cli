@@ -1,9 +1,7 @@
 GOOS_LINUX = linux
-GOOS_WINDOWS = windows
 GOOS_MACOS = darwin
 
 GOARCH_LINUX ?= amd64
-GOARCH_WINDOWS ?= amd64
 GOARCH_MACOS = arm64
 GOARCH_MACOS_INTEL = amd64
 
@@ -20,42 +18,29 @@ gen-docs: ## Generates docs
 
 ##@ Install (Dev)
 
-
-.PHONY: install_linux_mock
-install_linux_mock:  ## Install ksctl
-	@echo "Started to Install ksctl"
-	cd scripts && \
-		env GOOS=${GOOS_LINUX} GOARCH=${GOARCH_LINUX} ./builder-mock.sh
-
-.PHONY: install_macos_mock
-install_macos_mock: ## Install ksctl on macos m1,m2,..
-	@echo "Started to Install ksctl"
-	cd scripts && \
-		env GOOS=${GOOS_MACOS} GOARCH=${GOARCH_MACOS} ./builder-mock.sh
-
-.PHONY: install_macos_intel_mock
-install_macos_intel_mock: ## Install ksctl on macos intel
-	@echo "Started to Install ksctl"
-	cd scripts && \
-		env GOOS=${GOOS_MACOS} GOARCH=${GOARCH_MACOS_INTEL} ./builder-mock.sh
-
 .PHONY: install_linux
 install_linux:  ## Install ksctl
 	@echo "Started to Install ksctl"
 	cd scripts && \
-		env GOOS=${GOOS_LINUX} GOARCH=${GOARCH_LINUX} ./builder.sh
+		env GOOS=${GOOS_LINUX} GOARCH=${GOARCH_LINUX} go build -o ksctl -v ../ && \
+		sudo mv ksctl /usr/local/bin/ && \
+		ksctl version
 
 .PHONY: install_macos
 install_macos: ## Install ksctl on macos m1,m2,..
 	@echo "Started to Install ksctl"
 	cd scripts && \
-		env GOOS=${GOOS_MACOS} GOARCH=${GOARCH_MACOS} ./builder.sh
+		env GOOS=${GOOS_MACOS} GOARCH=${GOARCH_MACOS} go build -o /usr/local/bin/ksctl -v ../ && \
+		sudo mv ksctl /usr/local/bin/ && \
+		ksctl version
 
 .PHONY: install_macos_intel
 install_macos_intel: ## Install ksctl on macos intel
 	@echo "Started to Install ksctl"
 	cd scripts && \
-		env GOOS=${GOOS_MACOS} GOARCH=${GOARCH_MACOS_INTEL} ./builder.sh
+		env GOOS=${GOOS_MACOS} GOARCH=${GOARCH_MACOS_INTEL} go build -o /usr/local/bin/ksctl -v ../ && \
+		sudo mv ksctl /usr/local/bin/ && \
+		ksctl version
 
 .PHONY: uninstall
 uninstall:  ## Uninstall ksctl
