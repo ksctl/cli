@@ -26,8 +26,8 @@ jobs:
         working-directory: pkg
         run: gofmt -s -w -d $(find . -type f -name '*.go' -print)
 
-      - name: check gofmt internal dir
-        working-directory: internal
+      - name: check gofmt cmd dir
+        working-directory: cmd
         run: gofmt -s -w -d $(find . -type f -name '*.go' -print)
 
       # TODO: Add linter
