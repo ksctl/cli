@@ -153,6 +153,20 @@ func (k *KsctlCommand) metadataForSelfManagedCluster(
 		os.Exit(1)
 	}
 
+	managedCNI, defaultCNI, ksctlCNI, defaultKsctl, err := metaClient.ListBootstrapCNIs()
+	if err != nil {
+		k.l.Error("Failed to get the list of self managed CNIs", "Reason", err)
+		os.Exit(1)
+	}
+
+	v, err := k.handleCNI(managedCNI, defaultCNI, ksctlCNI, defaultKsctl)
+	if err != nil {
+		k.l.Error("Failed to get the CNI", "Reason", err)
+		os.Exit(1)
+	}
+
+	meta.Addons = v
+
 	k.metadataSummary(*meta)
 
 	if ok, _ := cli.Confirmation("Do you want to proceed with the cluster creation", "no"); !ok {
@@ -238,6 +252,19 @@ func (k *KsctlCommand) metadataForManagedCluster(
 			k.l.Error("Failed to calculate the price", "Reason", err)
 			os.Exit(1)
 		}
+	}
+
+	managedCNI, defaultCNI, ksctlCNI, defaultKsctl, err := metaClient.ListManagedCNIs()
+	if err != nil {
+		k.l.Error("Failed to get the list of managed CNIs", "Reason", err)
+		os.Exit(1)
+	}
+
+	if v, err := k.handleCNI(managedCNI, defaultCNI, ksctlCNI, defaultKsctl); err != nil {
+		k.l.Error("Failed to get the CNI", "Reason", err)
+		os.Exit(1)
+	} else {
+		meta.Addons = v
 	}
 
 	k.handleManagedK8sVersion(metaClient, meta)

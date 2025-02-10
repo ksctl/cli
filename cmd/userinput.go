@@ -246,9 +246,11 @@ func (k *KsctlCommand) getSelectedStorageDriver() (consts.KsctlStore, bool) {
 		return "", false
 	}
 
-	if errS := k.loadMongoCredentials(); errS != nil {
-		k.l.Error("Failed to load the MongoDB credentials", "Reason", errS)
-		return "", false
+	if k.KsctlConfig.PreferedStateStore == consts.StoreExtMongo {
+		if errS := k.loadMongoCredentials(); errS != nil {
+			k.l.Error("Failed to load the MongoDB credentials", "Reason", errS)
+			return "", false
+		}
 	}
 
 	return k.KsctlConfig.PreferedStateStore, true

@@ -16,11 +16,14 @@ package cmd
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"strconv"
 
 	"github.com/ksctl/cli/v2/pkg/cli"
+	"github.com/ksctl/ksctl/v2/pkg/addons"
 	"github.com/ksctl/ksctl/v2/pkg/consts"
+	"github.com/ksctl/ksctl/v2/pkg/errors"
 	"github.com/ksctl/ksctl/v2/pkg/handler/cluster/controller"
 	controllerMeta "github.com/ksctl/ksctl/v2/pkg/handler/cluster/metadata"
 	"github.com/ksctl/ksctl/v2/pkg/provider"
@@ -202,5 +205,51 @@ func (k *KsctlCommand) metadataSummary(meta controller.Metadata) {
 			println()
 		}
 	}
+}
 
+func (k *KsctlCommand) handleCNI(managedCNI addons.ClusterAddons, defaultOptionManaged string, ksctlCNI addons.ClusterAddons, defaultOptionKsctl string) (addons.ClusterAddons, error) {
+	var v addons.ClusterAddons
+
+	handleInput := func(vc addons.ClusterAddons, prompt string, defaultOpt string, errorPrompt string) (addons.ClusterAddon, error) {
+		cc := map[string]string{}
+		cm := map[string]addons.ClusterAddon{}
+		for _, c := range vc {
+			cc[fmt.Sprintf("%s <%s>", c.Name, c.Label)] = c.Name
+			cm[c.Name] = c
+		}
+
+		selected, err := cli.DropDown(
+			prompt,
+			cc,
+			defaultOpt,
+		)
+		if err != nil {
+			return addons.ClusterAddon{}, errors.WrapError(
+				errors.ErrInvalidUserInput,
+				k.l.NewError(k.Ctx, errorPrompt, "Reason", err),
+			)
+		}
+
+		return cm[selected], nil
+	}
+
+	_v0, err := handleInput(managedCNI, "Select the CNI addon provided by offering", defaultOptionManaged, "Failed to get the CNI addon provided by managed offering")
+	if err != nil {
+		return nil, err
+	}
+
+	v = append(v, _v0)
+
+	if _v0.Name != string(consts.CNINone) {
+		return v, nil
+	}
+
+	_v1, err := handleInput(ksctlCNI, "Select the CNI addon provided by ksctl", defaultOptionKsctl, "Failed to get the CNI addon provided by ksctl")
+	if err != nil {
+		return nil, err
+	}
+
+	v = append(v, _v1)
+
+	return v, nil
 }
