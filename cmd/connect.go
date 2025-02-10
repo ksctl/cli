@@ -27,7 +27,7 @@ import (
 
 	"github.com/creack/pty"
 	"github.com/fatih/color"
-	"github.com/ksctl/cli/pkg/cli"
+	"github.com/ksctl/cli/v2/pkg/cli"
 	"github.com/ksctl/ksctl/v2/pkg/handler/cluster/common"
 	"github.com/ksctl/ksctl/v2/pkg/handler/cluster/controller"
 	"github.com/ksctl/ksctl/v2/pkg/logger"

@@ -18,7 +18,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/ksctl/cli/cmd"
+	"github.com/ksctl/cli/v2/cmd"
 )
 
 func main() {

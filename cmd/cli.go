@@ -18,8 +18,8 @@ import (
 	"context"
 	"os"
 
-	"github.com/ksctl/cli/pkg/config"
-	cLogger "github.com/ksctl/cli/pkg/logger"
+	"github.com/ksctl/cli/v2/pkg/config"
+	cLogger "github.com/ksctl/cli/v2/pkg/logger"
 	"github.com/ksctl/ksctl/v2/pkg/consts"
 	"github.com/ksctl/ksctl/v2/pkg/logger"
 	"github.com/ksctl/ksctl/v2/pkg/provider"

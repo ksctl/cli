@@ -20,7 +20,7 @@ import (
 	"github.com/ksctl/ksctl/v2/pkg/addons"
 	"github.com/ksctl/ksctl/v2/pkg/consts"
 
-	"github.com/ksctl/cli/pkg/cli"
+	"github.com/ksctl/cli/v2/pkg/cli"
 	"github.com/ksctl/ksctl/v2/pkg/handler/cluster/controller"
 
 	controllerManaged "github.com/ksctl/ksctl/v2/pkg/handler/cluster/managed"

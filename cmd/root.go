@@ -18,10 +18,10 @@ import (
 	"context"
 	"os"
 
-	"github.com/ksctl/cli/pkg/cli"
+	"github.com/ksctl/cli/v2/pkg/cli"
 	"github.com/ksctl/ksctl/v2/pkg/consts"
 
-	cLogger "github.com/ksctl/cli/pkg/logger"
+	cLogger "github.com/ksctl/cli/v2/pkg/logger"
 	"github.com/spf13/cobra"
 )
 
