@@ -20,12 +20,15 @@ func (k *KsctlCommand) CommandMapping() error {
 	c := k.Cluster()
 	cr := k.Configure()
 	cl := k.List()
+	a := k.Addons()
 
 	cli.RegisterCommand(
 		k.root,
 		c,
 		k.Version(),
+		k.SelfUpdate(),
 		cr,
+		a,
 	)
 	cli.RegisterCommand(
 		c,
@@ -47,6 +50,13 @@ func (k *KsctlCommand) CommandMapping() error {
 		cr,
 		k.ConfigureStorage(),
 		k.ConfigureCloud(),
+	)
+
+	cli.RegisterCommand(
+		a,
+		k.EnableAddon(),
+		k.DisableAddon(),
+		k.ListAddon(),
 	)
 
 	return nil

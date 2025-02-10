@@ -12,6 +12,7 @@ require (
 	github.com/pterm/pterm v0.12.80
 	github.com/rodaine/table v1.2.0
 	github.com/spf13/cobra v1.8.1
+	golang.org/x/mod v0.22.0
 	golang.org/x/term v0.28.0
 	k8s.io/client-go v0.32.0
 )
@@ -172,7 +173,6 @@ require (
 	go.opentelemetry.io/otel/trace v1.28.0 // indirect
 	go.starlark.net v0.0.0-20230525235612-a134d8f9ddca // indirect
 	golang.org/x/crypto v0.32.0 // indirect
-	golang.org/x/mod v0.22.0 // indirect
 	golang.org/x/net v0.34.0 // indirect
 	golang.org/x/oauth2 v0.23.0 // indirect
 	golang.org/x/sync v0.10.0 // indirect
