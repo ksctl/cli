@@ -18,7 +18,7 @@ import (
 	"fmt"
 
 	"github.com/fatih/color"
-	"github.com/ksctl/cli/pkg/config"
+	"github.com/ksctl/cli/v2/pkg/config"
 	"github.com/spf13/cobra"
 )
 

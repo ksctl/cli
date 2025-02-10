@@ -1,4 +1,4 @@
-module github.com/ksctl/cli
+module github.com/ksctl/cli/v2
 
 go 1.23.3
 

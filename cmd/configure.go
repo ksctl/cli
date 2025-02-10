@@ -20,8 +20,8 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/ksctl/cli/pkg/cli"
-	"github.com/ksctl/cli/pkg/config"
+	"github.com/ksctl/cli/v2/pkg/cli"
+	"github.com/ksctl/cli/v2/pkg/config"
 	"github.com/ksctl/ksctl/v2/pkg/consts"
 	"github.com/ksctl/ksctl/v2/pkg/statefile"
 	"github.com/ksctl/ksctl/v2/pkg/utilities"

@@ -19,7 +19,7 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/ksctl/cli/pkg/cli"
+	"github.com/ksctl/cli/v2/pkg/cli"
 	"github.com/ksctl/ksctl/v2/pkg/consts"
 	"github.com/ksctl/ksctl/v2/pkg/handler/cluster/controller"
 	controllerMeta "github.com/ksctl/ksctl/v2/pkg/handler/cluster/metadata"
