@@ -36,6 +36,7 @@ func (k *KsctlCommand) NewRootCmd() *cobra.Command {
 		Long:  "CLI tool which can manage multiple K8s clusters from local clusters to cloud provider specific clusters.",
 		PersistentPreRun: func(cmd *cobra.Command, args []string) {
 			if k.debugMode {
+				k.CliLog.Box(k.Ctx, "CLI Mode", "CLI is running in debug mode")
 				k.menuDriven = cli.NewDebugMenuDriven()
 			} else {
 				k.menuDriven = cli.NewPtermMenuDriven()
@@ -44,6 +45,7 @@ func (k *KsctlCommand) NewRootCmd() *cobra.Command {
 			_ = k.menuDriven.GetProgressAnimation() // Just boot it up...
 
 			if v {
+				k.CliLog.Box(k.Ctx, "CLI Mode", "Verbose mode is enabled")
 				k.verbose = -1
 			}
 
