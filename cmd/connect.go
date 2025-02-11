@@ -74,10 +74,9 @@ ksctl connect --help
 				}
 			}
 
-			selectedCluster, err := cli.DropDown(
+			selectedCluster, err := k.menuDriven.DropDown(
 				"Select the cluster to delete",
 				selectDisplay,
-				"",
 			)
 			if err != nil {
 				k.l.Error("Failed to get userinput", "Reason", err)
@@ -108,14 +107,14 @@ ksctl connect --help
 
 			k.writeKubeconfig([]byte(*kubeconfig))
 
-			accessMode, err := cli.DropDown(
+			accessMode, err := k.menuDriven.DropDown(
 				"Select the access mode",
 				map[string]string{
 					"k9s":  "k9s",
 					"bash": "shell",
 					"none": "none",
 				},
-				"none",
+				cli.WithDefaultValue("none"),
 			)
 			if err != nil {
 				k.l.Error("Failed to get userinput", "Reason", err)

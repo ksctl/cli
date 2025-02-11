@@ -29,6 +29,6 @@ func AddVerboseFlag(command *cobra.Command, verbose *bool) {
 	command.PersistentFlags().BoolVarP(verbose, "verbose", "v", false, "Enable verbose output")
 }
 
-func AddDryRunFlag(command *cobra.Command, dryRun *bool) {
-	command.PersistentFlags().BoolVar(dryRun, "dry-run", false, "Perform a dry run")
+func AddDebugMode(command *cobra.Command, debugRun *bool) {
+	command.PersistentFlags().BoolVar(debugRun, "debug-cli", false, "Its used to run debug mode against cli's menudriven interface")
 }

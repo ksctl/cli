@@ -73,13 +73,13 @@ func (k *KsctlCommand) ConfigureCloud() *cobra.Command {
 }
 
 func (k *KsctlCommand) handleStorageConfig() bool {
-	if v, err := cli.DropDown(
+	if v, err := k.menuDriven.DropDown(
 		"What should be your default storageDriver?",
 		map[string]string{
 			"MongoDb": string(consts.StoreExtMongo),
 			"Local":   string(consts.StoreLocal),
 		},
-		"Local",
+		cli.WithDefaultValue("Local"),
 	); err != nil {
 		k.l.Error("Failed to get the storageDriver", "Reason", err)
 		return false
@@ -103,13 +103,12 @@ func (k *KsctlCommand) handleStorageConfig() bool {
 }
 
 func (k *KsctlCommand) handleCloudConfig() bool {
-	if v, err := cli.DropDown(
+	if v, err := k.menuDriven.DropDown(
 		"Credentials",
 		map[string]string{
 			"Amazon Web Services": string(consts.CloudAws),
 			"Azure":               string(consts.CloudAzure),
 		},
-		"",
 	); err != nil {
 		k.l.Error("Failed to get the credentials", "Reason", err)
 		return false
@@ -133,11 +132,11 @@ func (k *KsctlCommand) handleCloudConfig() bool {
 
 func (k *KsctlCommand) storeAwsCredentials() (err error) {
 	c := new(statefile.CredentialsAws)
-	c.AccessKeyId, err = cli.TextInputPassword("Enter your AWS Access Key ID")
+	c.AccessKeyId, err = k.menuDriven.TextInputPassword("Enter your AWS Access Key ID")
 	if err != nil {
 		return err
 	}
-	c.SecretAccessKey, err = cli.TextInputPassword("Enter your AWS Secret Access Key")
+	c.SecretAccessKey, err = k.menuDriven.TextInputPassword("Enter your AWS Secret Access Key")
 	if err != nil {
 		return err
 	}
@@ -160,21 +159,21 @@ func (k *KsctlCommand) loadAwsCredentials() error {
 
 func (k *KsctlCommand) storeAzureCredentials() (err error) {
 	c := new(statefile.CredentialsAzure)
-	c.SubscriptionID, err = cli.TextInputPassword("Enter your Azure Subscription ID")
+	c.SubscriptionID, err = k.menuDriven.TextInputPassword("Enter your Azure Subscription ID")
 	if err != nil {
 		return err
 	}
 
-	c.TenantID, err = cli.TextInputPassword("Enter your Azure Tenant ID")
+	c.TenantID, err = k.menuDriven.TextInputPassword("Enter your Azure Tenant ID")
 	if err != nil {
 		return err
 	}
 
-	c.ClientID, err = cli.TextInputPassword("Enter your Azure Client ID")
+	c.ClientID, err = k.menuDriven.TextInputPassword("Enter your Azure Client ID")
 	if err != nil {
 		return err
 	}
-	c.ClientSecret, err = cli.TextInputPassword("Enter your Azure Client Secret")
+	c.ClientSecret, err = k.menuDriven.TextInputPassword("Enter your Azure Client Secret")
 	if err != nil {
 		return err
 	}
@@ -197,26 +196,26 @@ func (k *KsctlCommand) loadAzureCredentials() error {
 
 func (k *KsctlCommand) storeMongoCredentials() (err error) {
 	c := new(statefile.CredentialsMongodb)
-	srv, err := cli.Confirmation("Enter whether MongoDB has SRV record or not", "no")
+	srv, err := k.menuDriven.Confirmation("Enter whether MongoDB has SRV record or not", cli.WithDefaultValue("no"))
 	if err != nil {
 		return err
 	}
 	c.SRV = srv
 
-	c.Domain, err = cli.TextInput("Enter your MongoDB URI", "")
+	c.Domain, err = k.menuDriven.TextInput("Enter your MongoDB URI")
 	if err != nil {
 		return err
 	}
-	c.Username, err = cli.TextInputPassword("Enter your MongoDB Username")
+	c.Username, err = k.menuDriven.TextInputPassword("Enter your MongoDB Username")
 	if err != nil {
 		return err
 	}
-	c.Password, err = cli.TextInputPassword("Enter your MongoDB Password")
+	c.Password, err = k.menuDriven.TextInputPassword("Enter your MongoDB Password")
 	if err != nil {
 		return err
 	}
 	port := ""
-	if port, err = cli.TextInput("Enter your MongoDB Port", ""); err != nil {
+	if port, err = k.menuDriven.TextInput("Enter your MongoDB Port"); err != nil {
 		return err
 	}
 	if len(port) != 0 {

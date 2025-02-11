@@ -24,7 +24,7 @@ import (
 )
 
 func (k *KsctlCommand) getClusterName() (string, bool) {
-	v, err := cli.TextInput("Enter Cluster Name", "")
+	v, err := k.menuDriven.TextInput("Enter Cluster Name")
 	if err != nil {
 		k.l.Error("Failed to get userinput", "Reason", err)
 		return "", false
@@ -38,13 +38,13 @@ func (k *KsctlCommand) getClusterName() (string, bool) {
 }
 
 func (k *KsctlCommand) getBootstrap() (consts.KsctlKubernetes, bool) {
-	v, err := cli.DropDown(
+	v, err := k.menuDriven.DropDown(
 		"Select the bootstrap type",
 		map[string]string{
 			"Kubeadm": string(consts.K8sKubeadm),
 			"K3s":     string(consts.K8sK3s),
 		},
-		string(consts.K8sK3s),
+		cli.WithDefaultValue(string(consts.K8sK3s)),
 	)
 	if err != nil {
 		k.l.Error("Failed to get userinput", "Reason", err)
@@ -57,7 +57,7 @@ func (k *KsctlCommand) getBootstrap() (consts.KsctlKubernetes, bool) {
 type userInputValidation func(int) bool
 
 func (k *KsctlCommand) getCounterValue(prompt string, validate userInputValidation, defaultVal int) (int, bool) {
-	v, err := cli.TextInput(prompt, strconv.Itoa(defaultVal))
+	v, err := k.menuDriven.TextInput(prompt, cli.WithDefaultValue(strconv.Itoa(defaultVal)))
 	if err != nil {
 		k.l.Error("Failed to get userinput", "Reason", err)
 		return 0, false
@@ -84,10 +84,9 @@ func (k *KsctlCommand) getSelectedRegion(regions []provider.RegionOutput) (strin
 
 	k.l.Debug(k.Ctx, "Regions", "regions", vr)
 
-	if v, err := cli.DropDown(
+	if v, err := k.menuDriven.DropDown(
 		"Select the region",
 		vr,
-		"",
 	); err != nil {
 		k.l.Error("Failed to get userinput", "Reason", err)
 		return "", false
@@ -100,10 +99,10 @@ func (k *KsctlCommand) getSelectedRegion(regions []provider.RegionOutput) (strin
 func (k *KsctlCommand) getSelectedK8sVersion(prompt string, vers []string) (string, bool) {
 	k.l.Debug(k.Ctx, "List of k8s versions", "versions", vers)
 
-	if v, err := cli.DropDownList(
+	if v, err := k.menuDriven.DropDownList(
 		prompt,
 		vers,
-		vers[0],
+		cli.WithDefaultValue(vers[0]),
 	); err != nil {
 		k.l.Error("Failed to get userinput", "Reason", err)
 		return "", false
@@ -136,10 +135,9 @@ func (k *KsctlCommand) getSelectedInstanceType(
 
 	k.l.Debug(k.Ctx, "Instance types", "vms", vr)
 
-	if v, err := cli.DropDown(
+	if v, err := k.menuDriven.DropDown(
 		prompt,
 		vr,
-		"",
 	); err != nil {
 		k.l.Error("Failed to get userinput", "Reason", err)
 		return "", false
@@ -166,10 +164,9 @@ func (k *KsctlCommand) getSelectedManagedClusterOffering(
 
 	k.l.Debug(k.Ctx, "Offerings", "offerings", vr)
 
-	if v, err := cli.DropDown(
+	if v, err := k.menuDriven.DropDown(
 		prompt,
 		vr,
-		"",
 	); err != nil {
 		k.l.Error("Failed to get userinput", "Reason", err)
 		return "", false
@@ -180,13 +177,13 @@ func (k *KsctlCommand) getSelectedManagedClusterOffering(
 }
 
 func (k *KsctlCommand) getSelectedClusterType() (consts.KsctlClusterType, bool) {
-	if v, err := cli.DropDown(
+	if v, err := k.menuDriven.DropDown(
 		"Select the cluster type",
 		map[string]string{
 			"Cloud Managed (For ex. EKS, AKS, Kind)":   string(consts.ClusterTypeMang),
 			"Self Managed (For example, K3s, Kubeadm)": string(consts.ClusterTypeSelfMang),
 		},
-		string(consts.ClusterTypeMang),
+		cli.WithDefaultValue(string(consts.ClusterTypeMang)),
 	); err != nil {
 		k.l.Error("Failed to get userinput", "Reason", err)
 		return "", false
@@ -206,10 +203,9 @@ func (k *KsctlCommand) getSelectedCloudProvider(v consts.KsctlClusterType) (cons
 		options["Kind"] = string(consts.CloudLocal)
 	}
 
-	if v, err := cli.DropDown(
+	if v, err := k.menuDriven.DropDown(
 		"Select the cloud provider",
 		options,
-		"",
 	); err != nil {
 		k.l.Error("Failed to get userinput", "Reason", err)
 		return "", false

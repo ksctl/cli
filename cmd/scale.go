@@ -18,7 +18,6 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/ksctl/cli/v2/pkg/cli"
 	"github.com/ksctl/ksctl/v2/pkg/consts"
 	"github.com/ksctl/ksctl/v2/pkg/handler/cluster/controller"
 	"github.com/ksctl/ksctl/v2/pkg/handler/cluster/selfmanaged"
@@ -63,10 +62,9 @@ ksctl update scaleup --help
 				}
 			}
 
-			selectedCluster, err := cli.DropDown(
+			selectedCluster, err := k.menuDriven.DropDown(
 				"Select the cluster to scaleup",
 				selectDisplay,
-				"",
 			)
 			if err != nil {
 				k.l.Error("Failed to get userinput", "Reason", err)
@@ -136,10 +134,9 @@ ksctl update scaledown --help
 				}
 			}
 
-			selectedCluster, err := cli.DropDown(
+			selectedCluster, err := k.menuDriven.DropDown(
 				"Select the cluster to scaledown",
 				selectDisplay,
-				"",
 			)
 			if err != nil {
 				k.l.Error("Failed to get userinput", "Reason", err)

@@ -64,7 +64,7 @@ func (k *KsctlCommand) baseMetadataFields(m *controller.Metadata) {
 }
 
 func (k *KsctlCommand) handleRegionSelection(meta *controllerMeta.Controller, m *controller.Metadata) {
-	ss := cli.GetSpinner()
+	ss := k.menuDriven.GetProgressAnimation()
 	ss.Start("Fetching the region list")
 
 	listOfRegions, err := meta.ListAllRegions()
@@ -84,7 +84,7 @@ func (k *KsctlCommand) handleRegionSelection(meta *controllerMeta.Controller, m 
 
 func (k *KsctlCommand) handleInstanceTypeSelection(meta *controllerMeta.Controller, m *controller.Metadata, prompt string) provider.InstanceRegionOutput {
 	if len(k.inMemInstanceTypesInReg) == 0 {
-		ss := cli.GetSpinner()
+		ss := k.menuDriven.GetProgressAnimation()
 		ss.Start("Fetching the instance type list")
 
 		listOfVMs, err := meta.ListAllInstances(m.Region)
@@ -106,7 +106,7 @@ func (k *KsctlCommand) handleInstanceTypeSelection(meta *controllerMeta.Controll
 }
 
 func (k *KsctlCommand) handleManagedK8sVersion(meta *controllerMeta.Controller, m *controller.Metadata) {
-	ss := cli.GetSpinner()
+	ss := k.menuDriven.GetProgressAnimation()
 	ss.Start("Fetching the managed cluster k8s versions")
 
 	listOfK8sVersions, err := meta.ListAllManagedClusterK8sVersions(m.Region)
@@ -218,10 +218,10 @@ func (k *KsctlCommand) handleCNI(managedCNI addons.ClusterAddons, defaultOptionM
 			cm[c.Name] = c
 		}
 
-		selected, err := cli.DropDown(
+		selected, err := k.menuDriven.DropDown(
 			prompt,
 			cc,
-			defaultOpt,
+			cli.WithDefaultValue(defaultOpt),
 		)
 		if err != nil {
 			return addons.ClusterAddon{}, errors.WrapError(
