@@ -39,6 +39,9 @@ ksctl addons list --help
 `,
 		Short: "Use to list the addons",
 		Long:  "It is used to list the addons",
+		Run: func(cmd *cobra.Command, args []string) {
+			// and available addons from ksctl side
+		},
 	}
 
 	return cmd
