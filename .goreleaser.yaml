@@ -25,9 +25,9 @@ builds:
       - amd64
       - arm64
     ldflags:
-      - -s -w -X "github.com/ksctl/cli/cli/v2/pkg/config.BuildDate={{.Env.DATE}}"
-      - -s -w -X "github.com/ksctl/cli/cli/v2/pkg/config.Version={{.Env.VERSION}}"
-      - -s -w -X "github.com/ksctl/ksctl/v2/pkg/config.KsctlCoreVer={{.Env.OCIVERSION}}"
+      - -s -w -X "github.com/ksctl/cli/v2/pkg/config.BuildDate={{.Env.DATE}}"
+      - -s -w -X "github.com/ksctl/cli/v2/pkg/config.Version={{.Env.VERSION}}"
+      - -s -w -X "github.com/ksctl/cli/v2/pkg/config.KsctlCoreVer={{.Env.OCIVERSION}}"
 
 signs:
   - cmd: cosign
