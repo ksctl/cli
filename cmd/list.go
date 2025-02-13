@@ -23,7 +23,6 @@ import (
 	"github.com/ksctl/ksctl/v2/pkg/handler/cluster/controller"
 	"github.com/ksctl/ksctl/v2/pkg/logger"
 	"github.com/ksctl/ksctl/v2/pkg/provider"
-	"github.com/ksctl/ksctl/v2/pkg/validation"
 	"github.com/spf13/cobra"
 
 	controllerCommon "github.com/ksctl/ksctl/v2/pkg/handler/cluster/common"
@@ -31,34 +30,10 @@ import (
 
 func (k *KsctlCommand) List() *cobra.Command {
 
-	var clusterType = ""
-
 	cmd := &cobra.Command{
 		Use: "list",
 		Example: `
 ksctl list --help
-`,
-		Short: "Use to list the clusters",
-		Long:  "It is used to list the clusters created by the user",
-		Run: func(cmd *cobra.Command, args []string) {
-			if !validation.ValidateClusterType(consts.KsctlClusterType(clusterType)) {
-				k.l.Error("Invalid cluster type", "Type", clusterType)
-				os.Exit(1)
-			}
-		},
-	}
-
-	cmd.Flags().StringVar(&clusterType, "cluster-type", "", "Type of cluster to list")
-
-	return cmd
-}
-
-func (k *KsctlCommand) ListAll() *cobra.Command {
-
-	cmd := &cobra.Command{
-		Use: "all",
-		Example: `
-ksctl list all --help
 `,
 		Short: "Use to list all the clusters",
 		Long:  "It is used to list all the clusters created by the user",

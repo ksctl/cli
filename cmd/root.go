@@ -15,11 +15,9 @@
 package cmd
 
 import (
-	"context"
 	"os"
 
 	"github.com/ksctl/cli/v2/pkg/cli"
-	"github.com/ksctl/ksctl/v2/pkg/consts"
 
 	cLogger "github.com/ksctl/cli/v2/pkg/logger"
 	"github.com/spf13/cobra"
@@ -37,15 +35,17 @@ func (k *KsctlCommand) NewRootCmd() *cobra.Command {
 		Short: "CLI tool for managing multiple K8s clusters",
 		Long:  "CLI tool which can manage multiple K8s clusters from local clusters to cloud provider specific clusters.",
 		PersistentPreRun: func(cmd *cobra.Command, args []string) {
-			if k.dryRun {
-				k.Ctx = context.WithValue(
-					k.Ctx,
-					consts.KsctlTestFlagKey,
-					"true",
-				)
+			if k.debugMode {
+				k.CliLog.Box(k.Ctx, "CLI Mode", "CLI is running in debug mode")
+				k.menuDriven = cli.NewDebugMenuDriven()
+			} else {
+				k.menuDriven = cli.NewPtermMenuDriven()
 			}
 
+			_ = k.menuDriven.GetProgressAnimation() // Just boot it up...
+
 			if v {
+				k.CliLog.Box(k.Ctx, "CLI Mode", "Verbose mode is enabled")
 				k.verbose = -1
 			}
 
@@ -54,7 +54,7 @@ func (k *KsctlCommand) NewRootCmd() *cobra.Command {
 	}
 
 	cmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-	cli.AddDryRunFlag(cmd, &k.dryRun)
+	cli.AddDebugMode(cmd, &k.debugMode)
 	cli.AddVerboseFlag(cmd, &v)
 
 	return cmd

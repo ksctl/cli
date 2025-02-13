@@ -66,10 +66,9 @@ ksctl delete --help
 				}
 			}
 
-			selectedCluster, err := cli.DropDown(
+			selectedCluster, err := k.menuDriven.DropDown(
 				"Select the cluster to delete",
 				selectDisplay,
-				"",
 			)
 			if err != nil {
 				k.l.Error("Failed to get userinput", "Reason", err)
@@ -78,7 +77,7 @@ ksctl delete --help
 
 			m := valueMaping[selectedCluster]
 
-			if ok, _ := cli.Confirmation("Do you want to proceed with the cluster deletion", "no"); !ok {
+			if ok, _ := k.menuDriven.Confirmation("Do you want to proceed with the cluster deletion", cli.WithDefaultValue("no")); !ok {
 				os.Exit(1)
 			}
 

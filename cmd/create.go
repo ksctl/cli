@@ -17,7 +17,6 @@ package cmd
 import (
 	"os"
 
-	"github.com/ksctl/ksctl/v2/pkg/addons"
 	"github.com/ksctl/ksctl/v2/pkg/consts"
 
 	"github.com/ksctl/cli/v2/pkg/cli"
@@ -116,7 +115,7 @@ func (k *KsctlCommand) metadataForSelfManagedCluster(
 		k.l.Error("Failed to get the list of bootstrap versions", "Reason", err)
 		os.Exit(1)
 	}
-	if v, err := cli.DropDownList("Select the bootstrap version", bootstrapVers, bootstrapVers[0]); err != nil {
+	if v, err := k.menuDriven.DropDownList("Select the bootstrap version", bootstrapVers, cli.WithDefaultValue(bootstrapVers[0])); err != nil {
 		k.l.Error("Failed to get the bootstrap version", "Reason", err)
 		os.Exit(1)
 	} else {
@@ -129,7 +128,7 @@ func (k *KsctlCommand) metadataForSelfManagedCluster(
 		k.l.Error("Failed to get the list of etcd versions", "Reason", err)
 		os.Exit(1)
 	}
-	if v, err := cli.DropDownList("Select the etcd version", etcdVers, etcdVers[0]); err != nil {
+	if v, err := k.menuDriven.DropDownList("Select the etcd version", etcdVers, cli.WithDefaultValue(etcdVers[0])); err != nil {
 		k.l.Error("Failed to get the etcd version", "Reason", err)
 		os.Exit(1)
 	} else {
@@ -153,9 +152,23 @@ func (k *KsctlCommand) metadataForSelfManagedCluster(
 		os.Exit(1)
 	}
 
+	managedCNI, defaultCNI, ksctlCNI, defaultKsctl, err := metaClient.ListBootstrapCNIs()
+	if err != nil {
+		k.l.Error("Failed to get the list of self managed CNIs", "Reason", err)
+		os.Exit(1)
+	}
+
+	v, err := k.handleCNI(managedCNI, defaultCNI, ksctlCNI, defaultKsctl)
+	if err != nil {
+		k.l.Error("Failed to get the CNI", "Reason", err)
+		os.Exit(1)
+	}
+
+	meta.Addons = v
+
 	k.metadataSummary(*meta)
 
-	if ok, _ := cli.Confirmation("Do you want to proceed with the cluster creation", "no"); !ok {
+	if ok, _ := k.menuDriven.Confirmation("Do you want to proceed with the cluster creation", cli.WithDefaultValue("no")); !ok {
 		os.Exit(1)
 	}
 
@@ -208,16 +221,15 @@ func (k *KsctlCommand) metadataForManagedCluster(
 		vm := k.handleInstanceTypeSelection(metaClient, meta, "Select instance_type for Managed Nodes")
 		meta.ManagedNodeType = vm.Sku
 
-		ss := cli.GetSpinner()
-		ss.Start("Fetching the managed cluster offerings")
+		k.menuDriven.GetProgressAnimation().Start("Fetching the managed cluster offerings")
 
 		listOfOfferings, err := metaClient.ListAllManagedClusterManagementOfferings(meta.Region, nil)
 		if err != nil {
-			ss.Stop()
+			k.menuDriven.GetProgressAnimation().Stop()
 			k.l.Error("Failed to sync the metadata", "Reason", err)
 			os.Exit(1)
 		}
-		ss.Stop()
+		k.menuDriven.GetProgressAnimation().Stop()
 
 		offeringSelected := ""
 
@@ -240,11 +252,24 @@ func (k *KsctlCommand) metadataForManagedCluster(
 		}
 	}
 
+	managedCNI, defaultCNI, ksctlCNI, defaultKsctl, err := metaClient.ListManagedCNIs()
+	if err != nil {
+		k.l.Error("Failed to get the list of managed CNIs", "Reason", err)
+		os.Exit(1)
+	}
+
+	if v, err := k.handleCNI(managedCNI, defaultCNI, ksctlCNI, defaultKsctl); err != nil {
+		k.l.Error("Failed to get the CNI", "Reason", err)
+		os.Exit(1)
+	} else {
+		meta.Addons = v
+	}
+
 	k.handleManagedK8sVersion(metaClient, meta)
 
 	k.metadataSummary(*meta)
 
-	if ok, _ := cli.Confirmation("Do you want to proceed with the cluster creation", "no"); !ok {
+	if ok, _ := k.menuDriven.Confirmation("Do you want to proceed with the cluster creation", cli.WithDefaultValue("no")); !ok {
 		os.Exit(1)
 	}
 
@@ -266,8 +291,4 @@ func (k *KsctlCommand) metadataForManagedCluster(
 	}
 
 	return
-}
-
-func (k *KsctlCommand) processAddons() (_ addons.ClusterAddons, _ error) {
-	return nil, nil
 }

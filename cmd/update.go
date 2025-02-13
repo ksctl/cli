@@ -20,11 +20,6 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
-	"github.com/ksctl/cli/v2/pkg/cli"
-	"github.com/ksctl/cli/v2/pkg/config"
-	"github.com/ksctl/ksctl/v2/pkg/poller"
-	"github.com/spf13/cobra"
-	"golang.org/x/mod/semver"
 	"io"
 	"net/http"
 	"os"
@@ -32,6 +27,12 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
+
+	"github.com/ksctl/cli/v2/pkg/cli"
+	"github.com/ksctl/cli/v2/pkg/config"
+	"github.com/ksctl/ksctl/v2/pkg/poller"
+	"github.com/spf13/cobra"
+	"golang.org/x/mod/semver"
 )
 
 func (k *KsctlCommand) SelfUpdate() *cobra.Command {
@@ -64,7 +65,7 @@ ksctl self-update --help
 				os.Exit(0)
 			}
 
-			selectedOption, err := cli.DropDownList("Select a version to update", vers, vers[0])
+			selectedOption, err := k.menuDriven.DropDownList("Select a version to update", vers, cli.WithDefaultValue(vers[0]))
 			if err != nil {
 				return
 			}

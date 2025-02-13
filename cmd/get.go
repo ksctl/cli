@@ -20,7 +20,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/ksctl/cli/v2/pkg/cli"
 	"github.com/ksctl/ksctl/v2/pkg/consts"
 	"github.com/ksctl/ksctl/v2/pkg/logger"
 	"github.com/ksctl/ksctl/v2/pkg/provider"
@@ -56,10 +55,9 @@ ksctl get --help
 				valueMaping[strconv.Itoa(idx)] = cluster
 			}
 
-			selectedCluster, err := cli.DropDown(
+			selectedCluster, err := k.menuDriven.DropDown(
 				"Select the cluster to delete",
 				selectDisplay,
-				"",
 			)
 			if err != nil {
 				k.l.Error("Failed to get userinput", "Reason", err)
@@ -75,6 +73,8 @@ ksctl get --help
 
 	return cmd
 }
+
+// TODO: get the addons in the cluster
 
 func handleTableOutputGet(ctx context.Context, l logger.Logger, data provider.ClusterData) {
 

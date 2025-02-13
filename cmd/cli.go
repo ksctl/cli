@@ -18,6 +18,7 @@ import (
 	"context"
 	"os"
 
+	"github.com/ksctl/cli/v2/pkg/cli"
 	"github.com/ksctl/cli/v2/pkg/config"
 	cLogger "github.com/ksctl/cli/v2/pkg/logger"
 	"github.com/ksctl/ksctl/v2/pkg/consts"
@@ -34,7 +35,8 @@ type KsctlCommand struct {
 	ksctlStorage            storage.Storage
 	root                    *cobra.Command
 	verbose                 int
-	dryRun                  bool
+	debugMode               bool
+	menuDriven              cli.MenuDriven
 	KsctlConfig             *config.Config
 	inMemInstanceTypesInReg map[string]provider.InstanceRegionOutput
 }

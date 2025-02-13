@@ -14,102 +14,39 @@
 
 package cli
 
-import (
-	"fmt"
-	"os"
-	"strings"
-
-	"github.com/pterm/pterm"
-)
-
-type Spinner struct {
-	c pterm.SpinnerPrinter
-	s *pterm.SpinnerPrinter
+type ProgressAnimation interface {
+	Start(msg ...any)
+	StopWithSuccess(msg ...any)
+	StopWithFailure(msg ...any)
+	Stop()
 }
 
-func GetSpinner() *Spinner {
-	spinner := pterm.DefaultSpinner
-	spinner.Sequence = []string{"⡏", "⡟", "⡿", "⢿", "⣻", "⣽", "⣾", "⣷", "⣯", "⣏"}
+type option struct {
+	defaultValue string
+}
 
-	return &Spinner{
-		c: spinner,
+func WithDefaultValue(defaultValue string) func(*option) error {
+	return func(o *option) error {
+		o.defaultValue = defaultValue
+		return nil
 	}
 }
 
-func (s *Spinner) Start(msg ...any) {
-	s.s, _ = s.c.Start(msg...)
+type MenuDriven interface {
+	GetProgressAnimation() ProgressAnimation
+	Confirmation(prompt string, opts ...func(*option) error) (proceed bool, err error)
+	TextInput(prompt string, opts ...func(*option) error) (string, error)
+	TextInputPassword(prompt string) (string, error)
+	DropDown(prompt string, options map[string]string, opts ...func(*option) error) (string, error)
+	DropDownList(prompt string, options []string, opts ...func(*option) error) (string, error)
 }
 
-func (s *Spinner) StopWithSuccess(msg ...any) {
-	s.s.Success(msg...)
-}
-
-func (s *Spinner) Stop() {
-	_, _ = fmt.Fprint(os.Stderr, "\r"+strings.Repeat(" ", pterm.GetTerminalWidth())) // Clear the spinner
-	_ = s.s.Stop()
-}
-
-func (s *Spinner) StopWithFailure(msg ...any) {
-	s.s.Fail(msg...)
-}
-
-func Confirmation(prompt, defaultOption string) (proceed bool, err error) {
-	x := pterm.DefaultInteractiveConfirm
-	if len(defaultOption) != 0 {
-		x = *x.WithDefaultText(defaultOption)
-	}
-	return x.Show(prompt)
-}
-
-func TextInput(prompt string, defaultValue string) (string, error) {
-	if len(defaultValue) == 0 {
-		return pterm.DefaultInteractiveTextInput.Show(prompt)
-	}
-	x := pterm.DefaultInteractiveTextInput.WithDefaultValue(defaultValue)
-	return x.Show(prompt)
-}
-
-func TextInputPassword(prompt string) (string, error) {
-	x := pterm.DefaultInteractiveTextInput.WithMask("*")
-	return x.Show(prompt)
-}
-
-func DropDown(prompt string, options map[string]string, defaultOption string) (string, error) {
-	var _options []string
-	for k := range options {
-		_options = append(_options, k)
-	}
-
-	x := pterm.DefaultInteractiveSelect.WithOptions(_options)
-	if len(defaultOption) != 0 {
-		for k, v := range options {
-			if v == defaultOption {
-				defaultOption = k
-				break
-			}
+func processOptions(opts []func(*option) error) (option, error) {
+	var o option
+	for _, opt := range opts {
+		if err := opt(&o); err != nil {
+			return o, err
 		}
-		x = x.WithDefaultOption(defaultOption)
 	}
-
-	if v, err := x.Show(prompt); err != nil {
-		return "", err
-	} else {
-		// pterm.DefaultArea.Clear()
-		return options[v], nil
-	}
-
-}
-
-func DropDownList(prompt string, options []string, defaultOption string) (string, error) {
-
-	x := pterm.DefaultInteractiveSelect.WithOptions(options)
-	if len(defaultOption) != 0 {
-		x = x.WithDefaultOption(defaultOption)
-	}
-
-	if v, err := x.Show(prompt); err != nil {
-		return "", err
-	} else {
-		return v, nil
-	}
+	return o, nil
 }
