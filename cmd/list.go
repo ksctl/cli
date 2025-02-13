@@ -28,30 +28,6 @@ import (
 	controllerCommon "github.com/ksctl/ksctl/v2/pkg/handler/cluster/common"
 )
 
-// func (k *KsctlCommand) List() *cobra.Command {
-//
-// 	var clusterType = ""
-//
-// 	cmd := &cobra.Command{
-// 		Use: "list",
-// 		Example: `
-// ksctl list --help
-// `,
-// 		Short: "Use to list the clusters",
-// 		Long:  "It is used to list the clusters created by the user",
-// 		Run: func(cmd *cobra.Command, args []string) {
-// 			if !validation.ValidateClusterType(consts.KsctlClusterType(clusterType)) {
-// 				k.l.Error("Invalid cluster type", "Type", clusterType)
-// 				os.Exit(1)
-// 			}
-// 		},
-// 	}
-//
-// 	cmd.Flags().StringVar(&clusterType, "cluster-type", "", "Type of cluster to list")
-//
-// 	return cmd
-// }
-
 func (k *KsctlCommand) List() *cobra.Command {
 
 	cmd := &cobra.Command{
