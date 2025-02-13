@@ -14,11 +14,9 @@
 
 package config
 
-import "time"
-
 // change this using ldflags
 var (
 	Version      string = "v0.0.1-dev"
 	KsctlCoreVer string = "v0.0.1-dev"
-	BuildDate    string = time.Now().UTC().String()
+	BuildDate    string
 )
