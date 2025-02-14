@@ -55,6 +55,10 @@ ksctl addons enable --help
 				os.Exit(1)
 			}
 
+			if k.loadCloudProviderCreds(m.Provider) != nil {
+				os.Exit(1)
+			}
+
 			c, err := addonsHandler.NewController(
 				k.Ctx,
 				k.l,
@@ -126,6 +130,10 @@ ksctl addons disable --help
 		Run: func(cmd *cobra.Command, args []string) {
 			m, ok := k.addonClientSetup()
 			if !ok {
+				os.Exit(1)
+			}
+
+			if k.loadCloudProviderCreds(m.Provider) != nil {
 				os.Exit(1)
 			}
 
