@@ -105,6 +105,24 @@ func (k *KsctlCommand) handleInstanceTypeSelection(meta *controllerMeta.Controll
 	return k.inMemInstanceTypesInReg[v]
 }
 
+func (k *KsctlCommand) getSpecificInstance(meta *controllerMeta.Controller, region string, instanceSku string) provider.InstanceRegionOutput {
+	if len(k.inMemInstanceTypesInReg) == 0 {
+		ss := k.menuDriven.GetProgressAnimation()
+		ss.Start("Fetching the instance type list")
+
+		listOfVMs, err := meta.ListAllInstances(region)
+		if err != nil {
+			ss.Stop()
+			k.l.Error("Failed to sync the metadata", "Reason", err)
+			os.Exit(1)
+		}
+		ss.Stop()
+		k.inMemInstanceTypesInReg = listOfVMs
+	}
+
+	return k.inMemInstanceTypesInReg[instanceSku]
+}
+
 func (k *KsctlCommand) handleManagedK8sVersion(meta *controllerMeta.Controller, m *controller.Metadata) {
 	ss := k.menuDriven.GetProgressAnimation()
 	ss.Start("Fetching the managed cluster k8s versions")
