@@ -8,7 +8,7 @@ require (
 	github.com/Delta456/box-cli-maker/v2 v2.3.0
 	github.com/creack/pty v1.1.18
 	github.com/fatih/color v1.18.0
-	github.com/ksctl/ksctl/v2 v2.0.0-rc.6
+	github.com/ksctl/ksctl/v2 v2.0.0-rc.7
 	github.com/pterm/pterm v0.12.80
 	github.com/rodaine/table v1.2.0
 	github.com/spf13/cobra v1.8.1
@@ -16,8 +16,6 @@ require (
 	golang.org/x/term v0.28.0
 	k8s.io/client-go v0.32.0
 )
-
-replace github.com/ksctl/ksctl/v2 => ../ksctl
 
 require (
 	atomicgo.dev/cursor v0.2.0 // indirect
