@@ -74,8 +74,6 @@ ksctl get --help
 	return cmd
 }
 
-// TODO: get the addons in the cluster
-
 func handleTableOutputGet(ctx context.Context, l logger.Logger, data provider.ClusterData) {
 
 	headers := []string{"Attributes", "Values"}

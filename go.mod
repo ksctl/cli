@@ -17,6 +17,8 @@ require (
 	k8s.io/client-go v0.32.0
 )
 
+replace github.com/ksctl/ksctl/v2 => ../ksctl
+
 require (
 	atomicgo.dev/cursor v0.2.0 // indirect
 	atomicgo.dev/keyboard v0.2.9 // indirect
