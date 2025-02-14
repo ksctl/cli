@@ -55,7 +55,7 @@ ksctl connect --help
 			}
 
 			if len(clusters) == 0 {
-				k.l.Error("No clusters found to delete")
+				k.l.Error("No clusters found to connect")
 				os.Exit(1)
 			}
 
@@ -84,6 +84,10 @@ ksctl connect --help
 			}
 
 			m := valueMaping[selectedCluster]
+
+			if k.loadCloudProviderCreds(m.Provider) != nil {
+				os.Exit(1)
+			}
 
 			c, err := common.NewController(
 				k.Ctx,
