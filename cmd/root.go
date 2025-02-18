@@ -18,6 +18,7 @@ import (
 	"os"
 
 	"github.com/ksctl/cli/v2/pkg/cli"
+	"github.com/ksctl/cli/v2/pkg/telemetry"
 
 	cLogger "github.com/ksctl/cli/v2/pkg/logger"
 	"github.com/spf13/cobra"
@@ -50,6 +51,8 @@ func (k *KsctlCommand) NewRootCmd() *cobra.Command {
 			}
 
 			k.l = cLogger.NewLogger(k.verbose, os.Stdout)
+
+			k.telemetry = telemetry.NewTelemetry(k.KsctlConfig.Telemetry)
 		},
 	}
 

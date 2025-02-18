@@ -35,6 +35,7 @@ import (
 
 type Config struct {
 	PreferedStateStore consts.KsctlStore `json:"preferedStateStore"`
+	Telemetry          bool              `json:"telemetry"` // default is True
 }
 
 func LoadConfig(c *Config) (errC error) {
@@ -50,6 +51,7 @@ func LoadConfig(c *Config) (errC error) {
 			// NOTE: writing default config
 			*c = Config{
 				PreferedStateStore: consts.StoreLocal,
+				Telemetry:          true,
 			}
 			return SaveConfig(c)
 		}
