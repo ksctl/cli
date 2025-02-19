@@ -21,6 +21,7 @@ import (
 	"strings"
 
 	"github.com/ksctl/cli/v2/pkg/cli"
+	"github.com/ksctl/cli/v2/pkg/telemetry"
 	"github.com/ksctl/ksctl/v2/pkg/consts"
 	"github.com/ksctl/ksctl/v2/pkg/errors"
 	controllerCommon "github.com/ksctl/ksctl/v2/pkg/handler/cluster/common"
@@ -65,6 +66,7 @@ ksctl update scaleup --help
 						Region:        cluster.Region,
 						StateLocation: k.KsctlConfig.PreferedStateStore,
 						K8sDistro:     cluster.K8sDistro,
+						K8sVersion:    cluster.K8sVersion,
 						NoWP:          cluster.NoWP,
 					}
 				}
@@ -80,6 +82,17 @@ ksctl update scaleup --help
 			}
 
 			m := valueMaping[selectedCluster]
+
+			if err := k.telemetry.Send(k.Ctx, k.l, telemetry.EventClusterScaleUp, telemetry.TelemetryMeta{
+				CloudProvider:     m.Provider,
+				StorageDriver:     m.StateLocation,
+				Region:            m.Region,
+				ClusterType:       m.ClusterType,
+				BootstrapProvider: m.K8sDistro,
+				K8sVersion:        m.K8sVersion,
+			}); err != nil {
+				k.l.Debug(k.Ctx, "Failed to send the telemetry", "Reason", err)
+			}
 
 			currWP := m.NoWP
 
@@ -196,6 +209,7 @@ ksctl update scaledown --help
 						Region:        cluster.Region,
 						StateLocation: k.KsctlConfig.PreferedStateStore,
 						K8sDistro:     cluster.K8sDistro,
+						K8sVersion:    cluster.K8sVersion,
 						NoWP:          cluster.NoWP,
 						WorkerPlaneNodeType: func() string {
 							g := []string{}
@@ -218,6 +232,17 @@ ksctl update scaledown --help
 			}
 
 			m := valueMaping[selectedCluster]
+
+			if err := k.telemetry.Send(k.Ctx, k.l, telemetry.EventClusterScaleDown, telemetry.TelemetryMeta{
+				CloudProvider:     m.Provider,
+				StorageDriver:     m.StateLocation,
+				Region:            m.Region,
+				ClusterType:       m.ClusterType,
+				BootstrapProvider: m.K8sDistro,
+				K8sVersion:        m.K8sVersion,
+			}); err != nil {
+				k.l.Debug(k.Ctx, "Failed to send the telemetry", "Reason", err)
+			}
 
 			if err := k.loadCloudProviderCreds(m.Provider); err != nil {
 				k.l.Error("Error in loading the cloud provider creds", "Error", err)

@@ -31,7 +31,7 @@ type TelemetryEvent string
 const (
 	EventClusterCreate       TelemetryEvent = "cluster_create"
 	EventClusterDelete       TelemetryEvent = "cluster_delete"
-	EventClusterUpdate       TelemetryEvent = "cluster_connect"
+	EventClusterConnect      TelemetryEvent = "cluster_connect"
 	EventClusterList         TelemetryEvent = "cluster_list"
 	EventClusterGet          TelemetryEvent = "cluster_get"
 	EventClusterScaleDown    TelemetryEvent = "cluster_scaledown"

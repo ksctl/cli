@@ -60,6 +60,16 @@ func (k *KsctlCommand) baseMetadataFields(m *controller.Metadata) {
 		} else {
 			os.Exit(1)
 		}
+	} else {
+		switch m.Provider {
+		case consts.CloudLocal:
+			m.K8sDistro = consts.K8sKind
+		case consts.CloudAzure:
+			m.K8sDistro = consts.K8sAks
+		case consts.CloudAws:
+			m.K8sDistro = consts.K8sEks
+		}
+
 	}
 }
 

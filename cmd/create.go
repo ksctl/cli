@@ -169,6 +169,17 @@ func (k *KsctlCommand) metadataForSelfManagedCluster(
 
 	k.metadataSummary(*meta)
 
+	if err := k.telemetry.Send(k.Ctx, k.l, telemetry.EventClusterCreate, telemetry.TelemetryMeta{
+		CloudProvider:     meta.Provider,
+		StorageDriver:     meta.StateLocation,
+		Region:            meta.Region,
+		ClusterType:       meta.ClusterType,
+		BootstrapProvider: meta.K8sDistro,
+		K8sVersion:        meta.K8sVersion,
+	}); err != nil {
+		k.l.Debug(k.Ctx, "Failed to send the telemetry", "Reason", err)
+	}
+
 	if ok, _ := k.menuDriven.Confirmation("Do you want to proceed with the cluster creation", cli.WithDefaultValue("no")); !ok {
 		os.Exit(1)
 	}

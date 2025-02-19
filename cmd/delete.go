@@ -21,6 +21,7 @@ import (
 	"strings"
 
 	"github.com/ksctl/cli/v2/pkg/cli"
+	"github.com/ksctl/cli/v2/pkg/telemetry"
 	"github.com/ksctl/ksctl/v2/pkg/consts"
 	"github.com/ksctl/ksctl/v2/pkg/handler/cluster/controller"
 	"github.com/ksctl/ksctl/v2/pkg/handler/cluster/managed"
@@ -76,6 +77,17 @@ ksctl delete --help
 			}
 
 			m := valueMaping[selectedCluster]
+
+			if err := k.telemetry.Send(k.Ctx, k.l, telemetry.EventClusterDelete, telemetry.TelemetryMeta{
+				CloudProvider:     m.Provider,
+				StorageDriver:     m.StateLocation,
+				Region:            m.Region,
+				ClusterType:       m.ClusterType,
+				BootstrapProvider: m.K8sDistro,
+				K8sVersion:        m.K8sVersion,
+			}); err != nil {
+				k.l.Debug(k.Ctx, "Failed to send the telemetry", "Reason", err)
+			}
 
 			if ok, _ := k.menuDriven.Confirmation("Do you want to proceed with the cluster deletion", cli.WithDefaultValue("no")); !ok {
 				os.Exit(1)

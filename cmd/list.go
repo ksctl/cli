@@ -18,6 +18,7 @@ import (
 	"context"
 	"os"
 
+	"github.com/ksctl/cli/v2/pkg/telemetry"
 	"github.com/ksctl/ksctl/v2/pkg/consts"
 	"github.com/ksctl/ksctl/v2/pkg/errors"
 	"github.com/ksctl/ksctl/v2/pkg/handler/cluster/controller"
@@ -42,6 +43,10 @@ ksctl list --help
 			if err != nil {
 				k.l.Error("Error in fetching the clusters", "Error", err)
 				os.Exit(1)
+			}
+
+			if err := k.telemetry.Send(k.Ctx, k.l, telemetry.EventClusterList, telemetry.TelemetryMeta{}); err != nil {
+				k.l.Debug(k.Ctx, "Failed to send the telemetry", "Reason", err)
 			}
 
 			if len(clusters) == 0 {
