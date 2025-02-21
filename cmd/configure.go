@@ -20,6 +20,7 @@ import (
 	"os"
 	"strconv"
 
+	"github.com/fatih/color"
 	"github.com/ksctl/cli/v2/pkg/cli"
 	"github.com/ksctl/cli/v2/pkg/config"
 	"github.com/ksctl/ksctl/v2/pkg/consts"
@@ -34,7 +35,44 @@ func (k *KsctlCommand) Configure() *cobra.Command {
 		Use: "configure",
 
 		Short: "Configure ksctl cli",
-		Long:  "It will help you to configure the ksctl cli",
+		Long:  "It will display the current ksctl cli configuration",
+		Run: func(cmd *cobra.Command, args []string) {
+			headers := []string{"Property", "Value"}
+
+			enabled := color.HiCyanString("✔")
+			disabled := color.HiRedString("✘")
+			telemetry := enabled
+
+			if k.KsctlConfig.Telemetry != nil && !*k.KsctlConfig.Telemetry {
+				telemetry = disabled
+			}
+			rows := [][]string{
+				{"PreferedStorage", string(k.KsctlConfig.PreferedStateStore)},
+				{"TelemetryStatus", telemetry},
+			}
+
+			if k.KsctlConfig.PreferedStateStore == consts.StoreExtMongo {
+				if err := k.loadMongoCredentials(); err != nil {
+					rows = append(rows, []string{"MongoDB 💾", disabled})
+				} else {
+					rows = append(rows, []string{"MongoDB 💾", enabled})
+				}
+			}
+
+			if _, err := k.loadAwsCredentials(); err == nil {
+				rows = append(rows, []string{"AWS ☁️", enabled})
+			} else {
+				rows = append(rows, []string{"AWS ☁️", disabled})
+			}
+
+			if _, err := k.loadAzureCredentials(); err == nil {
+				rows = append(rows, []string{"Azure ☁️", enabled})
+			} else {
+				rows = append(rows, []string{"Azure ☁️", disabled})
+			}
+
+			k.l.Table(k.Ctx, headers, rows)
+		},
 	}
 
 	return cmd
@@ -65,6 +103,29 @@ func (k *KsctlCommand) ConfigureCloud() *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			if ok := k.handleCloudConfig(); !ok {
 				os.Exit(1)
+			}
+		},
+	}
+
+	return cmd
+}
+
+func (k *KsctlCommand) ConfigureTelemetry() *cobra.Command {
+	cmd := &cobra.Command{
+		Use: "telemetry",
+
+		Short: "Configure telemetry",
+		Long:  "It will help you to configure the telemetry",
+		Run: func(cmd *cobra.Command, args []string) {
+			if v, err := k.menuDriven.Confirmation("Do you want to enable the telemetry?", cli.WithDefaultValue("yes")); err != nil {
+				k.l.Error("Failed to get the telemetry status", "Reason", err)
+				os.Exit(1)
+			} else {
+				k.KsctlConfig.Telemetry = utilities.Ptr(v)
+				if err := config.SaveConfig(k.KsctlConfig); err != nil {
+					k.l.Error("Failed to save the configuration", "Reason", err)
+					os.Exit(1)
+				}
 			}
 		},
 	}
@@ -144,17 +205,16 @@ func (k *KsctlCommand) storeAwsCredentials() (err error) {
 	return config.SaveCloudCreds(c, consts.CloudAws)
 }
 
-func (k *KsctlCommand) loadAwsCredentials() error {
+func (k *KsctlCommand) loadAwsCredentials() ([]byte, error) {
 	c := new(statefile.CredentialsAws)
 	if err := config.LoadCloudCreds(c, consts.CloudAws); err != nil {
-		return err
+		return nil, err
 	}
 	v, err := json.Marshal(c)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	k.Ctx = context.WithValue(k.Ctx, consts.KsctlAwsCredentials, v)
-	return nil
+	return v, nil
 }
 
 func (k *KsctlCommand) storeAzureCredentials() (err error) {
@@ -181,17 +241,16 @@ func (k *KsctlCommand) storeAzureCredentials() (err error) {
 	return config.SaveCloudCreds(c, consts.CloudAzure)
 }
 
-func (k *KsctlCommand) loadAzureCredentials() error {
+func (k *KsctlCommand) loadAzureCredentials() ([]byte, error) {
 	c := new(statefile.CredentialsAzure)
 	if err := config.LoadCloudCreds(c, consts.CloudAzure); err != nil {
-		return err
+		return nil, err
 	}
 	v, err := json.Marshal(c)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	k.Ctx = context.WithValue(k.Ctx, consts.KsctlAzureCredentials, v)
-	return nil
+	return v, nil
 }
 
 func (k *KsctlCommand) storeMongoCredentials() (err error) {

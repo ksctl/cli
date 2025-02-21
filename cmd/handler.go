@@ -44,6 +44,7 @@ func (k *KsctlCommand) CommandMapping() error {
 		cr,
 		k.ConfigureStorage(),
 		k.ConfigureCloud(),
+		k.ConfigureTelemetry(),
 	)
 
 	cli.RegisterCommand(

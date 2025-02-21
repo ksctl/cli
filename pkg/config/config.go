@@ -21,6 +21,7 @@ import (
 	"path/filepath"
 
 	"github.com/ksctl/ksctl/v2/pkg/consts"
+	"github.com/ksctl/ksctl/v2/pkg/utilities"
 )
 
 // ksctl config in ~/.config/ksctl/config.json (handled by ksctl:cli)
@@ -35,7 +36,7 @@ import (
 
 type Config struct {
 	PreferedStateStore consts.KsctlStore `json:"preferedStateStore"`
-	Telemetry          bool              `json:"telemetry"` // default is True
+	Telemetry          *bool             `json:"telemetry,omitempty"`
 }
 
 func LoadConfig(c *Config) (errC error) {
@@ -51,7 +52,7 @@ func LoadConfig(c *Config) (errC error) {
 			// NOTE: writing default config
 			*c = Config{
 				PreferedStateStore: consts.StoreLocal,
-				Telemetry:          true,
+				Telemetry:          utilities.Ptr(true),
 			}
 			return SaveConfig(c)
 		}

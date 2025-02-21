@@ -66,12 +66,12 @@ type Telemetry struct {
 	active   bool
 }
 
-func NewTelemetry(active bool) *Telemetry {
+func NewTelemetry(active *bool) *Telemetry {
 	return &Telemetry{
 		userId:   "ksctl:cli",
 		endpoint: "https://telemetry.ksctl.com",
 		ksctlVer: config.Version,
-		active:   active,
+		active:   active == nil || *active,
 	}
 }
 
