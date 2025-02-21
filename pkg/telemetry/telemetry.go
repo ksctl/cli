@@ -20,6 +20,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"runtime"
 
 	"github.com/ksctl/cli/v2/pkg/config"
 	"github.com/ksctl/ksctl/v2/pkg/consts"
@@ -53,6 +54,8 @@ type TelemetryMeta struct {
 type TelemetryData struct {
 	UserId   string `json:"client_id"`
 	KsctlVer string `json:"ksctl_ver"`
+	OS       string `json:"os"`
+	Arch     string `json:"arch"`
 
 	Event TelemetryEvent `json:"event"`
 
@@ -64,6 +67,8 @@ type Telemetry struct {
 	ksctlVer string
 	endpoint string
 	active   bool
+	os       string
+	arch     string
 }
 
 func NewTelemetry(active *bool) *Telemetry {
@@ -72,6 +77,8 @@ func NewTelemetry(active *bool) *Telemetry {
 		endpoint: "https://telemetry.ksctl.com",
 		ksctlVer: config.Version,
 		active:   active == nil || *active,
+		os:       runtime.GOOS,
+		arch:     runtime.GOARCH,
 	}
 }
 
@@ -85,6 +92,8 @@ func (t *Telemetry) Send(ctx context.Context, l logger.Logger, event TelemetryEv
 		KsctlVer: t.ksctlVer,
 		Event:    event,
 		Data:     data,
+		OS:       t.os,
+		Arch:     t.arch,
 	}
 
 	payloadBuf := new(bytes.Buffer)
