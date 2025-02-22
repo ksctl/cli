@@ -47,8 +47,8 @@ func (k *KsctlCommand) Configure() *cobra.Command {
 				telemetry = disabled
 			}
 			rows := [][]string{
-				{"PreferedStorage", string(k.KsctlConfig.PreferedStateStore)},
-				{"TelemetryStatus", telemetry},
+				{"Storage Backend", string(k.KsctlConfig.PreferedStateStore)},
+				{"Telemetry", telemetry},
 			}
 
 			if k.KsctlConfig.PreferedStateStore == consts.StoreExtMongo {
