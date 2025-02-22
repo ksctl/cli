@@ -20,6 +20,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/ksctl/cli/v2/pkg/telemetry"
 	"github.com/ksctl/ksctl/v2/pkg/consts"
 	"github.com/ksctl/ksctl/v2/pkg/logger"
 	"github.com/ksctl/ksctl/v2/pkg/provider"
@@ -65,6 +66,17 @@ ksctl get --help
 			}
 
 			cluster := valueMaping[selectedCluster]
+
+			if err := k.telemetry.Send(k.Ctx, k.l, telemetry.EventClusterGet, telemetry.TelemetryMeta{
+				CloudProvider:     cluster.CloudProvider,
+				StorageDriver:     k.KsctlConfig.PreferedStateStore,
+				Region:            cluster.Region,
+				ClusterType:       cluster.ClusterType,
+				BootstrapProvider: cluster.K8sDistro,
+				K8sVersion:        cluster.K8sVersion,
+			}); err != nil {
+				k.l.Debug(k.Ctx, "Failed to send the telemetry", "Reason", err)
+			}
 
 			handleTableOutputGet(k.Ctx, k.l, cluster)
 

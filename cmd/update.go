@@ -30,6 +30,7 @@ import (
 
 	"github.com/ksctl/cli/v2/pkg/cli"
 	"github.com/ksctl/cli/v2/pkg/config"
+	"github.com/ksctl/cli/v2/pkg/telemetry"
 	"github.com/ksctl/ksctl/v2/pkg/poller"
 	"github.com/spf13/cobra"
 	"golang.org/x/mod/semver"
@@ -46,7 +47,7 @@ ksctl self-update --help
 		Long:  "It is used to update the ksctl cli",
 		Run: func(cmd *cobra.Command, args []string) {
 
-			if config.Version == "v0.0.1-dev" {
+			if config.InDevMode() {
 				k.l.Error("Cannot update dev version", "msg", "Please use a stable version to update")
 				os.Exit(1)
 			}
@@ -71,6 +72,10 @@ ksctl self-update --help
 			}
 
 			newVer := selectedOption
+
+			if err := k.telemetry.Send(k.Ctx, k.l, telemetry.EventClusterUpgrade, telemetry.TelemetryMeta{}); err != nil {
+				k.l.Debug(k.Ctx, "Failed to send the telemetry", "Reason", err)
+			}
 
 			if err := k.update(newVer); err != nil {
 				k.l.Error("Failed to update ksctl cli", "error", err)

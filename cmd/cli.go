@@ -21,6 +21,7 @@ import (
 	"github.com/ksctl/cli/v2/pkg/cli"
 	"github.com/ksctl/cli/v2/pkg/config"
 	cLogger "github.com/ksctl/cli/v2/pkg/logger"
+	"github.com/ksctl/cli/v2/pkg/telemetry"
 	"github.com/ksctl/ksctl/v2/pkg/consts"
 	"github.com/ksctl/ksctl/v2/pkg/logger"
 	"github.com/ksctl/ksctl/v2/pkg/provider"
@@ -38,6 +39,7 @@ type KsctlCommand struct {
 	debugMode               bool
 	menuDriven              cli.MenuDriven
 	KsctlConfig             *config.Config
+	telemetry               *telemetry.Telemetry
 	inMemInstanceTypesInReg map[string]provider.InstanceRegionOutput
 }
 

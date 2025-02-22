@@ -45,7 +45,7 @@ func (l *GeneralLog) ExternalLogHandlerf(ctx context.Context, msgType logger.Cus
 	l.log(false, false, ctx, msgType, format, args...)
 }
 
-func formGroups(disableContext bool, ctx context.Context, v ...any) (format string, vals []any) {
+func formGroups(v ...any) (format string, vals []any) {
 	if len(v) == 0 {
 		return "\n", nil
 	}
@@ -54,10 +54,7 @@ func formGroups(disableContext bool, ctx context.Context, v ...any) (format stri
 	defer func() {
 		format = _format.String()
 	}()
-	if !disableContext {
-		_format.WriteString(color.HiBlackString("component=") + "%s ")
-		vals = append(vals, color.HiBlackString(getPackageName(ctx)))
-	}
+
 	i := 0
 	for ; i+1 < len(v); i += 2 {
 		if !reflect.TypeOf(v[i+1]).Implements(reflect.TypeOf((*error)(nil)).Elem()) &&
@@ -94,7 +91,7 @@ func (l *GeneralLog) logErrorf(disableContext bool, disablePrefix bool, ctx cont
 		prefix := fmt.Sprintf("%s%s ", getTime(l.level), logger.LogError)
 		msg = prefix + msg
 	}
-	format, _args := formGroups(disableContext, ctx, args...)
+	format, _args := formGroups(args...)
 
 	var errMsg error
 	if _args == nil {
@@ -114,7 +111,13 @@ func (l *GeneralLog) log(disableContext bool, useGroupFormer bool, ctx context.C
 	defer l.mu.Unlock()
 	prefix := fmt.Sprintf("%s%s ", getTime(l.level), msgType)
 
+	context := ""
+	if !disableContext {
+		context = color.HiBlackString("component=" + getPackageName(ctx) + " ")
+	}
+
 	if useGroupFormer {
+
 		msgColored := ""
 		switch msgType {
 		case logger.LogSuccess:
@@ -130,8 +133,8 @@ func (l *GeneralLog) log(disableContext bool, useGroupFormer bool, ctx context.C
 		case logger.LogError:
 			msgColored = color.HiRedString(msg)
 		}
-		msg = prefix + msgColored
-		format, _args := formGroups(disableContext, ctx, args...)
+		msg = prefix + context + msgColored
+		format, _args := formGroups(args...)
 		if _args == nil {
 			if disableContext && msgType == logger.LogError {
 				l.boxBox(
@@ -148,8 +151,7 @@ func (l *GeneralLog) log(disableContext bool, useGroupFormer bool, ctx context.C
 			fmt.Fprintf(l.writter, msg+" "+format, _args...)
 		}
 	} else {
-		args = append([]any{color.HiBlackString(getPackageName(ctx))}, args...)
-		fmt.Fprintf(l.writter, prefix+color.HiBlackString("component=")+"%s "+msg+"\n", args...)
+		fmt.Fprintf(l.writter, prefix+context+msg+"\n", args...)
 	}
 }
 

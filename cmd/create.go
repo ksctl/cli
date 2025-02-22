@@ -20,6 +20,7 @@ import (
 	"github.com/ksctl/ksctl/v2/pkg/consts"
 
 	"github.com/ksctl/cli/v2/pkg/cli"
+	"github.com/ksctl/cli/v2/pkg/telemetry"
 	"github.com/ksctl/ksctl/v2/pkg/handler/cluster/controller"
 
 	controllerManaged "github.com/ksctl/ksctl/v2/pkg/handler/cluster/managed"
@@ -168,6 +169,18 @@ func (k *KsctlCommand) metadataForSelfManagedCluster(
 
 	k.metadataSummary(*meta)
 
+	if err := k.telemetry.Send(k.Ctx, k.l, telemetry.EventClusterCreate, telemetry.TelemetryMeta{
+		CloudProvider:     meta.Provider,
+		StorageDriver:     meta.StateLocation,
+		Region:            meta.Region,
+		ClusterType:       meta.ClusterType,
+		BootstrapProvider: meta.K8sDistro,
+		K8sVersion:        meta.K8sVersion,
+		Addons:            telemetry.TranslateMetadata(meta.Addons),
+	}); err != nil {
+		k.l.Debug(k.Ctx, "Failed to send the telemetry", "Reason", err)
+	}
+
 	if ok, _ := k.menuDriven.Confirmation("Do you want to proceed with the cluster creation", cli.WithDefaultValue("no")); !ok {
 		os.Exit(1)
 	}
@@ -268,6 +281,29 @@ func (k *KsctlCommand) metadataForManagedCluster(
 	k.handleManagedK8sVersion(metaClient, meta)
 
 	k.metadataSummary(*meta)
+
+	if err := k.telemetry.Send(k.Ctx, k.l, telemetry.EventClusterCreate, telemetry.TelemetryMeta{
+		CloudProvider: meta.Provider,
+		StorageDriver: meta.StateLocation,
+		Region:        meta.Region,
+		ClusterType:   meta.ClusterType,
+		BootstrapProvider: func() consts.KsctlKubernetes {
+			switch meta.Provider {
+			case consts.CloudLocal:
+				return consts.K8sKind
+			case consts.CloudAzure:
+				return consts.K8sAks
+			case consts.CloudAws:
+				return consts.K8sEks
+			default:
+				return ""
+			}
+		}(),
+		K8sVersion: meta.K8sVersion,
+		Addons:     telemetry.TranslateMetadata(meta.Addons),
+	}); err != nil {
+		k.l.Debug(k.Ctx, "Failed to send the telemetry", "Reason", err)
+	}
 
 	if ok, _ := k.menuDriven.Confirmation("Do you want to proceed with the cluster creation", cli.WithDefaultValue("no")); !ok {
 		os.Exit(1)

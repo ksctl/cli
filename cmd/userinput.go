@@ -15,6 +15,7 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"strconv"
 
@@ -223,14 +224,19 @@ func (k *KsctlCommand) getSelectedCloudProvider(v consts.KsctlClusterType) (cons
 func (k *KsctlCommand) loadCloudProviderCreds(v consts.KsctlCloud) error {
 	switch v {
 	case consts.CloudAws:
-		if err := k.loadAwsCredentials(); err != nil {
+		if v, err := k.loadAwsCredentials(); err != nil {
 			k.l.Error("Failed to load the AWS credentials", "Reason", err)
 			return err
+		} else {
+			k.Ctx = context.WithValue(k.Ctx, consts.KsctlAwsCredentials, v)
 		}
+
 	case consts.CloudAzure:
-		if err := k.loadAzureCredentials(); err != nil {
+		if v, err := k.loadAzureCredentials(); err != nil {
 			k.l.Error("Failed to load the Azure credentials", "Reason", err)
 			return err
+		} else {
+			k.Ctx = context.WithValue(k.Ctx, consts.KsctlAzureCredentials, v)
 		}
 	}
 	return nil

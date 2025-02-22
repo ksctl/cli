@@ -18,6 +18,7 @@ import (
 	"os"
 
 	"github.com/ksctl/cli/v2/pkg/cli"
+	"github.com/ksctl/cli/v2/pkg/telemetry"
 
 	cLogger "github.com/ksctl/cli/v2/pkg/logger"
 	"github.com/spf13/cobra"
@@ -35,6 +36,9 @@ func (k *KsctlCommand) NewRootCmd() *cobra.Command {
 		Short: "CLI tool for managing multiple K8s clusters",
 		Long:  "CLI tool which can manage multiple K8s clusters from local clusters to cloud provider specific clusters.",
 		PersistentPreRun: func(cmd *cobra.Command, args []string) {
+
+			telemetry.IntegrityCheck()
+
 			if k.debugMode {
 				k.CliLog.Box(k.Ctx, "CLI Mode", "CLI is running in debug mode")
 				k.menuDriven = cli.NewDebugMenuDriven()
@@ -50,6 +54,8 @@ func (k *KsctlCommand) NewRootCmd() *cobra.Command {
 			}
 
 			k.l = cLogger.NewLogger(k.verbose, os.Stdout)
+
+			k.telemetry = telemetry.NewTelemetry(k.KsctlConfig.Telemetry)
 		},
 	}
 
