@@ -51,3 +51,4 @@ jobs:
           DATE: ${{ env.CURR_DATE }}
           VERSION: ${{ env.CURR_VER }}
           OCIVERSION: ${{ env.KSCTL_CORE }}
+          CLI_IDENTITY: ${{ secrets.CLI_IDENTITY }}

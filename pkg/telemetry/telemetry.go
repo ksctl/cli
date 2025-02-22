@@ -20,11 +20,19 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
 	"runtime"
+	"strings"
 
+	"github.com/fatih/color"
 	"github.com/ksctl/cli/v2/pkg/config"
+	"github.com/ksctl/ksctl/v2/pkg/addons"
 	"github.com/ksctl/ksctl/v2/pkg/consts"
 	"github.com/ksctl/ksctl/v2/pkg/logger"
+)
+
+var (
+	clientIdentity string
 )
 
 type TelemetryEvent string
@@ -42,6 +50,25 @@ const (
 	EventClusterAddonDisable TelemetryEvent = "cluster_addon_disable"
 )
 
+type TelemetryAddon struct {
+	Sku     string `json:"sku"`
+	Version string `json:"version"`
+	Label   string `json:"label"`
+}
+
+func TranslateMetadata(addons addons.ClusterAddons) []TelemetryAddon {
+	var telemetryAddons []TelemetryAddon
+
+	for _, addon := range addons {
+		telemetryAddons = append(telemetryAddons, TelemetryAddon{
+			Sku:   addon.Name,
+			Label: addon.Label,
+		})
+	}
+
+	return telemetryAddons
+}
+
 type TelemetryMeta struct {
 	CloudProvider     consts.KsctlCloud       `json:"cloud_provider"`
 	StorageDriver     consts.KsctlStore       `json:"storage_driver"`
@@ -49,17 +76,18 @@ type TelemetryMeta struct {
 	ClusterType       consts.KsctlClusterType `json:"cluster_type"`
 	BootstrapProvider consts.KsctlKubernetes  `json:"bootstrap_provider"`
 	K8sVersion        string                  `json:"k8s_version"`
+	Addons            []TelemetryAddon        `json:"addons"`
 }
 
 type TelemetryData struct {
-	UserId   string `json:"client_id"`
-	KsctlVer string `json:"ksctl_ver"`
-	OS       string `json:"os"`
-	Arch     string `json:"arch"`
+	ClientIdentity string         `json:"client_identity"`
+	UserId         string         `json:"client_id"`
+	Event          TelemetryEvent `json:"event"`
 
-	Event TelemetryEvent `json:"event"`
-
-	Data TelemetryMeta `json:"meta"`
+	KsctlVer string        `json:"ksctl_ver"`
+	OS       string        `json:"os"`
+	Arch     string        `json:"arch"`
+	Data     TelemetryMeta `json:"meta"`
 }
 
 type Telemetry struct {
@@ -82,18 +110,51 @@ func NewTelemetry(active *bool) *Telemetry {
 	}
 }
 
+func IntegrityCheck() {
+	if config.InDevMode() {
+		return
+	}
+
+	if len(config.Version) == 0 {
+		color.New(color.BgHiRed, color.FgHiBlack).Println("corrupted version")
+		os.Exit(2)
+	}
+
+	if len(clientIdentity) == 0 {
+		color.New(color.BgHiRed, color.FgHiBlack).Println("corrupted cli identity")
+		os.Exit(2)
+	}
+
+	if len(config.KsctlCoreVer) == 0 {
+		color.New(color.BgHiRed, color.FgHiBlack).Println("corrupted core version")
+		os.Exit(2)
+	}
+
+	if len(config.BuildDate) == 0 {
+		color.New(color.BgHiRed, color.FgHiBlack).Println("corrupted build date")
+		os.Exit(2)
+	}
+}
+
 func (t *Telemetry) Send(ctx context.Context, l logger.Logger, event TelemetryEvent, data TelemetryMeta) error {
 	if !t.active {
 		return nil
 	}
 
 	telemetryData := TelemetryData{
-		UserId:   t.userId,
-		KsctlVer: t.ksctlVer,
-		Event:    event,
-		Data:     data,
-		OS:       t.os,
-		Arch:     t.arch,
+		ClientIdentity: clientIdentity,
+		UserId:         t.userId,
+		KsctlVer:       t.ksctlVer,
+		Event:          event,
+		Data:           data,
+		OS:             t.os,
+		Arch:           t.arch,
+	}
+
+	if config.InDevMode() {
+		telemetryData.ClientIdentity = strings.Repeat("*", 10)
+		l.Debug(ctx, "Telemetry data", "data", telemetryData)
+		return nil
 	}
 
 	payloadBuf := new(bytes.Buffer)

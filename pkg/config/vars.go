@@ -16,7 +16,11 @@ package config
 
 // change this using ldflags
 var (
-	Version      string = "v0.0.1-dev"
-	KsctlCoreVer string = "v0.0.1-dev"
+	Version      string = "dev"
+	KsctlCoreVer string = "dev"
 	BuildDate    string
 )
+
+func InDevMode() bool {
+	return Version == "dev"
+}

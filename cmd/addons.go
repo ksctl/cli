@@ -18,6 +18,7 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 
 	"github.com/ksctl/cli/v2/pkg/cli"
 	"github.com/ksctl/cli/v2/pkg/telemetry"
@@ -119,6 +120,18 @@ ksctl addons enable --help
 				k.l.Error("Error in getting the addon", "Error", err)
 				os.Exit(1)
 			} else {
+
+				if err := k.telemetry.Send(k.Ctx, k.l, telemetry.EventClusterAddonEnable, telemetry.TelemetryMeta{
+					Addons: []telemetry.TelemetryAddon{
+						{
+							Sku:     addonSku,
+							Version: addonVer,
+						},
+					},
+				}); err != nil {
+					k.l.Debug(k.Ctx, "Failed to send the telemetry", "Reason", err)
+				}
+
 				if _err := cc.Install(addonVer); _err != nil {
 					k.l.Error("Error in enabling the addon", "Error", _err)
 					os.Exit(1)
@@ -144,18 +157,6 @@ ksctl addons disable --help
 			m, ok := k.addonClientSetup()
 			if !ok {
 				os.Exit(1)
-			}
-
-			// TODO: Do we need to send what is the addon?
-			if err := k.telemetry.Send(k.Ctx, k.l, telemetry.EventClusterAddonDisable, telemetry.TelemetryMeta{
-				CloudProvider:     m.Provider,
-				StorageDriver:     m.StateLocation,
-				Region:            m.Region,
-				ClusterType:       m.ClusterType,
-				BootstrapProvider: m.K8sDistro,
-				K8sVersion:        m.K8sVersion,
-			}); err != nil {
-				k.l.Debug(k.Ctx, "Failed to send the telemetry", "Reason", err)
 			}
 
 			if k.loadCloudProviderCreds(m.Provider) != nil {
@@ -184,12 +185,12 @@ ksctl addons disable --help
 			for _, addon := range addons {
 				ver := "NaN"
 				if addon.Version != "" {
-					ver = "@" + addon.Version
+					ver = addon.Version
 				}
-				vals[fmt.Sprintf("%s%s", addon.Name, ver)] = addon.Name
+				vals[fmt.Sprintf("%s@%s", addon.Name, ver)] = addon.Name + "@" + ver
 			}
 
-			selectedAddon, err := k.menuDriven.DropDown(
+			_selectedAddon, err := k.menuDriven.DropDown(
 				"Select the addon to disable",
 				vals,
 			)
@@ -198,10 +199,24 @@ ksctl addons disable --help
 				os.Exit(1)
 			}
 
+			selectedAddon := strings.Split(_selectedAddon, "@")[0]
+
 			if cc, err := c.GetAddon(selectedAddon); err != nil {
 				k.l.Error("Error in getting the addon", "Error", err)
 				os.Exit(1)
 			} else {
+
+				if err := k.telemetry.Send(k.Ctx, k.l, telemetry.EventClusterAddonDisable, telemetry.TelemetryMeta{
+					Addons: []telemetry.TelemetryAddon{
+						{
+							Sku:     selectedAddon,
+							Version: strings.Split(_selectedAddon, "@")[1],
+						},
+					},
+				}); err != nil {
+					k.l.Debug(k.Ctx, "Failed to send the telemetry", "Reason", err)
+				}
+
 				if _err := cc.Uninstall(); _err != nil {
 					k.l.Error("Error in disabling the addon", "Error", _err)
 					os.Exit(1)

@@ -176,6 +176,7 @@ func (k *KsctlCommand) metadataForSelfManagedCluster(
 		ClusterType:       meta.ClusterType,
 		BootstrapProvider: meta.K8sDistro,
 		K8sVersion:        meta.K8sVersion,
+		Addons:            telemetry.TranslateMetadata(meta.Addons),
 	}); err != nil {
 		k.l.Debug(k.Ctx, "Failed to send the telemetry", "Reason", err)
 	}
@@ -288,6 +289,7 @@ func (k *KsctlCommand) metadataForManagedCluster(
 		ClusterType:       meta.ClusterType,
 		BootstrapProvider: meta.K8sDistro,
 		K8sVersion:        meta.K8sVersion,
+		Addons:            telemetry.TranslateMetadata(meta.Addons),
 	}); err != nil {
 		k.l.Debug(k.Ctx, "Failed to send the telemetry", "Reason", err)
 	}

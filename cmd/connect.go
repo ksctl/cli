@@ -94,6 +94,7 @@ ksctl connect --help
 				ClusterType:       m.ClusterType,
 				BootstrapProvider: m.K8sDistro,
 				K8sVersion:        m.K8sVersion,
+				Addons:            telemetry.TranslateMetadata(m.Addons),
 			}); err != nil {
 				k.l.Debug(k.Ctx, "Failed to send the telemetry", "Reason", err)
 			}
