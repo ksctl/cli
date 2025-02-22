@@ -22,7 +22,6 @@ import (
 	"net/http"
 	"os"
 	"runtime"
-	"strings"
 
 	"github.com/fatih/color"
 	"github.com/ksctl/cli/v2/pkg/config"
@@ -152,8 +151,6 @@ func (t *Telemetry) Send(ctx context.Context, l logger.Logger, event TelemetryEv
 	}
 
 	if config.InDevMode() {
-		telemetryData.ClientIdentity = strings.Repeat("*", 10)
-		l.Debug(ctx, "Telemetry data", "data", telemetryData)
 		return nil
 	}
 
