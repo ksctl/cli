@@ -10,7 +10,7 @@ require (
 	github.com/fatih/color v1.18.0
 	github.com/ksctl/ksctl/v2 v2.0.0
 	github.com/pterm/pterm v0.12.80
-	github.com/rodaine/table v1.2.0
+	github.com/rodaine/table v1.3.0
 	github.com/spf13/cobra v1.9.1
 	golang.org/x/mod v0.22.0
 	golang.org/x/term v0.28.0
