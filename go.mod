@@ -6,7 +6,7 @@ toolchain go1.23.4
 
 require (
 	github.com/Delta456/box-cli-maker/v2 v2.3.0
-	github.com/creack/pty v1.1.18
+	github.com/creack/pty v1.1.24
 	github.com/fatih/color v1.18.0
 	github.com/ksctl/ksctl/v2 v2.0.0
 	github.com/pterm/pterm v0.12.80
