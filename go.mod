@@ -12,7 +12,7 @@ require (
 	github.com/pterm/pterm v0.12.80
 	github.com/rodaine/table v1.3.0
 	github.com/spf13/cobra v1.9.1
-	golang.org/x/mod v0.22.0
+	golang.org/x/mod v0.24.0
 	golang.org/x/term v0.28.0
 	k8s.io/client-go v0.32.2
 )
