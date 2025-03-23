@@ -127,7 +127,12 @@ ksctl update scaleup --help
 				os.Exit(1)
 			}
 
-			wp := k.handleInstanceTypeSelection(metaClient, &m, "Select instance_type for Worker Nodes")
+			category := provider.Unknown
+			if m.Provider != consts.CloudLocal {
+				category = k.handleInstanceCategorySelection()
+			}
+
+			wp := k.handleInstanceTypeSelection(metaClient, &m, category, "Select instance_type for Worker Nodes")
 
 			m.WorkerPlaneNodeType = wp.Sku
 
@@ -295,7 +300,7 @@ ksctl update scaledown --help
 				for i := cc.NoWP; i < len(vms); i++ {
 					vm := vms[i]
 
-					wp := k.getSpecificInstance(metaClient, cc.Region, vm)
+					wp := k.getSpecificInstanceForScaledown(metaClient, cc.Region, vm)
 					if _, ok := g[wp.Sku]; ok {
 						g[wp.Sku] = struct {
 							Count int
