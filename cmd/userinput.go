@@ -110,7 +110,7 @@ func (k *KsctlCommand) getSelectedInstanceCategory(categories map[string]provide
 	}
 
 	if v, err := k.menuDriven.DropDown(
-		"Select the instance category",
+		"Let us know about your workload type",
 		vr,
 	); err != nil {
 		k.l.Error("Failed to get userinput", "Reason", err)
