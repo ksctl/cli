@@ -27,10 +27,10 @@ func (k *KsctlCommand) CommandMapping() error {
 		k.Version(),
 		k.SelfUpdate(),
 		cr,
-		a,
 	)
 	cli.RegisterCommand(
 		c,
+		a,
 		k.Create(),
 		k.Delete(),
 		k.List(),
