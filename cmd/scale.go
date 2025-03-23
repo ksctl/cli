@@ -127,7 +127,12 @@ ksctl update scaleup --help
 				os.Exit(1)
 			}
 
-			wp := k.handleInstanceTypeSelection(metaClient, &m, "Select instance_type for Worker Nodes")
+			category := provider.Unknown
+			if m.Provider != consts.CloudLocal {
+				category = k.handleInstanceCategorySelection()
+			}
+
+			wp := k.handleInstanceTypeSelection(metaClient, &m, category, "Select instance_type for Worker Nodes")
 
 			m.WorkerPlaneNodeType = wp.Sku
 

@@ -18,6 +18,7 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/ksctl/cli/v2/pkg/cli"
 	"github.com/ksctl/ksctl/v2/pkg/consts"
@@ -94,6 +95,29 @@ func (k *KsctlCommand) getSelectedRegion(regions []provider.RegionOutput) (strin
 	} else {
 		k.l.Debug(k.Ctx, "DropDown input", "region", v)
 		return v, true
+	}
+}
+
+func (k *KsctlCommand) getSelectedInstanceCategory(categories map[string]provider.MachineCategory) (provider.MachineCategory, bool) {
+	k.l.Debug(k.Ctx, "Instance categories", "categories", categories)
+
+	vr := make(map[string]string, len(categories))
+
+	for k, _v := range categories {
+		useCases := strings.Join(_v.UseCases(), ", ")
+		key := fmt.Sprintf(">>> %s <<<\n   Used for: %s\n", k, useCases)
+		vr[key] = string(_v)
+	}
+
+	if v, err := k.menuDriven.DropDown(
+		"Select the instance category",
+		vr,
+	); err != nil {
+		k.l.Error("Failed to get userinput", "Reason", err)
+		return "", false
+	} else {
+		k.l.Debug(k.Ctx, "DropDown input", "instanceCategory", v)
+		return provider.MachineCategory(v), true
 	}
 }
 

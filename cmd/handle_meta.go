@@ -82,8 +82,29 @@ func (k *KsctlCommand) handleRegionSelection(meta *controllerMeta.Controller, m 
 	}
 }
 
-func (k *KsctlCommand) handleInstanceTypeSelection(meta *controllerMeta.Controller, m *controller.Metadata, prompt string) provider.InstanceRegionOutput {
+func (k *KsctlCommand) handleInstanceCategorySelection() provider.MachineCategory {
+	v := provider.GetAvailableMachineCategories()
+
+	_v, ok := k.getSelectedInstanceCategory(v)
+	if !ok {
+		k.l.Error("Failed to get the instance category")
+		os.Exit(1)
+	}
+	return _v
+}
+
+func (k *KsctlCommand) handleInstanceTypeSelection(
+	meta *controllerMeta.Controller,
+	m *controller.Metadata,
+	category provider.MachineCategory,
+	prompt string,
+) provider.InstanceRegionOutput {
+
 	if len(k.inMemInstanceTypesInReg) == 0 {
+		if len(category) == 0 {
+			k.l.Error("Machine category is not provided")
+			os.Exit(1)
+		}
 		ss := k.menuDriven.GetProgressAnimation()
 		ss.Start("Fetching the instance type list")
 
@@ -94,7 +115,12 @@ func (k *KsctlCommand) handleInstanceTypeSelection(meta *controllerMeta.Controll
 			os.Exit(1)
 		}
 		ss.Stop()
-		k.inMemInstanceTypesInReg = listOfVMs
+		k.inMemInstanceTypesInReg = make(map[string]provider.InstanceRegionOutput, len(listOfVMs))
+		for _, v := range listOfVMs {
+			if v.Category == category {
+				k.inMemInstanceTypesInReg[v.Sku] = v
+			}
+		}
 	}
 
 	v, ok := k.getSelectedInstanceType(prompt, k.inMemInstanceTypesInReg)
@@ -105,7 +131,12 @@ func (k *KsctlCommand) handleInstanceTypeSelection(meta *controllerMeta.Controll
 	return k.inMemInstanceTypesInReg[v]
 }
 
-func (k *KsctlCommand) getSpecificInstance(meta *controllerMeta.Controller, region string, instanceSku string) provider.InstanceRegionOutput {
+func (k *KsctlCommand) getSpecificInstance(
+	meta *controllerMeta.Controller,
+	region string,
+	instanceSku string,
+) provider.InstanceRegionOutput {
+
 	if len(k.inMemInstanceTypesInReg) == 0 {
 		ss := k.menuDriven.GetProgressAnimation()
 		ss.Start("Fetching the instance type list")

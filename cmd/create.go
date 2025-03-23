@@ -18,6 +18,7 @@ import (
 	"os"
 
 	"github.com/ksctl/ksctl/v2/pkg/consts"
+	"github.com/ksctl/ksctl/v2/pkg/provider"
 
 	"github.com/ksctl/cli/v2/pkg/cli"
 	"github.com/ksctl/cli/v2/pkg/telemetry"
@@ -44,10 +45,15 @@ ksctl create --help
 
 			k.baseMetadataFields(&meta)
 
+			category := provider.Unknown
+			if meta.Provider != consts.CloudLocal {
+				category = k.handleInstanceCategorySelection()
+			}
+
 			if meta.ClusterType == consts.ClusterTypeMang {
-				k.metadataForManagedCluster(&meta)
+				k.metadataForManagedCluster(&meta, category)
 			} else {
-				k.metadataForSelfManagedCluster(&meta)
+				k.metadataForSelfManagedCluster(&meta, category)
 			}
 
 			k.l.Success(k.Ctx, "Created the cluster", "Name", meta.ClusterName)
@@ -59,6 +65,7 @@ ksctl create --help
 
 func (k *KsctlCommand) metadataForSelfManagedCluster(
 	meta *controller.Metadata,
+	category provider.MachineCategory,
 ) {
 	metaClient, err := controllerMeta.NewController(
 		k.Ctx,
@@ -74,10 +81,10 @@ func (k *KsctlCommand) metadataForSelfManagedCluster(
 
 	k.handleRegionSelection(metaClient, meta)
 
-	cp := k.handleInstanceTypeSelection(metaClient, meta, "Select instance_type for Control Plane")
-	wp := k.handleInstanceTypeSelection(metaClient, meta, "Select instance_type for Worker Nodes")
-	etcd := k.handleInstanceTypeSelection(metaClient, meta, "Select instance_type for Etcd Nodes")
-	lb := k.handleInstanceTypeSelection(metaClient, meta, "Select instance_type for Load Balancer")
+	cp := k.handleInstanceTypeSelection(metaClient, meta, category, "Select instance_type for Control Plane")
+	wp := k.handleInstanceTypeSelection(metaClient, meta, category, "Select instance_type for Worker Nodes")
+	etcd := k.handleInstanceTypeSelection(metaClient, meta, category, "Select instance_type for Etcd Nodes")
+	lb := k.handleInstanceTypeSelection(metaClient, meta, category, "Select instance_type for Load Balancer")
 
 	meta.ControlPlaneNodeType = cp.Sku
 	meta.WorkerPlaneNodeType = wp.Sku
@@ -207,6 +214,7 @@ func (k *KsctlCommand) metadataForSelfManagedCluster(
 
 func (k *KsctlCommand) metadataForManagedCluster(
 	meta *controller.Metadata,
+	category provider.MachineCategory,
 ) {
 	metaClient, err := controllerMeta.NewController(
 		k.Ctx,
@@ -231,7 +239,7 @@ func (k *KsctlCommand) metadataForManagedCluster(
 
 	if meta.Provider != consts.CloudLocal {
 		k.handleRegionSelection(metaClient, meta)
-		vm := k.handleInstanceTypeSelection(metaClient, meta, "Select instance_type for Managed Nodes")
+		vm := k.handleInstanceTypeSelection(metaClient, meta, category, "Select instance_type for Managed Nodes")
 		meta.ManagedNodeType = vm.Sku
 
 		k.menuDriven.GetProgressAnimation().Start("Fetching the managed cluster offerings")
