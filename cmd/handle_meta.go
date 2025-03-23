@@ -63,7 +63,7 @@ func (k *KsctlCommand) baseMetadataFields(m *controller.Metadata) {
 	}
 }
 
-func (k *KsctlCommand) handleRegionSelection(meta *controllerMeta.Controller, m *controller.Metadata) {
+func (k *KsctlCommand) handleRegionSelection(meta *controllerMeta.Controller, m *controller.Metadata) []provider.RegionOutput {
 	ss := k.menuDriven.GetProgressAnimation()
 	ss.Start("Fetching the region list")
 
@@ -80,6 +80,8 @@ func (k *KsctlCommand) handleRegionSelection(meta *controllerMeta.Controller, m 
 	} else {
 		m.Region = v
 	}
+
+	return listOfRegions
 }
 
 func (k *KsctlCommand) handleInstanceCategorySelection() provider.MachineCategory {

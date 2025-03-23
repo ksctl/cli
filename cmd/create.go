@@ -58,6 +58,31 @@ ksctl create --help
 	return cmd
 }
 
+func (k *KsctlCommand) findCostAcrossRegions(
+	meta controller.Metadata,
+	availRegions []provider.RegionOutput,
+	cpSku, wpSku, dsSku, lbSku string,
+	noCP, noWP, noDS int,
+) {
+	for _, region := range availRegions {
+		m_cpy := meta
+		regSku := region.Sku
+		go func() {
+			metaClient, err := controllerMeta.NewController(
+				k.Ctx,
+				k.l,
+				&controller.Client{
+					Metadata: m_cpy,
+				},
+			)
+			if err != nil {
+				k.l.Warn(k.Ctx, "Failed to create the controller", "Reason", err, "region", regSku)
+			}
+			_ = metaClient
+		}()
+	}
+}
+
 func (k *KsctlCommand) metadataForSelfManagedCluster(
 	meta *controller.Metadata,
 ) {
@@ -73,7 +98,7 @@ func (k *KsctlCommand) metadataForSelfManagedCluster(
 		os.Exit(1)
 	}
 
-	k.handleRegionSelection(metaClient, meta)
+	allAvailRegions := k.handleRegionSelection(metaClient, meta)
 
 	cp := k.handleInstanceTypeSelection(metaClient, meta, provider.ComputeIntensive, "Select instance_type for Control Plane")
 	etcd := k.handleInstanceTypeSelection(metaClient, meta, provider.MemoryIntensive, "Select instance_type for Etcd Nodes")
@@ -117,6 +142,8 @@ func (k *KsctlCommand) metadataForSelfManagedCluster(
 	} else {
 		meta.NoDS = v
 	}
+
+	go k.findCostAcrossRegions(*meta, allAvailRegions, cp.Sku, wp.Sku, etcd.Sku, lb.Sku, meta.NoCP, meta.NoWP, meta.NoDS)
 
 	bootstrapVers, err := metaClient.ListAllBootstrapVersions()
 	if err != nil {
@@ -237,7 +264,7 @@ func (k *KsctlCommand) metadataForManagedCluster(
 	}
 
 	if meta.Provider != consts.CloudLocal {
-		k.handleRegionSelection(metaClient, meta)
+		_ = k.handleRegionSelection(metaClient, meta)
 
 		category := provider.Unknown
 		if meta.Provider != consts.CloudLocal {
