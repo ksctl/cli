@@ -300,7 +300,7 @@ ksctl update scaledown --help
 				for i := cc.NoWP; i < len(vms); i++ {
 					vm := vms[i]
 
-					wp := k.getSpecificInstance(metaClient, cc.Region, vm)
+					wp := k.getSpecificInstanceForScaledown(metaClient, cc.Region, vm)
 					if _, ok := g[wp.Sku]; ok {
 						g[wp.Sku] = struct {
 							Count int

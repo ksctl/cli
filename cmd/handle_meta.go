@@ -131,7 +131,7 @@ func (k *KsctlCommand) handleInstanceTypeSelection(
 	return k.inMemInstanceTypesInReg[v]
 }
 
-func (k *KsctlCommand) getSpecificInstance(
+func (k *KsctlCommand) getSpecificInstanceForScaledown(
 	meta *controllerMeta.Controller,
 	region string,
 	instanceSku string,
