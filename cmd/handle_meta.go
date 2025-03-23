@@ -115,20 +115,23 @@ func (k *KsctlCommand) handleInstanceTypeSelection(
 			os.Exit(1)
 		}
 		ss.Stop()
-		k.inMemInstanceTypesInReg = make(map[string]provider.InstanceRegionOutput, len(listOfVMs))
-		for _, v := range listOfVMs {
-			if v.Category == category {
-				k.inMemInstanceTypesInReg[v.Sku] = v
-			}
+		k.inMemInstanceTypesInReg = listOfVMs
+	}
+
+	availableOptions := make(map[string]provider.InstanceRegionOutput, len(k.inMemInstanceTypesInReg))
+
+	for _, v := range k.inMemInstanceTypesInReg {
+		if v.Category == category {
+			availableOptions[v.Sku] = v
 		}
 	}
 
-	v, ok := k.getSelectedInstanceType(prompt, k.inMemInstanceTypesInReg)
+	v, ok := k.getSelectedInstanceType(prompt, availableOptions)
 	if !ok {
 		k.l.Error("Failed to get the instance type")
 		os.Exit(1)
 	}
-	return k.inMemInstanceTypesInReg[v]
+	return availableOptions[v]
 }
 
 func (k *KsctlCommand) getSpecificInstanceForScaledown(
