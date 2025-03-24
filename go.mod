@@ -17,6 +17,8 @@ require (
 	k8s.io/client-go v0.32.2
 )
 
+replace github.com/ksctl/ksctl/v2 => ../ksctl
+
 require (
 	al.essio.dev/pkg/shellescape v1.5.1 // indirect
 	atomicgo.dev/cursor v0.2.0 // indirect

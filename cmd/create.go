@@ -16,6 +16,7 @@ package cmd
 
 import (
 	"os"
+	"sync"
 
 	"github.com/ksctl/ksctl/v2/pkg/consts"
 	"github.com/ksctl/ksctl/v2/pkg/provider"
@@ -61,13 +62,15 @@ ksctl create --help
 func (k *KsctlCommand) findCostAcrossRegions(
 	meta controller.Metadata,
 	availRegions []provider.RegionOutput,
-	cpSku, wpSku, dsSku, lbSku string,
-	noCP, noWP, noDS int,
+	instanceSku string,
 ) {
+	wg := &sync.WaitGroup{}
+	wg.Add(len(availRegions))
 	for _, region := range availRegions {
 		m_cpy := meta
 		regSku := region.Sku
 		go func() {
+			defer wg.Done()
 			metaClient, err := controllerMeta.NewController(
 				k.Ctx,
 				k.l,
@@ -76,11 +79,18 @@ func (k *KsctlCommand) findCostAcrossRegions(
 				},
 			)
 			if err != nil {
-				k.l.Warn(k.Ctx, "Failed to create the controller", "Reason", err, "region", regSku)
+				k.l.Warn(k.Ctx, "Failed to create the controller", "Reason", err, "region", regSku, "instance_type", instanceSku)
 			}
-			_ = metaClient
+			p, err := metaClient.GetPriceForInstance(regSku, instanceSku)
+			if err != nil {
+				k.l.Warn(k.Ctx, "Failed to get the price", "Reason", err, "region", regSku, "instance_type", instanceSku)
+			} else {
+				k.l.Print(k.Ctx, "Price for the instance", "region", regSku, "price", p, "instance_type", instanceSku)
+			}
 		}()
 	}
+
+	wg.Wait()
 }
 
 func (k *KsctlCommand) metadataForSelfManagedCluster(
@@ -143,7 +153,7 @@ func (k *KsctlCommand) metadataForSelfManagedCluster(
 		meta.NoDS = v
 	}
 
-	go k.findCostAcrossRegions(*meta, allAvailRegions, cp.Sku, wp.Sku, etcd.Sku, lb.Sku, meta.NoCP, meta.NoWP, meta.NoDS)
+	k.findCostAcrossRegions(*meta, allAvailRegions, cp.Sku)
 
 	bootstrapVers, err := metaClient.ListAllBootstrapVersions()
 	if err != nil {
