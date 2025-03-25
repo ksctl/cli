@@ -66,21 +66,21 @@ func (k *KsctlCommand) findCostAcrossRegions(
 ) {
 	wg := &sync.WaitGroup{}
 	wg.Add(len(availRegions))
+	metaClient, err := controllerMeta.NewController(
+		k.Ctx,
+		k.l,
+		&controller.Client{
+			Metadata: meta,
+		},
+	)
+	if err != nil {
+		k.l.Warn(k.Ctx, "Failed to create the controller", "Reason", err, "instance_type", instanceSku)
+	}
+
 	for _, region := range availRegions {
-		m_cpy := meta
 		regSku := region.Sku
 		go func() {
 			defer wg.Done()
-			metaClient, err := controllerMeta.NewController(
-				k.Ctx,
-				k.l,
-				&controller.Client{
-					Metadata: m_cpy,
-				},
-			)
-			if err != nil {
-				k.l.Warn(k.Ctx, "Failed to create the controller", "Reason", err, "region", regSku, "instance_type", instanceSku)
-			}
 			p, err := metaClient.GetPriceForInstance(regSku, instanceSku)
 			if err != nil {
 				k.l.Warn(k.Ctx, "Failed to get the price", "Reason", err, "region", regSku, "instance_type", instanceSku)
