@@ -219,10 +219,10 @@ func (k *KsctlCommand) PrintRecommendationSelfManagedCost(
 
 	headers := []string{
 		"Region",
-		fmt.Sprintf("Control Plane << %s >>", instanceTypeCP),
-		fmt.Sprintf("Worker Plane << %s >>", instanceTypeWP),
-		fmt.Sprintf("Etcd Nodes << %s >>", instanceTypeDS),
-		fmt.Sprintf("Load Balancer << %s >>", instanceTypeLB),
+		fmt.Sprintf("Control Plane (%s)", instanceTypeCP),
+		fmt.Sprintf("Worker Plane (%s)", instanceTypeWP),
+		fmt.Sprintf("Etcd Nodes (%s)", instanceTypeDS),
+		fmt.Sprintf("Load Balancer (%s)", instanceTypeLB),
 		"Total Monthly Cost",
 	}
 
