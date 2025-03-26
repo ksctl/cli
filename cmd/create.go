@@ -19,6 +19,7 @@ import (
 	"fmt"
 	"os"
 	"slices"
+	"time"
 
 	"github.com/fatih/color"
 	"github.com/ksctl/ksctl/v2/pkg/consts"
@@ -353,17 +354,48 @@ func (k *KsctlCommand) metadataForSelfManagedCluster(
 		os.Exit(1)
 	}
 
-	// TODO: add spinner
-	k.PrintRecommendationSelfManagedCost(
-		<-isOptimizeInstanceRegionReady,
-		meta.NoCP,
-		meta.NoWP,
-		meta.NoDS,
-		cp.Sku,
-		wp.Sku,
-		etcd.Sku,
-		lb.Sku,
-	)
+	func() {
+		ticker := time.NewTicker(2 * time.Second)
+		defer ticker.Stop()
+		for {
+			select {
+			case o := <-isOptimizeInstanceRegionReady:
+				k.PrintRecommendationSelfManagedCost(
+					o,
+					meta.NoCP,
+					meta.NoWP,
+					meta.NoDS,
+					cp.Sku,
+					wp.Sku,
+					etcd.Sku,
+					lb.Sku,
+				)
+
+				availRegions := []string{"No don't change"}
+				for _, _o := range o[:5] {
+					availRegions = append(availRegions, _o.region)
+				}
+
+				v, err := k.menuDriven.DropDownList(fmt.Sprintf("Region Switch. Currently set (%s)", meta.Region), availRegions,
+					cli.WithDefaultValue("Don't change"),
+				)
+				if err != nil {
+					k.l.Error("Skipping it becuase failed to get the region switch", "Reason", err)
+					return
+				}
+				if v == "Don't change" {
+					return
+				}
+
+				k.l.Print(k.Ctx, "changed the region", "from", color.HiRedString(meta.Region), "to", color.HiGreenString(v))
+				meta.Region = v
+
+				return
+			case <-ticker.C:
+				k.l.Print(k.Ctx, "Still optimizing instance types...")
+			}
+		}
+	}()
 
 	managedCNI, defaultCNI, ksctlCNI, defaultKsctl, err := metaClient.ListBootstrapCNIs()
 	if err != nil {
