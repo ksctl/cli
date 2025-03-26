@@ -15,7 +15,6 @@
 package cmd
 
 import (
-	"cmp"
 	"fmt"
 	"os"
 	"slices"
@@ -61,186 +60,6 @@ ksctl create --help
 	}
 
 	return cmd
-}
-
-// findCostAcrossRegions it returns a map of K[V] where K is the region and V is the cost of the instance
-func (k *KsctlCommand) findCostAcrossRegions(
-	meta controller.Metadata,
-	availRegions []provider.RegionOutput,
-	instanceSku string,
-) (map[string]float64, error) {
-	metaClient, err := controllerMeta.NewController(
-		k.Ctx,
-		k.l,
-		&controller.Client{
-			Metadata: meta,
-		},
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	resultChan := make(chan struct {
-		region string
-		price  float64
-		err    error
-	}, len(availRegions))
-
-	for _, region := range availRegions {
-		regSku := region.Sku
-		go func(sku string) {
-			price, err := metaClient.GetPriceForInstance(sku, instanceSku)
-			resultChan <- struct {
-				region string
-				price  float64
-				err    error
-			}{sku, price, err}
-		}(regSku)
-	}
-
-	cost := make(map[string]float64, len(availRegions))
-	for i := 0; i < len(availRegions); i++ {
-		result := <-resultChan
-		if result.err == nil {
-			cost[result.region] = result.price
-		}
-	}
-
-	return cost, nil
-}
-
-type RecommendationSelfManagedCost struct {
-	region    string
-	totalCost float64
-
-	cpCost   float64
-	wpCost   float64
-	etcdCost float64
-	lbCost   float64
-}
-
-func (k *KsctlCommand) getBestRegionsWithTotalCostSelfManaged(
-	allAvailRegions []provider.RegionOutput,
-	costForCP map[string]float64,
-	costForWP map[string]float64,
-	costForDS map[string]float64,
-	costForLB map[string]float64,
-) []RecommendationSelfManagedCost {
-
-	checkRegion := func(region string, m map[string]float64) bool {
-		_, ok := m[region]
-		return ok
-	}
-
-	var costForCluster []RecommendationSelfManagedCost
-
-	for _, region := range allAvailRegions {
-		if !checkRegion(region.Sku, costForCP) ||
-			!checkRegion(region.Sku, costForWP) ||
-			!checkRegion(region.Sku, costForDS) ||
-			!checkRegion(region.Sku, costForLB) {
-			continue
-		}
-
-		totalCost := costForCP[region.Sku] + costForWP[region.Sku] + costForDS[region.Sku] + costForLB[region.Sku]
-
-		costForCluster = append(costForCluster, RecommendationSelfManagedCost{
-			region:    region.Sku,
-			cpCost:    costForCP[region.Sku],
-			wpCost:    costForWP[region.Sku],
-			etcdCost:  costForDS[region.Sku],
-			lbCost:    costForLB[region.Sku],
-			totalCost: totalCost,
-		})
-	}
-
-	slices.SortFunc(costForCluster, func(a, b RecommendationSelfManagedCost) int {
-		return cmp.Compare(a.totalCost, b.totalCost)
-	})
-
-	if len(costForCluster) < 3 {
-		return costForCluster
-	}
-
-	return costForCluster
-}
-
-func (k *KsctlCommand) OptimizeInstanceRegion(
-	meta *controller.Metadata,
-	allAvailRegions []provider.RegionOutput,
-	cp provider.InstanceRegionOutput,
-	wp provider.InstanceRegionOutput,
-	etcd provider.InstanceRegionOutput,
-	lb provider.InstanceRegionOutput,
-) []RecommendationSelfManagedCost {
-	cpInstanceCosts, err := k.findCostAcrossRegions(*meta, allAvailRegions, cp.Sku)
-	if err != nil {
-		k.l.Error("Failed to get the cost of control plane instances", "Reason", err)
-	}
-
-	wpInstanceCosts, err := k.findCostAcrossRegions(*meta, allAvailRegions, wp.Sku)
-	if err != nil {
-		k.l.Error("Failed to get the cost of worker plane instances", "Reason", err)
-	}
-
-	etcdInstanceCosts, err := k.findCostAcrossRegions(*meta, allAvailRegions, etcd.Sku)
-	if err != nil {
-		k.l.Error("Failed to get the cost of etcd instances", "Reason", err)
-	}
-
-	lbInstanceCosts, err := k.findCostAcrossRegions(*meta, allAvailRegions, lb.Sku)
-	if err != nil {
-		k.l.Error("Failed to get the cost of load balancer instances", "Reason", err)
-	}
-
-	return k.getBestRegionsWithTotalCostSelfManaged(
-		allAvailRegions,
-		cpInstanceCosts,
-		wpInstanceCosts,
-		etcdInstanceCosts,
-		lbInstanceCosts,
-	)
-}
-
-func (k *KsctlCommand) PrintRecommendationSelfManagedCost(
-	costs []RecommendationSelfManagedCost,
-	noOfCP int,
-	noOfWP int,
-	noOfDS int,
-	instanceTypeCP string,
-	instanceTypeWP string,
-	instanceTypeDS string,
-	instanceTypeLB string,
-) {
-	k.l.Print(k.Ctx,
-		"Here is your recommendation",
-		"Parameter", "Region wise cost",
-		"OptimizedRegion", color.HiCyanString(costs[0].region),
-	)
-
-	headers := []string{
-		"Region",
-		fmt.Sprintf("Control Plane (%s)", instanceTypeCP),
-		fmt.Sprintf("Worker Plane (%s)", instanceTypeWP),
-		fmt.Sprintf("Etcd Nodes (%s)", instanceTypeDS),
-		fmt.Sprintf("Load Balancer (%s)", instanceTypeLB),
-		"Total Monthly Cost",
-	}
-
-	var data [][]string
-	for _, cost := range costs {
-		total := cost.cpCost*float64(noOfCP) + cost.wpCost*float64(noOfWP) + cost.etcdCost*float64(noOfDS) + cost.lbCost
-		data = append(data, []string{
-			cost.region,
-			fmt.Sprintf("$%.2f X %d", cost.cpCost, noOfCP),
-			fmt.Sprintf("$%.2f X %d", cost.wpCost, noOfWP),
-			fmt.Sprintf("$%.2f X %d", cost.etcdCost, noOfDS),
-			fmt.Sprintf("$%.2f X 1", cost.lbCost),
-			fmt.Sprintf("$%.2f", total),
-		})
-	}
-
-	k.l.Table(k.Ctx, headers, data)
 }
 
 func (k *KsctlCommand) metadataForSelfManagedCluster(
@@ -303,11 +122,10 @@ func (k *KsctlCommand) metadataForSelfManagedCluster(
 		meta.NoDS = v
 	}
 
-	var isOptimizeInstanceRegionReady chan []RecommendationSelfManagedCost
-	isOptimizeInstanceRegionReady = make(chan []RecommendationSelfManagedCost)
+	isOptimizeInstanceRegionReady := make(chan []RecommendationSelfManagedCost)
 
 	go func() {
-		isOptimizeInstanceRegionReady <- k.OptimizeInstanceRegion(meta, allAvailRegions, cp, wp, etcd, lb)
+		isOptimizeInstanceRegionReady <- k.OptimizeSelfManagedInstanceTypesAcrossRegions(meta, allAvailRegions, cp, wp, etcd, lb)
 	}()
 
 	bootstrapVers, err := metaClient.ListAllBootstrapVersions()
@@ -370,6 +188,10 @@ func (k *KsctlCommand) metadataForSelfManagedCluster(
 					etcd.Sku,
 					lb.Sku,
 				)
+				pos := slices.IndexFunc(o, func(i RecommendationSelfManagedCost) bool {
+					return i.region == meta.Region
+				})
+				o = append(o[:pos], o[pos+1:]...)
 
 				availRegions := []string{"No don't change"}
 				for _, _o := range o[:5] {
@@ -473,8 +295,10 @@ func (k *KsctlCommand) metadataForManagedCluster(
 		meta.NoMP = v
 	}
 
+	isOptimizeInstanceRegionReady := make(chan []RecommendationManagedCost)
+
 	if meta.Provider != consts.CloudLocal {
-		_ = k.handleRegionSelection(metaClient, meta)
+		allAvailRegions := k.handleRegionSelection(metaClient, meta)
 
 		category := provider.Unknown
 		if meta.Provider != consts.CloudLocal {
@@ -503,6 +327,12 @@ func (k *KsctlCommand) metadataForManagedCluster(
 			offeringSelected = v
 		}
 
+		go func() {
+			isOptimizeInstanceRegionReady <- k.OptimizeManagedOfferingsAcrossRegions(meta, allAvailRegions, listOfOfferings[offeringSelected], vm)
+		}()
+
+		k.l.Print(k.Ctx, "Current Selection will cost you")
+
 		_, err = metaClient.PriceCalculator(
 			controllerMeta.PriceCalculatorInput{
 				ManagedControlPlaneMachine: listOfOfferings[offeringSelected],
@@ -513,6 +343,50 @@ func (k *KsctlCommand) metadataForManagedCluster(
 			k.l.Error("Failed to calculate the price", "Reason", err)
 			os.Exit(1)
 		}
+
+		func() {
+			ticker := time.NewTicker(2 * time.Second)
+			defer ticker.Stop()
+			for {
+				select {
+				case o := <-isOptimizeInstanceRegionReady:
+					k.PrintRecommendationManagedCost(
+						o,
+						meta.NoMP,
+						listOfOfferings[offeringSelected].Sku,
+						vm.Sku,
+					)
+
+					pos := slices.IndexFunc(o, func(i RecommendationManagedCost) bool {
+						return i.region == meta.Region
+					})
+					o = append(o[:pos], o[pos+1:]...)
+
+					availRegions := []string{"No don't change"}
+					for _, _o := range o[:5] {
+						availRegions = append(availRegions, _o.region)
+					}
+
+					v, err := k.menuDriven.DropDownList(fmt.Sprintf("Region Switch. Currently set (%s)", meta.Region), availRegions,
+						cli.WithDefaultValue("Don't change"),
+					)
+					if err != nil {
+						k.l.Error("Skipping it becuase failed to get the region switch", "Reason", err)
+						return
+					}
+					if v == "Don't change" {
+						return
+					}
+
+					k.l.Print(k.Ctx, "changed the region", "from", color.HiRedString(meta.Region), "to", color.HiGreenString(v))
+					meta.Region = v
+
+					return
+				case <-ticker.C:
+					k.l.Print(k.Ctx, "Still optimizing instance types...")
+				}
+			}
+		}()
 	}
 
 	managedCNI, defaultCNI, ksctlCNI, defaultKsctl, err := metaClient.ListManagedCNIs()
