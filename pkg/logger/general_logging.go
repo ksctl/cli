@@ -95,7 +95,7 @@ func (l *GeneralLog) logErrorf(disableContext bool, disablePrefix bool, ctx cont
 
 	var errMsg error
 	if _args == nil {
-		errMsg = fmt.Errorf(msg + " " + format)
+		errMsg = fmt.Errorf("%s %s", msg, format)
 	} else {
 		errMsg = fmt.Errorf(msg+" "+format, _args...)
 	}
