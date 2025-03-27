@@ -193,7 +193,7 @@ func (k *KsctlCommand) metadataForSelfManagedCluster(
 				})
 				o = append(o[:pos], o[pos+1:]...)
 
-				availRegions := []string{"No don't change"}
+				availRegions := []string{"Don't change"}
 				for _, _o := range o[:5] {
 					availRegions = append(availRegions, _o.region)
 				}
@@ -362,7 +362,7 @@ func (k *KsctlCommand) metadataForManagedCluster(
 					})
 					o = append(o[:pos], o[pos+1:]...)
 
-					availRegions := []string{"No don't change"}
+					availRegions := []string{"Don't change"}
 					for _, _o := range o[:5] {
 						availRegions = append(availRegions, _o.region)
 					}
