@@ -1,8 +1,6 @@
 module github.com/ksctl/cli/v2
 
-go 1.23.3
-
-toolchain go1.23.4
+go 1.24.0
 
 require (
 	github.com/Delta456/box-cli-maker/v2 v2.3.0
