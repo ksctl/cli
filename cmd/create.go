@@ -15,8 +15,12 @@
 package cmd
 
 import (
+	"fmt"
 	"os"
+	"slices"
+	"time"
 
+	"github.com/fatih/color"
 	"github.com/ksctl/ksctl/v2/pkg/consts"
 	"github.com/ksctl/ksctl/v2/pkg/provider"
 
@@ -73,7 +77,7 @@ func (k *KsctlCommand) metadataForSelfManagedCluster(
 		os.Exit(1)
 	}
 
-	k.handleRegionSelection(metaClient, meta)
+	allAvailRegions := k.handleRegionSelection(metaClient, meta)
 
 	cp := k.handleInstanceTypeSelection(metaClient, meta, provider.ComputeIntensive, "Select instance_type for Control Plane")
 	etcd := k.handleInstanceTypeSelection(metaClient, meta, provider.MemoryIntensive, "Select instance_type for Etcd Nodes")
@@ -118,11 +122,18 @@ func (k *KsctlCommand) metadataForSelfManagedCluster(
 		meta.NoDS = v
 	}
 
+	isOptimizeInstanceRegionReady := make(chan []RecommendationSelfManagedCost)
+
+	go func() {
+		isOptimizeInstanceRegionReady <- k.OptimizeSelfManagedInstanceTypesAcrossRegions(meta, allAvailRegions, cp, wp, etcd, lb)
+	}()
+
 	bootstrapVers, err := metaClient.ListAllBootstrapVersions()
 	if err != nil {
 		k.l.Error("Failed to get the list of bootstrap versions", "Reason", err)
 		os.Exit(1)
 	}
+
 	if v, err := k.menuDriven.DropDownList("Select the bootstrap version", bootstrapVers, cli.WithDefaultValue(bootstrapVers[0])); err != nil {
 		k.l.Error("Failed to get the bootstrap version", "Reason", err)
 		os.Exit(1)
@@ -144,6 +155,7 @@ func (k *KsctlCommand) metadataForSelfManagedCluster(
 		meta.EtcdVersion = v
 	}
 
+	k.l.Print(k.Ctx, "Current Selection will cost you")
 	_, err = metaClient.PriceCalculator(
 		controllerMeta.PriceCalculatorInput{
 			Currency:              cp.Price.Currency,
@@ -159,6 +171,53 @@ func (k *KsctlCommand) metadataForSelfManagedCluster(
 		k.l.Error("Failed to calculate the price", "Reason", err)
 		os.Exit(1)
 	}
+
+	func() {
+		ticker := time.NewTicker(2 * time.Second)
+		defer ticker.Stop()
+		for {
+			select {
+			case o := <-isOptimizeInstanceRegionReady:
+				k.PrintRecommendationSelfManagedCost(
+					o,
+					meta.NoCP,
+					meta.NoWP,
+					meta.NoDS,
+					cp.Sku,
+					wp.Sku,
+					etcd.Sku,
+					lb.Sku,
+				)
+				pos := slices.IndexFunc(o, func(i RecommendationSelfManagedCost) bool {
+					return i.region == meta.Region
+				})
+				o = append(o[:pos], o[pos+1:]...)
+
+				availRegions := []string{"No don't change"}
+				for _, _o := range o[:5] {
+					availRegions = append(availRegions, _o.region)
+				}
+
+				v, err := k.menuDriven.DropDownList(fmt.Sprintf("Region Switch. Currently set (%s)", meta.Region), availRegions,
+					cli.WithDefaultValue("Don't change"),
+				)
+				if err != nil {
+					k.l.Error("Skipping it becuase failed to get the region switch", "Reason", err)
+					return
+				}
+				if v == "Don't change" {
+					return
+				}
+
+				k.l.Print(k.Ctx, "changed the region", "from", color.HiRedString(meta.Region), "to", color.HiGreenString(v))
+				meta.Region = v
+
+				return
+			case <-ticker.C:
+				k.l.Print(k.Ctx, "Still optimizing instance types...")
+			}
+		}
+	}()
 
 	managedCNI, defaultCNI, ksctlCNI, defaultKsctl, err := metaClient.ListBootstrapCNIs()
 	if err != nil {
@@ -236,8 +295,10 @@ func (k *KsctlCommand) metadataForManagedCluster(
 		meta.NoMP = v
 	}
 
+	isOptimizeInstanceRegionReady := make(chan []RecommendationManagedCost)
+
 	if meta.Provider != consts.CloudLocal {
-		k.handleRegionSelection(metaClient, meta)
+		allAvailRegions := k.handleRegionSelection(metaClient, meta)
 
 		category := provider.Unknown
 		if meta.Provider != consts.CloudLocal {
@@ -266,6 +327,12 @@ func (k *KsctlCommand) metadataForManagedCluster(
 			offeringSelected = v
 		}
 
+		go func() {
+			isOptimizeInstanceRegionReady <- k.OptimizeManagedOfferingsAcrossRegions(meta, allAvailRegions, listOfOfferings[offeringSelected], vm)
+		}()
+
+		k.l.Print(k.Ctx, "Current Selection will cost you")
+
 		_, err = metaClient.PriceCalculator(
 			controllerMeta.PriceCalculatorInput{
 				ManagedControlPlaneMachine: listOfOfferings[offeringSelected],
@@ -276,6 +343,50 @@ func (k *KsctlCommand) metadataForManagedCluster(
 			k.l.Error("Failed to calculate the price", "Reason", err)
 			os.Exit(1)
 		}
+
+		func() {
+			ticker := time.NewTicker(2 * time.Second)
+			defer ticker.Stop()
+			for {
+				select {
+				case o := <-isOptimizeInstanceRegionReady:
+					k.PrintRecommendationManagedCost(
+						o,
+						meta.NoMP,
+						listOfOfferings[offeringSelected].Sku,
+						vm.Sku,
+					)
+
+					pos := slices.IndexFunc(o, func(i RecommendationManagedCost) bool {
+						return i.region == meta.Region
+					})
+					o = append(o[:pos], o[pos+1:]...)
+
+					availRegions := []string{"No don't change"}
+					for _, _o := range o[:5] {
+						availRegions = append(availRegions, _o.region)
+					}
+
+					v, err := k.menuDriven.DropDownList(fmt.Sprintf("Region Switch. Currently set (%s)", meta.Region), availRegions,
+						cli.WithDefaultValue("Don't change"),
+					)
+					if err != nil {
+						k.l.Error("Skipping it becuase failed to get the region switch", "Reason", err)
+						return
+					}
+					if v == "Don't change" {
+						return
+					}
+
+					k.l.Print(k.Ctx, "changed the region", "from", color.HiRedString(meta.Region), "to", color.HiGreenString(v))
+					meta.Region = v
+
+					return
+				case <-ticker.C:
+					k.l.Print(k.Ctx, "Still optimizing instance types...")
+				}
+			}
+		}()
 	}
 
 	managedCNI, defaultCNI, ksctlCNI, defaultKsctl, err := metaClient.ListManagedCNIs()

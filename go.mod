@@ -8,7 +8,7 @@ require (
 	github.com/Delta456/box-cli-maker/v2 v2.3.0
 	github.com/creack/pty v1.1.24
 	github.com/fatih/color v1.18.0
-	github.com/ksctl/ksctl/v2 v2.1.0
+	github.com/ksctl/ksctl/v2 v2.2.0
 	github.com/pterm/pterm v0.12.80
 	github.com/rodaine/table v1.3.0
 	github.com/spf13/cobra v1.9.1

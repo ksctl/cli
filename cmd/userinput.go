@@ -105,7 +105,7 @@ func (k *KsctlCommand) getSelectedInstanceCategory(categories map[string]provide
 
 	for k, _v := range categories {
 		useCases := strings.Join(_v.UseCases(), ", ")
-		key := fmt.Sprintf(">>> %s <<<\n   Used for: %s\n", k, useCases)
+		key := fmt.Sprintf("%s\n   Used for: %s\n", k, useCases)
 		vr[key] = string(_v)
 	}
 
