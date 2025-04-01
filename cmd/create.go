@@ -17,7 +17,6 @@ package cmd
 import (
 	"fmt"
 	"os"
-	"slices"
 	"time"
 
 	"github.com/fatih/color"
@@ -122,10 +121,21 @@ func (k *KsctlCommand) metadataForSelfManagedCluster(
 		meta.NoDS = v
 	}
 
-	isOptimizeInstanceRegionReady := make(chan []RecommendationSelfManagedCost)
+	isOptimizeInstanceRegionReady := make(chan controllerMeta.CostOptimizerOutput)
 
 	go func() {
-		isOptimizeInstanceRegionReady <- k.OptimizeSelfManagedInstanceTypesAcrossRegions(meta, allAvailRegions, cp, wp, etcd, lb)
+		isOptimizeInstanceRegionReady <- metaClient.CostOptimizeAcrossRegions(
+			allAvailRegions,
+			controllerMeta.CostOptimizerInput{
+				ControlPlane:             cp,
+				WorkerPlane:              wp,
+				DataStorePlane:           etcd,
+				LoadBalancer:             lb,
+				CountOfControlPlaneNodes: meta.NoCP,
+				CountOfWorkerNodes:       meta.NoWP,
+				CountOfEtcdNodes:         meta.NoDS,
+			},
+		)
 	}()
 
 	bootstrapVers, err := metaClient.ListAllBootstrapVersions()
@@ -178,24 +188,9 @@ func (k *KsctlCommand) metadataForSelfManagedCluster(
 		for {
 			select {
 			case o := <-isOptimizeInstanceRegionReady:
-				k.PrintRecommendationSelfManagedCost(
-					o,
-					meta.NoCP,
-					meta.NoWP,
-					meta.NoDS,
-					cp.Sku,
-					wp.Sku,
-					etcd.Sku,
-					lb.Sku,
-				)
-				pos := slices.IndexFunc(o, func(i RecommendationSelfManagedCost) bool {
-					return i.region == meta.Region
-				})
-				o = append(o[:pos], o[pos+1:]...)
-
 				availRegions := []string{"Don't change"}
-				for _, _o := range o[:5] {
-					availRegions = append(availRegions, _o.region)
+				for _, _o := range o.Regions[:5] {
+					availRegions = append(availRegions, _o)
 				}
 
 				v, err := k.menuDriven.DropDownList(fmt.Sprintf("Region Switch. Currently set (%s)", meta.Region), availRegions,
@@ -295,7 +290,7 @@ func (k *KsctlCommand) metadataForManagedCluster(
 		meta.NoMP = v
 	}
 
-	isOptimizeInstanceRegionReady := make(chan []RecommendationManagedCost)
+	isOptimizeInstanceRegionReady := make(chan controllerMeta.CostOptimizerOutput)
 
 	if meta.Provider != consts.CloudLocal {
 		allAvailRegions := k.handleRegionSelection(metaClient, meta)
@@ -328,7 +323,14 @@ func (k *KsctlCommand) metadataForManagedCluster(
 		}
 
 		go func() {
-			isOptimizeInstanceRegionReady <- k.OptimizeManagedOfferingsAcrossRegions(meta, allAvailRegions, listOfOfferings[offeringSelected], vm)
+			isOptimizeInstanceRegionReady <- metaClient.CostOptimizeAcrossRegions(
+				allAvailRegions,
+				controllerMeta.CostOptimizerInput{
+					ManagedOffering:     listOfOfferings[offeringSelected],
+					ManagedPlane:        vm,
+					CountOfManagedNodes: meta.NoMP,
+				},
+			)
 		}()
 
 		k.l.Print(k.Ctx, "Current Selection will cost you")
@@ -350,21 +352,9 @@ func (k *KsctlCommand) metadataForManagedCluster(
 			for {
 				select {
 				case o := <-isOptimizeInstanceRegionReady:
-					k.PrintRecommendationManagedCost(
-						o,
-						meta.NoMP,
-						listOfOfferings[offeringSelected].Sku,
-						vm.Sku,
-					)
-
-					pos := slices.IndexFunc(o, func(i RecommendationManagedCost) bool {
-						return i.region == meta.Region
-					})
-					o = append(o[:pos], o[pos+1:]...)
-
 					availRegions := []string{"Don't change"}
-					for _, _o := range o[:5] {
-						availRegions = append(availRegions, _o.region)
+					for _, _o := range o.Regions[:5] {
+						availRegions = append(availRegions, _o)
 					}
 
 					v, err := k.menuDriven.DropDownList(fmt.Sprintf("Region Switch. Currently set (%s)", meta.Region), availRegions,
