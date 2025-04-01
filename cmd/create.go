@@ -125,7 +125,7 @@ func (k *KsctlCommand) metadataForSelfManagedCluster(
 
 	go func() {
 		isOptimizeInstanceRegionReady <- metaClient.CostOptimizeAcrossRegions(
-			allAvailRegions,
+			allAvailRegions, meta.Region,
 			controllerMeta.CostOptimizerInput{
 				ControlPlane:             cp,
 				WorkerPlane:              wp,
@@ -324,7 +324,7 @@ func (k *KsctlCommand) metadataForManagedCluster(
 
 		go func() {
 			isOptimizeInstanceRegionReady <- metaClient.CostOptimizeAcrossRegions(
-				allAvailRegions,
+				allAvailRegions, meta.Region,
 				controllerMeta.CostOptimizerInput{
 					ManagedOffering:     listOfOfferings[offeringSelected],
 					ManagedPlane:        vm,
