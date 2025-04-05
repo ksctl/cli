@@ -75,6 +75,7 @@ func (k *KsctlCommand) handleRegionSelection(meta *controllerMeta.Controller, m 
 	}
 	ss.Stop()
 
+	k.l.Note(k.Ctx, "Carbon emission data shown represents monthly averages calculated over a one-year period")
 	if v, ok := k.getSelectedRegion(listOfRegions); !ok {
 		os.Exit(1)
 	} else {
