@@ -78,17 +78,12 @@ func (k *KsctlCommand) getCounterValue(prompt string, validate userInputValidati
 	return _v, true
 }
 
-func (k *KsctlCommand) getSelectedRegion(regions []provider.RegionOutput) (string, bool) {
-	vr := make(map[string]string, len(regions))
-	for _, r := range regions {
-		vr[r.Name] = r.Sku
-	}
-
-	k.l.Debug(k.Ctx, "Regions", "regions", vr)
+func (k *KsctlCommand) getSelectedRegion(regions provider.RegionsOutput) (string, bool) {
+	k.l.Debug(k.Ctx, "Regions", "regions", regions)
 
 	if v, err := k.menuDriven.DropDown(
 		"Select the region",
-		vr,
+		regions.S(),
 	); err != nil {
 		k.l.Error("Failed to get userinput", "Reason", err)
 		return "", false
