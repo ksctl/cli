@@ -40,7 +40,7 @@ type KsctlCommand struct {
 	menuDriven              cli.MenuDriven
 	KsctlConfig             *config.Config
 	telemetry               *telemetry.Telemetry
-	inMemInstanceTypesInReg map[string]provider.InstanceRegionOutput
+	inMemInstanceTypesInReg provider.InstancesRegionOutput
 }
 
 func New() (*KsctlCommand, error) {
