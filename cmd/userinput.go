@@ -138,18 +138,19 @@ func (k *KsctlCommand) getSelectedInstanceType(
 ) (string, bool) {
 	vr := make(map[string]string, len(vms))
 	for sku, vm := range vms {
-		displayName := fmt.Sprintf("%s (Arch: %s, vCPUs: %d, Memory: %dGB)",
-			vm.Description,
-			vm.CpuArch,
-			vm.VCpus,
-			vm.Memory,
-		)
-		displayName += fmt.Sprintf(", Price: %.2f %s/month",
-			vm.GetCost(),
-			vm.Price.Currency,
-		)
+		if vm.CpuArch == provider.ArchAmd64 {
+			displayName := fmt.Sprintf("%s (vCPUs: %d, Memory: %dGB)",
+				vm.Description,
+				vm.VCpus,
+				vm.Memory,
+			)
+			displayName += fmt.Sprintf(", Price: %.2f %s/month",
+				vm.GetCost(),
+				vm.Price.Currency,
+			)
 
-		vr[displayName] = sku
+			vr[displayName] = sku
+		}
 	}
 
 	k.l.Debug(k.Ctx, "Instance types", "vms", vr)
