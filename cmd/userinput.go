@@ -138,9 +138,7 @@ func (r CliRegions) S() map[string]string {
 	m := make(map[string]string, len(r))
 	for _, region := range r {
 		desc := region.Name
-		if region.Emission == nil {
-			desc += " ⚠️ (no emissions data)"
-		} else {
+		if region.Emission != nil {
 			emissionEmoji := "🔴" // High emissions (default)
 			if region.Emission.DirectCarbonIntensity < 200 {
 				emissionEmoji = "🟢" // Low emissions
