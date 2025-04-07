@@ -15,9 +15,13 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"time"
+
+	"github.com/ksctl/ksctl/v2/pkg/logger"
+	"github.com/ksctl/ksctl/v2/pkg/provider/optimizer"
 
 	"github.com/fatih/color"
 	"github.com/ksctl/ksctl/v2/pkg/consts"
@@ -76,7 +80,7 @@ func (k *KsctlCommand) metadataForSelfManagedCluster(
 		os.Exit(1)
 	}
 
-	allAvailRegions := k.handleRegionSelection(metaClient, meta)
+	//allAvailRegions := k.handleRegionSelection(metaClient, meta)
 
 	cp := k.handleInstanceTypeSelection(metaClient, meta, provider.ComputeIntensive, "Select instance_type for Control Plane")
 	etcd := k.handleInstanceTypeSelection(metaClient, meta, provider.MemoryIntensive, "Select instance_type for Etcd Nodes")
@@ -123,20 +127,20 @@ func (k *KsctlCommand) metadataForSelfManagedCluster(
 
 	isOptimizeInstanceRegionReady := make(chan controllerMeta.CostOptimizerOutput)
 
-	go func() {
-		isOptimizeInstanceRegionReady <- metaClient.CostOptimizeAcrossRegions(
-			allAvailRegions, meta.Region,
-			controllerMeta.CostOptimizerInput{
-				ControlPlane:             cp,
-				WorkerPlane:              wp,
-				DataStorePlane:           etcd,
-				LoadBalancer:             lb,
-				CountOfControlPlaneNodes: meta.NoCP,
-				CountOfWorkerNodes:       meta.NoWP,
-				CountOfEtcdNodes:         meta.NoDS,
-			},
-		)
-	}()
+	//go func() {
+	//	isOptimizeInstanceRegionReady <- metaClient.CostOptimizeAcrossRegions(
+	//		allAvailRegions, meta.Region,
+	//		controllerMeta.CostOptimizerInput{
+	//			ControlPlane:             cp,
+	//			WorkerPlane:              wp,
+	//			DataStorePlane:           etcd,
+	//			LoadBalancer:             lb,
+	//			CountOfControlPlaneNodes: meta.NoCP,
+	//			CountOfWorkerNodes:       meta.NoWP,
+	//			CountOfEtcdNodes:         meta.NoDS,
+	//		},
+	//	)
+	//}()
 
 	bootstrapVers, err := metaClient.ListAllBootstrapVersions()
 	if err != nil {
@@ -293,7 +297,7 @@ func (k *KsctlCommand) metadataForManagedCluster(
 	isOptimizeInstanceRegionReady := make(chan controllerMeta.CostOptimizerOutput)
 
 	if meta.Provider != consts.CloudLocal {
-		allAvailRegions := k.handleRegionSelection(metaClient, meta)
+		//allAvailRegions := k.handleRegionSelection(metaClient, meta)
 
 		category := provider.Unknown
 		if meta.Provider != consts.CloudLocal {
@@ -322,16 +326,16 @@ func (k *KsctlCommand) metadataForManagedCluster(
 			offeringSelected = v
 		}
 
-		go func() {
-			isOptimizeInstanceRegionReady <- metaClient.CostOptimizeAcrossRegions(
-				allAvailRegions, meta.Region,
-				controllerMeta.CostOptimizerInput{
-					ManagedOffering:     listOfOfferings[offeringSelected],
-					ManagedPlane:        vm,
-					CountOfManagedNodes: meta.NoMP,
-				},
-			)
-		}()
+		//go func() {
+		//	isOptimizeInstanceRegionReady <- metaClient.CostOptimizeAcrossRegions(
+		//		allAvailRegions, meta.Region,
+		//		controllerMeta.CostOptimizerInput{
+		//			ManagedOffering:     listOfOfferings[offeringSelected],
+		//			ManagedPlane:        vm,
+		//			CountOfManagedNodes: meta.NoMP,
+		//		},
+		//	)
+		//}()
 
 		k.l.Print(k.Ctx, "Current Selection will cost you")
 
@@ -442,3 +446,128 @@ func (k *KsctlCommand) metadataForManagedCluster(
 
 	return
 }
+
+//func (k *Optimizer) PrintRecommendation(
+//	ctx context.Context,
+//	l logger.Logger,
+//	clusterType consts.KsctlClusterType,
+//	costsManaged []optimizer.RecommendationManagedCost,
+//	costsSelfManaged []optimizer.RecommendationSelfManagedCost,
+//	currRegion string,
+//	noOfCP int,
+//	noOfWP int,
+//	noOfDS int,
+//	managedOfferingCP string,
+//	instanceTypeCP string,
+//	instanceTypeWP string,
+//	instanceTypeDS string,
+//	instanceTypeLB string,
+//) {
+//	var optimizedRegion string
+//	if clusterType == consts.ClusterTypeMang && len(costsManaged) > 0 {
+//		optimizedRegion = costsManaged[0].Region
+//	} else if clusterType == consts.ClusterTypeSelfMang && len(costsSelfManaged) > 0 {
+//		optimizedRegion = costsSelfManaged[0].Region
+//	}
+//
+//	l.Print(ctx,
+//		"Here is your recommendation",
+//		"Parameter", "Region wise cost",
+//		"OptimizedRegion", color.HiCyanString(optimizedRegion),
+//	)
+//
+//	var headers []string
+//	var data [][]string
+//
+//	if clusterType == consts.ClusterTypeMang {
+//		headers = []string{
+//			"Region",
+//			"🏭 Direct Emission",
+//			fmt.Sprintf("ControlPlane (%s)", managedOfferingCP),
+//			fmt.Sprintf("WorkerPlane (%s)", instanceTypeWP),
+//			"Total Monthly Cost",
+//		}
+//
+//		for _, cost := range costsManaged {
+//			total := cost.CpCost + cost.WpCost*float64(noOfWP)
+//			reg := cost.Region
+//			if reg == currRegion {
+//				reg += "*"
+//			}
+//			regEmissions := k.getEmissionInfo(reg, currRegion)
+//
+//			data = append(data, []string{
+//				reg,
+//				regEmissions,
+//				fmt.Sprintf("$%.2f X 1", cost.CpCost),
+//				fmt.Sprintf("$%.2f X %d", cost.WpCost, noOfWP),
+//				fmt.Sprintf("$%.2f", total),
+//			})
+//		}
+//	} else if clusterType == consts.ClusterTypeSelfMang {
+//		headers = []string{
+//			"Region",
+//			"🏭 Direct Emission",
+//			fmt.Sprintf("ControlPlane (%s)", instanceTypeCP),
+//			fmt.Sprintf("WorkerPlane (%s)", instanceTypeWP),
+//			fmt.Sprintf("DatastorePlane (%s)", instanceTypeDS),
+//			fmt.Sprintf("LoadBalancer (%s)", instanceTypeLB),
+//			"Total Monthly Cost",
+//		}
+//
+//		for _, cost := range costsSelfManaged {
+//			total := cost.CpCost*float64(noOfCP) + cost.WpCost*float64(noOfWP) + cost.EtcdCost*float64(noOfDS) + cost.LbCost
+//			reg := cost.Region
+//			if reg == currRegion {
+//				reg += "*"
+//			}
+//			regEmissions := k.getEmissionInfo(reg, currRegion)
+//
+//			data = append(data, []string{
+//				reg,
+//				regEmissions,
+//				fmt.Sprintf("$%.2f X %d", cost.CpCost, noOfCP),
+//				fmt.Sprintf("$%.2f X %d", cost.WpCost, noOfWP),
+//				fmt.Sprintf("$%.2f X %d", cost.EtcdCost, noOfDS),
+//				fmt.Sprintf("$%.2f X 1", cost.LbCost),
+//				fmt.Sprintf("$%.2f", total),
+//			})
+//		}
+//	}
+//
+//	l.Table(ctx, headers, data)
+//}
+
+// getEmissionInfo returns the emission information for a region
+
+//// PrintRecommendationSelfManagedCost is kept for backward compatibility
+//func (k *Optimizer) PrintRecommendationSelfManagedCost(
+//	ctx context.Context,
+//	l logger.Logger,
+//	costs []RecommendationSelfManagedCost,
+//	currRegion string,
+//	noOfCP int,
+//	noOfWP int,
+//	noOfDS int,
+//	instanceTypeCP string,
+//	instanceTypeWP string,
+//	instanceTypeDS string,
+//	instanceTypeLB string,
+//) {
+//	k.PrintRecommendation(ctx, l, "self-managed", nil, costs, currRegion, noOfCP, noOfWP, noOfDS,
+//		"", instanceTypeCP, instanceTypeWP, instanceTypeDS, instanceTypeLB)
+//}
+//
+//// PrintRecommendationManagedCost is kept for backward compatibility
+//func (k *Optimizer) PrintRecommendationManagedCost(
+//	ctx context.Context,
+//	l logger.Logger,
+//	costs []RecommendationManagedCost,
+//	currRegion string,
+//	noOfWP int,
+//	managedOfferingCP string,
+//	instanceTypeWP string,
+//) {
+//	k.PrintRecommendation(ctx, l, "managed", costs, nil, currRegion, 0, noOfWP, 0,
+//		managedOfferingCP, "", instanceTypeWP, "", "")
+//}
