@@ -489,8 +489,26 @@ func (k *KsctlCommand) PrintRecommendation(
 				fmt.Sprintf("$%.2f X %d", worker, optimizations.WorkerPlaneCount),
 				fmt.Sprintf("$%.2f", total),
 			})
+
 		}
 
+		regEmissions := optimizations.CurrentEmissions
+
+		var emissions string
+		if regEmissions == nil {
+			emissions = "N/A"
+		} else {
+			emissions = fmt.Sprintf("%.2f %s", regEmissions.DirectCarbonIntensity, regEmissions.Unit)
+		}
+
+		data = append(data, []string{"", "", "", "", ""})
+
+		data = append(data, []string{
+			optimizations.CurrentRegion + " (*)",
+			emissions,
+			"", "",
+			fmt.Sprintf("$%.2f", optimizations.CurrentTotalCost),
+		})
 	} else if clusterType == consts.ClusterTypeSelfMang {
 		headers = []string{
 			"Region",
@@ -528,6 +546,22 @@ func (k *KsctlCommand) PrintRecommendation(
 				fmt.Sprintf("$%.2f", total),
 			})
 		}
+		regEmissions := optimizations.CurrentEmissions
+
+		var emissions string
+		if regEmissions == nil {
+			emissions = "N/A"
+		} else {
+			emissions = fmt.Sprintf("%.2f %s", regEmissions.DirectCarbonIntensity, regEmissions.Unit)
+		}
+		data = append(data, []string{"", "", "", "", "", "", ""})
+
+		data = append(data, []string{
+			optimizations.CurrentRegion + " (*)",
+			emissions,
+			"", "", "", "",
+			fmt.Sprintf("$%.2f", optimizations.CurrentTotalCost),
+		})
 	}
 
 	k.l.Table(k.Ctx, headers, data)
