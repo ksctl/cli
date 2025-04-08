@@ -78,17 +78,12 @@ func (k *KsctlCommand) getCounterValue(prompt string, validate userInputValidati
 	return _v, true
 }
 
-func (k *KsctlCommand) getSelectedRegion(regions []provider.RegionOutput) (string, bool) {
-	vr := make(map[string]string, len(regions))
-	for _, r := range regions {
-		vr[r.Name] = r.Sku
-	}
-
-	k.l.Debug(k.Ctx, "Regions", "regions", vr)
+func (k *KsctlCommand) getSelectedRegion(regions provider.RegionsOutput) (string, bool) {
+	k.l.Debug(k.Ctx, "Regions", "regions", regions)
 
 	if v, err := k.menuDriven.DropDown(
 		"Select the region",
-		vr,
+		CliRegions(regions).S(),
 	); err != nil {
 		k.l.Error("Failed to get userinput", "Reason", err)
 		return "", false
@@ -137,12 +132,46 @@ func (k *KsctlCommand) getSelectedK8sVersion(prompt string, vers []string) (stri
 	}
 }
 
-func (k *KsctlCommand) getSelectedInstanceType(
-	prompt string,
-	vms map[string]provider.InstanceRegionOutput,
-) (string, bool) {
-	vr := make(map[string]string, len(vms))
-	for sku, vm := range vms {
+type CliRegions provider.RegionsOutput
+
+func (r CliRegions) S() map[string]string {
+	m := make(map[string]string, len(r))
+	for _, region := range r {
+		desc := region.Name
+		if region.Emission != nil {
+			emissionEmoji := "🔴" // High emissions (default)
+			if region.Emission.DirectCarbonIntensity < 200 {
+				emissionEmoji = "🟢" // Low emissions
+			} else if region.Emission.DirectCarbonIntensity < 400 {
+				emissionEmoji = "🟡" // Medium emissions
+			}
+
+			carbonInfo := fmt.Sprintf("🏭 Direct %.2f %s, Lifecycle %.2f %s",
+				region.Emission.DirectCarbonIntensity,
+				region.Emission.Unit,
+				region.Emission.LCACarbonIntensity,
+				region.Emission.Unit)
+
+			percentageInfo := ""
+			if region.Emission.RenewablePercentage > 0 {
+				percentageInfo += fmt.Sprintf(", ♻️ %.1f%% renewable", region.Emission.RenewablePercentage)
+			}
+			if region.Emission.LowCarbonPercentage > 0 {
+				percentageInfo += fmt.Sprintf(", 👣 %.1f%% low-carbon", region.Emission.LowCarbonPercentage)
+			}
+
+			desc += fmt.Sprintf(" %s (%s: %s%s)", emissionEmoji, region.Emission.CalcMethod, carbonInfo, percentageInfo)
+		}
+		m[desc] = region.Sku
+	}
+	return m
+}
+
+type CliInstances provider.InstancesRegionOutput
+
+func (I CliInstances) S() map[string]string {
+	m := make(map[string]string, len(I))
+	for _, vm := range I {
 		if vm.CpuArch == provider.ArchAmd64 {
 			displayName := fmt.Sprintf("%s (vCPUs: %d, Memory: %dGB)",
 				vm.Description,
@@ -154,9 +183,24 @@ func (k *KsctlCommand) getSelectedInstanceType(
 				vm.Price.Currency,
 			)
 
-			vr[displayName] = sku
+			if vm.EmboddedEmissions != nil {
+				displayName += fmt.Sprintf(", Embodied Emission: %.2f %s",
+					vm.EmboddedEmissions.EmboddedCo2,
+					vm.EmboddedEmissions.Co2Unit,
+				)
+			}
+
+			m[displayName] = vm.Sku
 		}
 	}
+	return m
+}
+
+func (k *KsctlCommand) getSelectedInstanceType(
+	prompt string,
+	vms provider.InstancesRegionOutput,
+) (string, bool) {
+	vr := CliInstances(vms).S()
 
 	k.l.Debug(k.Ctx, "Instance types", "vms", vr)
 

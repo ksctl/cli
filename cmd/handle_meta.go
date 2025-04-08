@@ -75,6 +75,7 @@ func (k *KsctlCommand) handleRegionSelection(meta *controllerMeta.Controller, m 
 	}
 	ss.Stop()
 
+	k.l.Note(k.Ctx, "Carbon emission data shown represents monthly averages calculated over a one-year period")
 	if v, ok := k.getSelectedRegion(listOfRegions); !ok {
 		os.Exit(1)
 	} else {
@@ -120,11 +121,11 @@ func (k *KsctlCommand) handleInstanceTypeSelection(
 		k.inMemInstanceTypesInReg = listOfVMs
 	}
 
-	availableOptions := make(map[string]provider.InstanceRegionOutput, len(k.inMemInstanceTypesInReg))
+	availableOptions := make(provider.InstancesRegionOutput, len(k.inMemInstanceTypesInReg))
 
 	for _, v := range k.inMemInstanceTypesInReg {
 		if v.Category == category {
-			availableOptions[v.Sku] = v
+			availableOptions = append(availableOptions, v)
 		}
 	}
 
@@ -133,7 +134,14 @@ func (k *KsctlCommand) handleInstanceTypeSelection(
 		k.l.Error("Failed to get the instance type")
 		os.Exit(1)
 	}
-	return availableOptions[v]
+
+	_v, ok := availableOptions.Get(v)
+	if !ok {
+		k.l.Error("Failed to get the instance type")
+		os.Exit(1)
+	}
+
+	return *_v
 }
 
 func (k *KsctlCommand) getSpecificInstanceForScaledown(
@@ -156,7 +164,12 @@ func (k *KsctlCommand) getSpecificInstanceForScaledown(
 		k.inMemInstanceTypesInReg = listOfVMs
 	}
 
-	return k.inMemInstanceTypesInReg[instanceSku]
+	v, ok := k.inMemInstanceTypesInReg.Get(instanceSku)
+	if !ok {
+		k.l.Error("Failed to get the instance type")
+		os.Exit(1)
+	}
+	return *v
 }
 
 func (k *KsctlCommand) handleManagedK8sVersion(meta *controllerMeta.Controller, m *controller.Metadata) {
