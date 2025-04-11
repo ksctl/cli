@@ -17,9 +17,7 @@ package cmd
 import (
 	"fmt"
 	"github.com/ksctl/ksctl/v2/pkg/consts"
-	"github.com/ksctl/ksctl/v2/pkg/provider"
 	"github.com/ksctl/ksctl/v2/pkg/provider/optimizer"
-	"os"
 	"strings"
 
 	"github.com/charmbracelet/bubbles/help"
@@ -84,9 +82,12 @@ func newKeyMap() keyMap {
 	}
 }
 
-func newModel(recommendI *optimizer.RecommendationAcrossRegions) Model {
+func newModel(
+	clusterType consts.KsctlClusterType,
+	recommendI *optimizer.RecommendationAcrossRegions) Model {
 	return Model{
 		recommendI:   recommendI,
+		clusterType:  clusterType,
 		currentPlan:  0,
 		help:         help.New(),
 		keys:         newKeyMap(),
@@ -155,7 +156,7 @@ func (m Model) View() string {
 	}
 
 	// Card styling
-	cardWidth := 24
+	cardWidth := 30
 	visibleCards := 3 // Force exactly 3 visible cards
 
 	// Add some top padding
@@ -201,8 +202,16 @@ func (m Model) View() string {
 			Align(lipgloss.Center).
 			PaddingTop(1)
 
-		priceStr := fmt.Sprintf("%s/mo\n%s", plan.price, plan.hourlyRate)
-		priceSection := priceStyle.Render(priceStr)
+		priceStr := strings.Builder{}
+		priceStr.WriteString(fmt.Sprintf("Price: $%.2f\n", plan.TotalCost))
+		if plan.Emissions != nil {
+			priceStr.WriteString(fmt.Sprintf("Direct: %.2f%s\n", plan.Emissions.DirectCarbonIntensity, plan.Emissions.Unit))
+			priceStr.WriteString(fmt.Sprintf("Renewable: %.2f%%\n", plan.Emissions.RenewablePercentage))
+			priceStr.WriteString(fmt.Sprintf("Low Co2: %.2f%%\n", plan.Emissions.LowCarbonPercentage))
+			priceStr.WriteString(fmt.Sprintf("Lifecycle: %.2f%s\n", plan.Emissions.LCACarbonIntensity, plan.Emissions.Unit))
+		}
+
+		priceSection := priceStyle.Render(priceStr.String())
 
 		// Separator
 		separator := lipgloss.NewStyle().
@@ -220,9 +229,19 @@ func (m Model) View() string {
 			Align(lipgloss.Left).
 			PaddingLeft(1)
 
-		specsStr := fmt.Sprintf("%s / %s\n%s\n%s",
-			plan.ram, plan.cpu, plan.storage, plan.transfer)
-		specsSection := specsStyle.Render(specsStr)
+		specsStr := strings.Builder{}
+		specsStr.WriteString(fmt.Sprintf("Region: %s\n", plan.Region))
+		if m.clusterType == consts.ClusterTypeSelfMang {
+			specsStr.WriteString(fmt.Sprintf("ControlPlane: %s\n", m.recommendI.InstanceTypeCP))
+			specsStr.WriteString(fmt.Sprintf("Worker: %s\n", m.recommendI.InstanceTypeWP))
+			specsStr.WriteString(fmt.Sprintf("Etcd: %s\n", m.recommendI.InstanceTypeDS))
+			specsStr.WriteString(fmt.Sprintf("LoadBalancer: %s\n", m.recommendI.InstanceTypeLB))
+		} else {
+			specsStr.WriteString(fmt.Sprintf("ManagedOffering: %s\n", m.recommendI.ManagedOffering))
+			specsStr.WriteString(fmt.Sprintf("Worker: %s\n", m.recommendI.InstanceTypeWP))
+		}
+
+		specsSection := specsStyle.Render(specsStr.String())
 
 		// Card container style
 		cardStyle := lipgloss.NewStyle().
@@ -254,7 +273,7 @@ func (m Model) View() string {
 		Align(lipgloss.Center).
 		Width(maxWidth)
 
-	instructions := "← → to navigate • enter to select plan"
+	instructions := "← → to navigate • enter to select plan • q to skip changing region"
 	builder.WriteString(instructionStyle.Render(instructions))
 
 	return builder.String()
@@ -264,34 +283,33 @@ type RegionRecommendation struct {
 	t *tea.Program
 }
 
-func NewRegionRecommendation(recommendI *optimizer.RecommendationAcrossRegions) *RegionRecommendation {
-	model := newModel(recommendI)
+func NewRegionRecommendation(
+	clusterType consts.KsctlClusterType,
+	recommendI *optimizer.RecommendationAcrossRegions) *RegionRecommendation {
+	model := newModel(clusterType, recommendI)
 	t := tea.NewProgram(model, tea.WithAltScreen())
 	return &RegionRecommendation{t: t}
 }
 
-func (t *RegionRecommendation) Run() {
+func (t *RegionRecommendation) Run() (string, error) {
 
-	// Run the program and capture the final model state
 	finalModel, err := t.t.Run()
 	if err != nil {
-		fmt.Printf("Error running program: %v", err)
-		os.Exit(1)
+		return "", err
 	}
 
-	// Cast the final model to our Model type
 	m, ok := finalModel.(Model)
 	if !ok {
-		fmt.Println("Could not get final model state")
-		return
+		return "", fmt.Errorf("failed to cast final model to Model type")
 	}
 
-	// Print the selection message after the program exits
-	if m.selectedPlan >= 0 && m.selectedPlan < len(m.plans) {
-		plan := m.plans[m.selectedPlan]
-		fmt.Printf("\nSelected plan: %s/mo (%s)\nThank you for your selection!\n",
-			plan.price, plan.hourlyRate)
-	} else if m.quitting {
-		fmt.Println("\nExited without selecting a plan.")
+	if m.selectedPlan >= 0 && m.selectedPlan < len(m.recommendI.RegionRecommendations) {
+		plan := m.recommendI.RegionRecommendations[m.selectedPlan]
+		return plan.Region, nil
 	}
+
+	if m.quitting {
+		return "", nil
+	}
+	return "", fmt.Errorf("internal problem. invalid selected plan index: %d", m.selectedPlan)
 }

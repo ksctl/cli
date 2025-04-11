@@ -85,26 +85,16 @@ func (k *KsctlCommand) CostOptimizeAcrossRegion(inp chan CliRecommendation, meta
 				return
 			}
 
-			k.PrintRecommendation(meta.ClusterType, optimizeResp)
-
-			availRegions := []string{"Don't change"}
-			for _, _o := range optimizeResp.RegionRecommendations {
-				availRegions = append(availRegions, _o.Region)
-			}
-
-			v, err := k.menuDriven.DropDownList(fmt.Sprintf("Region Switch. Currently set (%s)", meta.Region), availRegions,
-				cli.WithDefaultValue("Don't change"),
-			)
+			selectedReg, err := NewRegionRecommendation(meta.ClusterType, optimizeResp).Run()
 			if err != nil {
-				k.l.Error("Skipping it becuase failed to get the region switch", "Reason", err)
-				return
-			}
-			if v == "Don't change" {
+				k.l.Error("Failed to get the recommendation options from user", "Reason", err)
 				return
 			}
 
-			k.l.Print(k.Ctx, "changed the region", "from", color.HiRedString(meta.Region), "to", color.HiGreenString(v))
-			meta.Region = v
+			if selectedReg != "" {
+				k.l.Print(k.Ctx, "changed the region", "from", color.HiRedString(meta.Region), "to", color.HiGreenString(selectedReg))
+				meta.Region = selectedReg
+			}
 
 			return
 		case <-ticker.C:
