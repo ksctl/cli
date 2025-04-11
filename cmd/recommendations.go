@@ -237,7 +237,7 @@ func (m Model) View() string {
 			specsStr.WriteString(fmt.Sprintf("Etcd: %s\n", m.recommendI.InstanceTypeDS))
 			specsStr.WriteString(fmt.Sprintf("LoadBalancer: %s\n", m.recommendI.InstanceTypeLB))
 		} else {
-			specsStr.WriteString(fmt.Sprintf("ManagedOffering: %s\n", m.recommendI.ManagedOffering))
+			//specsStr.WriteString(fmt.Sprintf("ManagedOffering: %s\n", m.recommendI.ManagedOffering))
 			specsStr.WriteString(fmt.Sprintf("Worker: %s\n", m.recommendI.InstanceTypeWP))
 		}
 

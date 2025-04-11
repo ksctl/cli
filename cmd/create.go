@@ -85,6 +85,7 @@ func (k *KsctlCommand) CostOptimizeAcrossRegion(inp chan CliRecommendation, meta
 				return
 			}
 
+			k.PrintRecommendation(meta.ClusterType, optimizeResp)
 			selectedReg, err := NewRegionRecommendation(meta.ClusterType, optimizeResp).Run()
 			if err != nil {
 				k.l.Error("Failed to get the recommendation options from user", "Reason", err)
@@ -452,7 +453,7 @@ func (k *KsctlCommand) PrintRecommendation(
 	if clusterType == consts.ClusterTypeMang {
 		headers = []string{
 			"Region",
-			"🏭 Direct Emission",
+			"🏭 Emission",
 			fmt.Sprintf("ControlPlane (%s)", optimizations.ManagedOffering),
 			fmt.Sprintf("WorkerPlane (%s)", optimizations.InstanceTypeWP),
 			"Total Monthly Cost",
@@ -469,7 +470,13 @@ func (k *KsctlCommand) PrintRecommendation(
 			if regEmissions == nil {
 				emissions = "N/A"
 			} else {
-				emissions = fmt.Sprintf("%.2f %s", regEmissions.DirectCarbonIntensity, regEmissions.Unit)
+				emissions = fmt.Sprintf(
+					"D: %.2f %s\nR: %.2f%%\nLC: %.2f%%\nLCA: %.2f %s",
+					regEmissions.DirectCarbonIntensity, regEmissions.Unit,
+					regEmissions.RenewablePercentage,
+					regEmissions.LowCarbonPercentage,
+					regEmissions.LCACarbonIntensity, regEmissions.Unit,
+				)
 			}
 
 			data = append(data, []string{
@@ -502,7 +509,7 @@ func (k *KsctlCommand) PrintRecommendation(
 	} else if clusterType == consts.ClusterTypeSelfMang {
 		headers = []string{
 			"Region",
-			"🏭 Direct Emission",
+			"🏭 Emission",
 			fmt.Sprintf("ControlPlane (%s)", optimizations.InstanceTypeCP),
 			fmt.Sprintf("WorkerPlane (%s)", optimizations.InstanceTypeWP),
 			fmt.Sprintf("DatastorePlane (%s)", optimizations.InstanceTypeDS),
@@ -523,7 +530,13 @@ func (k *KsctlCommand) PrintRecommendation(
 			if regEmissions == nil {
 				emissions = "N/A"
 			} else {
-				emissions = fmt.Sprintf("%.2f %s", regEmissions.DirectCarbonIntensity, regEmissions.Unit)
+				emissions = fmt.Sprintf(
+					"D: %.2f %s\nR: %.2f%%\nLC: %.2f%%\nLCA: %.2f %s",
+					regEmissions.DirectCarbonIntensity, regEmissions.Unit,
+					regEmissions.RenewablePercentage,
+					regEmissions.LowCarbonPercentage,
+					regEmissions.LCACarbonIntensity, regEmissions.Unit,
+				)
 			}
 
 			data = append(data, []string{
