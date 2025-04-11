@@ -86,25 +86,16 @@ func (k *KsctlCommand) CostOptimizeAcrossRegion(inp chan CliRecommendation, meta
 			}
 
 			k.PrintRecommendation(meta.ClusterType, optimizeResp)
-
-			availRegions := []string{"Don't change"}
-			for _, _o := range optimizeResp.RegionRecommendations {
-				availRegions = append(availRegions, _o.Region)
-			}
-
-			v, err := k.menuDriven.DropDownList(fmt.Sprintf("Region Switch. Currently set (%s)", meta.Region), availRegions,
-				cli.WithDefaultValue("Don't change"),
-			)
+			selectedReg, err := NewRegionRecommendation(meta.ClusterType, optimizeResp).Run()
 			if err != nil {
-				k.l.Error("Skipping it becuase failed to get the region switch", "Reason", err)
-				return
-			}
-			if v == "Don't change" {
+				k.l.Error("Failed to get the recommendation options from user", "Reason", err)
 				return
 			}
 
-			k.l.Print(k.Ctx, "changed the region", "from", color.HiRedString(meta.Region), "to", color.HiGreenString(v))
-			meta.Region = v
+			if selectedReg != "" {
+				k.l.Print(k.Ctx, "changed the region", "from", color.HiRedString(meta.Region), "to", color.HiGreenString(selectedReg))
+				meta.Region = selectedReg
+			}
 
 			return
 		case <-ticker.C:
@@ -462,7 +453,7 @@ func (k *KsctlCommand) PrintRecommendation(
 	if clusterType == consts.ClusterTypeMang {
 		headers = []string{
 			"Region",
-			"🏭 Direct Emission",
+			"🏭 Emission",
 			fmt.Sprintf("ControlPlane (%s)", optimizations.ManagedOffering),
 			fmt.Sprintf("WorkerPlane (%s)", optimizations.InstanceTypeWP),
 			"Total Monthly Cost",
@@ -479,7 +470,13 @@ func (k *KsctlCommand) PrintRecommendation(
 			if regEmissions == nil {
 				emissions = "N/A"
 			} else {
-				emissions = fmt.Sprintf("%.2f %s", regEmissions.DirectCarbonIntensity, regEmissions.Unit)
+				emissions = fmt.Sprintf(
+					"D: %.2f %s\nR: %.2f%%\nLC: %.2f%%\nLCA: %.2f %s",
+					regEmissions.DirectCarbonIntensity, regEmissions.Unit,
+					regEmissions.RenewablePercentage,
+					regEmissions.LowCarbonPercentage,
+					regEmissions.LCACarbonIntensity, regEmissions.Unit,
+				)
 			}
 
 			data = append(data, []string{
@@ -489,12 +486,30 @@ func (k *KsctlCommand) PrintRecommendation(
 				fmt.Sprintf("$%.2f X %d", worker, optimizations.WorkerPlaneCount),
 				fmt.Sprintf("$%.2f", total),
 			})
+
 		}
 
+		regEmissions := optimizations.CurrentEmissions
+
+		var emissions string
+		if regEmissions == nil {
+			emissions = "N/A"
+		} else {
+			emissions = fmt.Sprintf("%.2f %s", regEmissions.DirectCarbonIntensity, regEmissions.Unit)
+		}
+
+		data = append(data, []string{"", "", "", "", ""})
+
+		data = append(data, []string{
+			optimizations.CurrentRegion + " (*)",
+			emissions,
+			"", "",
+			fmt.Sprintf("$%.2f", optimizations.CurrentTotalCost),
+		})
 	} else if clusterType == consts.ClusterTypeSelfMang {
 		headers = []string{
 			"Region",
-			"🏭 Direct Emission",
+			"🏭 Emission",
 			fmt.Sprintf("ControlPlane (%s)", optimizations.InstanceTypeCP),
 			fmt.Sprintf("WorkerPlane (%s)", optimizations.InstanceTypeWP),
 			fmt.Sprintf("DatastorePlane (%s)", optimizations.InstanceTypeDS),
@@ -515,7 +530,13 @@ func (k *KsctlCommand) PrintRecommendation(
 			if regEmissions == nil {
 				emissions = "N/A"
 			} else {
-				emissions = fmt.Sprintf("%.2f %s", regEmissions.DirectCarbonIntensity, regEmissions.Unit)
+				emissions = fmt.Sprintf(
+					"D: %.2f %s\nR: %.2f%%\nLC: %.2f%%\nLCA: %.2f %s",
+					regEmissions.DirectCarbonIntensity, regEmissions.Unit,
+					regEmissions.RenewablePercentage,
+					regEmissions.LowCarbonPercentage,
+					regEmissions.LCACarbonIntensity, regEmissions.Unit,
+				)
 			}
 
 			data = append(data, []string{
@@ -528,6 +549,22 @@ func (k *KsctlCommand) PrintRecommendation(
 				fmt.Sprintf("$%.2f", total),
 			})
 		}
+		regEmissions := optimizations.CurrentEmissions
+
+		var emissions string
+		if regEmissions == nil {
+			emissions = "N/A"
+		} else {
+			emissions = fmt.Sprintf("%.2f %s", regEmissions.DirectCarbonIntensity, regEmissions.Unit)
+		}
+		data = append(data, []string{"", "", "", "", "", "", ""})
+
+		data = append(data, []string{
+			optimizations.CurrentRegion + " (*)",
+			emissions,
+			"", "", "", "",
+			fmt.Sprintf("$%.2f", optimizations.CurrentTotalCost),
+		})
 	}
 
 	k.l.Table(k.Ctx, headers, data)
