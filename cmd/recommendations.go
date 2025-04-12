@@ -16,9 +16,11 @@ package cmd
 
 import (
 	"fmt"
+	"strings"
+
+	"github.com/fatih/color"
 	"github.com/ksctl/ksctl/v2/pkg/consts"
 	"github.com/ksctl/ksctl/v2/pkg/provider/optimizer"
-	"strings"
 
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
@@ -96,7 +98,7 @@ func newModel(
 }
 
 func (m Model) Init() tea.Cmd {
-	return tea.EnterAltScreen
+	return nil
 }
 
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -156,8 +158,8 @@ func (m Model) View() string {
 	}
 
 	// Card styling
-	cardWidth := 30
-	visibleCards := 3 // Force exactly 3 visible cards
+	cardWidth := 45   // Increased from 30 to 45 for more information display
+	visibleCards := 2 // Show exactly 2 visible cards
 
 	// Add some top padding
 	var builder strings.Builder
@@ -170,7 +172,7 @@ func (m Model) View() string {
 	} else if m.currentPlan == len(m.recommendI.RegionRecommendations)-1 {
 		startIdx = max(0, len(m.recommendI.RegionRecommendations)-visibleCards)
 	} else {
-		startIdx = max(0, m.currentPlan-1) // Center the selected card
+		startIdx = max(0, m.currentPlan-1)
 	}
 	endIdx := min(len(m.recommendI.RegionRecommendations), startIdx+visibleCards)
 
@@ -184,73 +186,70 @@ func (m Model) View() string {
 		var borderStyle lipgloss.Border
 
 		if isActive {
-			borderColor = lipgloss.Color("#0066FF") // Blue for active
-			textColor = lipgloss.Color("#EEEEC7")   // Light color for text
-			separatorColor = lipgloss.Color("#0066FF")
+			borderColor = lipgloss.Color("10")
+			textColor = lipgloss.Color("#EEEEC7")
+			separatorColor = lipgloss.Color("#555555")
 			borderStyle = lipgloss.RoundedBorder()
 		} else {
-			borderColor = lipgloss.Color("#444444") // Dark gray for inactive
-			textColor = lipgloss.Color("#888888")   // Muted text for inactive
-			separatorColor = lipgloss.Color("#444444")
+			borderColor = lipgloss.Color("#555555")
+			textColor = lipgloss.Color("#AAAAAA")
+			separatorColor = lipgloss.Color("#555555")
 			borderStyle = lipgloss.RoundedBorder()
 		}
 
 		priceStyle := lipgloss.NewStyle().
 			Bold(true).
 			Foreground(textColor).
-			Width(cardWidth - 4). // Adjusted for better border spacing
+			Width(cardWidth - 3).
 			Align(lipgloss.Center).
 			PaddingTop(1)
 
 		priceStr := strings.Builder{}
-		priceStr.WriteString(fmt.Sprintf("Price: $%.2f\n", plan.TotalCost))
+		priceDrop := (m.recommendI.CurrentTotalCost - plan.TotalCost) / m.recommendI.CurrentTotalCost * 100
+		priceStr.WriteString(fmt.Sprintf("Price: $%.2f %s\n", plan.TotalCost, color.HiGreenString(fmt.Sprintf("↓ %.0f%%", priceDrop))))
 		if plan.Emissions != nil {
 			priceStr.WriteString(fmt.Sprintf("Direct: %.2f%s\n", plan.Emissions.DirectCarbonIntensity, plan.Emissions.Unit))
 			priceStr.WriteString(fmt.Sprintf("Renewable: %.2f%%\n", plan.Emissions.RenewablePercentage))
 			priceStr.WriteString(fmt.Sprintf("Low Co2: %.2f%%\n", plan.Emissions.LowCarbonPercentage))
-			priceStr.WriteString(fmt.Sprintf("Lifecycle: %.2f%s\n", plan.Emissions.LCACarbonIntensity, plan.Emissions.Unit))
+			priceStr.WriteString(fmt.Sprintf("Lifecycle: %.2f%s", plan.Emissions.LCACarbonIntensity, plan.Emissions.Unit))
 		}
 
 		priceSection := priceStyle.Render(priceStr.String())
 
-		// Separator
 		separator := lipgloss.NewStyle().
 			Foreground(separatorColor).
-			Width(cardWidth - 4). // Adjusted for better border spacing
+			Width(cardWidth - 3).
 			Align(lipgloss.Center).
 			PaddingTop(1).
 			PaddingBottom(1).
-			Render(strings.Repeat("─", cardWidth-6)) // Adjusted width
+			Render(strings.Repeat("─", cardWidth-6))
 
-		// Specs section
 		specsStyle := lipgloss.NewStyle().
 			Foreground(textColor).
-			Width(cardWidth - 4). // Adjusted for better border spacing
-			Align(lipgloss.Left).
+			Width(cardWidth - 3).
+			Align(lipgloss.Center).
 			PaddingLeft(1)
 
 		specsStr := strings.Builder{}
-		specsStr.WriteString(fmt.Sprintf("Region: %s\n", plan.Region))
+		specsStr.WriteString(fmt.Sprintf("Region: %s\n", color.HiCyanString(plan.Region)))
 		if m.clusterType == consts.ClusterTypeSelfMang {
-			specsStr.WriteString(fmt.Sprintf("ControlPlane: %s\n", m.recommendI.InstanceTypeCP))
-			specsStr.WriteString(fmt.Sprintf("Worker: %s\n", m.recommendI.InstanceTypeWP))
-			specsStr.WriteString(fmt.Sprintf("Etcd: %s\n", m.recommendI.InstanceTypeDS))
+			specsStr.WriteString(fmt.Sprintf("ControlPlane: %s x %d\n", m.recommendI.InstanceTypeCP, m.recommendI.ControlPlaneCount))
+			specsStr.WriteString(fmt.Sprintf("Worker: %s x %d\n", m.recommendI.InstanceTypeWP, m.recommendI.WorkerPlaneCount))
+			specsStr.WriteString(fmt.Sprintf("Etcd: %s x %d\n", m.recommendI.InstanceTypeDS, m.recommendI.DataStoreCount))
 			specsStr.WriteString(fmt.Sprintf("LoadBalancer: %s\n", m.recommendI.InstanceTypeLB))
 		} else {
-			//specsStr.WriteString(fmt.Sprintf("ManagedOffering: %s\n", m.recommendI.ManagedOffering))
-			specsStr.WriteString(fmt.Sprintf("Worker: %s\n", m.recommendI.InstanceTypeWP))
+			specsStr.WriteString(fmt.Sprintf("ManagedOffering: %s\n", m.recommendI.ManagedOffering))
+			specsStr.WriteString(fmt.Sprintf("Worker: %s x %d\n", m.recommendI.InstanceTypeWP, m.recommendI.WorkerPlaneCount))
 		}
 
 		specsSection := specsStyle.Render(specsStr.String())
 
-		// Card container style
 		cardStyle := lipgloss.NewStyle().
 			Border(borderStyle).
 			BorderForeground(borderColor).
 			Width(cardWidth).
-			Padding(0, 1) // Add horizontal padding inside the border
+			Padding(0, 1)
 
-		// Put the card together
 		cardContent := lipgloss.JoinVertical(lipgloss.Left,
 			priceSection,
 			separator,
@@ -273,7 +272,7 @@ func (m Model) View() string {
 		Align(lipgloss.Center).
 		Width(maxWidth)
 
-	instructions := "← → to navigate • enter to select plan • q to skip changing region"
+	instructions := "← → to navigate • enter to select plan • q to skip changing region\n\n"
 	builder.WriteString(instructionStyle.Render(instructions))
 
 	return builder.String()
@@ -287,7 +286,8 @@ func NewRegionRecommendation(
 	clusterType consts.KsctlClusterType,
 	recommendI *optimizer.RecommendationAcrossRegions) *RegionRecommendation {
 	model := newModel(clusterType, recommendI)
-	t := tea.NewProgram(model, tea.WithAltScreen())
+	t := tea.NewProgram(model)
+	// t := tea.NewProgram(model, tea.WithAltScreen())
 	return &RegionRecommendation{t: t}
 }
 

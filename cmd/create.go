@@ -48,6 +48,63 @@ ksctl create --help
 		Run: func(cmd *cobra.Command, args []string) {
 			meta := controller.Metadata{}
 
+			NewRegionRecommendation(consts.ClusterTypeSelfMang, &optimizer.RecommendationAcrossRegions{
+				RegionRecommendations: []optimizer.RegionRecommendation{
+					{
+						Region: "GGG",
+						Emissions: &provider.RegionalEmission{
+							DirectCarbonIntensity: 5.0,
+							Unit:                  "gCO2/kWh",
+							RenewablePercentage:   5.0,
+							LowCarbonPercentage:   5.0,
+							LCACarbonIntensity:    5.0,
+						},
+						ControlPlaneCost: 5.0,
+						WorkerPlaneCost:  5.0,
+						DataStoreCost:    5.0,
+						LoadBalancerCost: 5.0,
+						TotalCost:        20.0,
+					},
+					{
+						Region: "GGG",
+						Emissions: &provider.RegionalEmission{
+							DirectCarbonIntensity: 5.0,
+							Unit:                  "gCO2/kWh",
+							RenewablePercentage:   5.0,
+							LowCarbonPercentage:   5.0,
+							LCACarbonIntensity:    5.0,
+						},
+						ControlPlaneCost: 5.0,
+						WorkerPlaneCost:  5.0,
+						DataStoreCost:    5.0,
+						LoadBalancerCost: 5.0,
+						TotalCost:        20.0,
+					},
+					{
+						Region: "HHH",
+						Emissions: &provider.RegionalEmission{
+							DirectCarbonIntensity: 4.0,
+							Unit:                  "gCO2/kWh",
+							RenewablePercentage:   10.0,
+							LowCarbonPercentage:   8.0,
+							LCACarbonIntensity:    4.0,
+						},
+						ControlPlaneCost: 6.0,
+						WorkerPlaneCost:  6.0,
+						DataStoreCost:    6.0,
+						LoadBalancerCost: 6.0,
+						TotalCost:        24.0,
+					},
+				},
+				InstanceTypeWP:   "GGG",
+				InstanceTypeCP:   "GGG",
+				InstanceTypeDS:   "GGG",
+				InstanceTypeLB:   "GGG",
+				CurrentRegion:    "GGG",
+				CurrentTotalCost: 50.0,
+			}).Run()
+			os.Exit(1)
+
 			k.baseMetadataFields(&meta)
 
 			if meta.ClusterType == consts.ClusterTypeMang {
