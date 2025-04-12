@@ -142,6 +142,17 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
+const (
+	RenewableLowThreshold             = 10.0
+	RenewableMediumThreshold          = 40.0
+	LowCarbonLowThreshold             = 10.0
+	LowCarbonMediumThreshold          = 40.0
+	DirectCo2LowThreshold             = 200.0
+	DirectCo2MediumThreshold          = 400.0
+	LCACarbonIntensityMediumThreshold = 100.0
+	LCACarbonIntensityHighThreshold   = 200.0
+)
+
 func (m Model) View() string {
 	if m.quitting {
 		if m.selectedPlan >= 0 && m.selectedPlan < len(m.recommendI.RegionRecommendations) {
@@ -209,20 +220,48 @@ func (m Model) View() string {
 
 		priceStr := strings.Builder{}
 		priceDrop := (m.recommendI.CurrentTotalCost - plan.TotalCost) / m.recommendI.CurrentTotalCost * 100
-		priceStr.WriteString(fmt.Sprintf("Price: $%.2f %s\n", plan.TotalCost, color.HiGreenString(fmt.Sprintf("↓ %.0f%%", priceDrop))))
+		priceStr.WriteString(fmt.Sprintf("Price: %s %s\n", color.MagentaString(fmt.Sprintf("$%.2f", plan.TotalCost)), color.HiGreenString(fmt.Sprintf("↓ %.0f%%", priceDrop))))
 		if plan.Emissions != nil {
 			dco2_val := fmt.Sprintf("%.2f %s", plan.Emissions.DirectCarbonIntensity, plan.Emissions.Unit)
-			if plan.Emissions.DirectCarbonIntensity > 400 {
+			if plan.Emissions.DirectCarbonIntensity > DirectCo2MediumThreshold {
 				dco2_val = color.HiRedString(dco2_val)
-			} else if plan.Emissions.DirectCarbonIntensity > 200 {
+			} else if plan.Emissions.DirectCarbonIntensity > DirectCo2LowThreshold {
 				dco2_val = color.HiYellowString(dco2_val)
 			} else {
 				dco2_val = color.HiGreenString(dco2_val)
 			}
-			priceStr.WriteString(fmt.Sprintf("Direct: %s\n", dco2_val))
-			priceStr.WriteString(fmt.Sprintf("Renewable: %.2f%%\n", plan.Emissions.RenewablePercentage))
-			priceStr.WriteString(fmt.Sprintf("Low Co2: %.2f%%\n", plan.Emissions.LowCarbonPercentage))
-			priceStr.WriteString(fmt.Sprintf("Lifecycle: %.2f %s", plan.Emissions.LCACarbonIntensity, plan.Emissions.Unit))
+
+			reneable_val := fmt.Sprintf("%.1f%%", plan.Emissions.RenewablePercentage)
+			if plan.Emissions.RenewablePercentage < RenewableLowThreshold {
+				reneable_val = color.HiRedString(reneable_val)
+			} else if plan.Emissions.RenewablePercentage < RenewableMediumThreshold {
+				reneable_val = color.HiYellowString(reneable_val)
+			} else {
+				reneable_val = color.HiGreenString(reneable_val)
+			}
+
+			lowCo2_val := fmt.Sprintf("%.1f%%", plan.Emissions.LowCarbonPercentage)
+			if plan.Emissions.LowCarbonPercentage < LowCarbonLowThreshold {
+				lowCo2_val = color.HiRedString(lowCo2_val)
+			} else if plan.Emissions.LowCarbonPercentage < LowCarbonMediumThreshold {
+				lowCo2_val = color.HiYellowString(lowCo2_val)
+			} else {
+				lowCo2_val = color.HiGreenString(lowCo2_val)
+			}
+
+			lcaIntensity_val := fmt.Sprintf("%.1f %s", plan.Emissions.LCACarbonIntensity, plan.Emissions.Unit)
+			if plan.Emissions.LCACarbonIntensity > LCACarbonIntensityHighThreshold {
+				lcaIntensity_val = color.HiRedString(lcaIntensity_val)
+			} else if plan.Emissions.LCACarbonIntensity > LCACarbonIntensityMediumThreshold {
+				lcaIntensity_val = color.HiYellowString(lcaIntensity_val)
+			} else {
+				lcaIntensity_val = color.HiGreenString(lcaIntensity_val)
+			}
+
+			priceStr.WriteString(fmt.Sprintf("🌍 Direct Emissions: %s\n", dco2_val))
+			priceStr.WriteString(fmt.Sprintf("🌱 Renewable Energy: %s\n", reneable_val))
+			priceStr.WriteString(fmt.Sprintf("💨 Low Carbon Energy: %s\n", lowCo2_val))
+			priceStr.WriteString(fmt.Sprintf("🔄 Lifecycle Emissions: %s\n", lcaIntensity_val))
 		} else {
 			priceStr.WriteString(color.HiYellowString("Emissions data is currently unavailable 🌍\n"))
 		}
@@ -289,7 +328,8 @@ func (m Model) View() string {
 		Align(lipgloss.Center).
 		Width(maxWidth)
 
-	instructions := "← → to navigate • enter to select plan • q to skip changing region\n\n"
+	instructions := "← → to navigate • enter to select plan • q to skip changing region"
+	instructions += " • Currently it costs " + fmt.Sprintf("`$%.2f`", m.recommendI.CurrentTotalCost) + " in " + color.HiCyanString(m.recommendI.CurrentRegion) + "\n\n"
 	builder.WriteString(instructionStyle.Render(instructions))
 
 	return builder.String()

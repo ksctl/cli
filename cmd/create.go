@@ -15,7 +15,6 @@
 package cmd
 
 import (
-	"fmt"
 	"os"
 	"time"
 
@@ -47,74 +46,6 @@ ksctl create --help
 
 		Run: func(cmd *cobra.Command, args []string) {
 			meta := controller.Metadata{}
-
-			NewRegionRecommendation(consts.ClusterTypeSelfMang, &optimizer.RecommendationAcrossRegions{
-				RegionRecommendations: []optimizer.RegionRecommendation{
-					{
-						Region: "us-east-1",
-						Emissions: &provider.RegionalEmission{
-							DirectCarbonIntensity: 233.0,
-							Unit:                  "gCO2/kWh",
-							RenewablePercentage:   5.0,
-							LowCarbonPercentage:   5.0,
-							LCACarbonIntensity:    5.0,
-						},
-						ControlPlaneCost: 5.0,
-						WorkerPlaneCost:  5.0,
-						DataStoreCost:    5.0,
-						LoadBalancerCost: 5.0,
-						TotalCost:        20.0,
-					},
-					{
-						Region: "us-west-2",
-						Emissions: &provider.RegionalEmission{
-							DirectCarbonIntensity: 120.0,
-							Unit:                  "gCO2/kWh",
-							RenewablePercentage:   5.0,
-							LowCarbonPercentage:   5.0,
-							LCACarbonIntensity:    5.0,
-						},
-						ControlPlaneCost: 5.0,
-						WorkerPlaneCost:  5.0,
-						DataStoreCost:    5.0,
-						LoadBalancerCost: 5.0,
-						TotalCost:        20.0,
-					},
-					{
-						Region: "eu-central-1",
-						Emissions: &provider.RegionalEmission{
-							DirectCarbonIntensity: 401.0,
-							Unit:                  "gCO2/kWh",
-							RenewablePercentage:   10.0,
-							LowCarbonPercentage:   8.0,
-							LCACarbonIntensity:    4.0,
-						},
-						ControlPlaneCost: 6.0,
-						WorkerPlaneCost:  6.0,
-						DataStoreCost:    6.0,
-						LoadBalancerCost: 6.0,
-						TotalCost:        24.0,
-					},
-					{
-						Region:           "eu-north-1",
-						ControlPlaneCost: 6.0,
-						WorkerPlaneCost:  6.0,
-						DataStoreCost:    6.0,
-						LoadBalancerCost: 6.0,
-						TotalCost:        10.0,
-					},
-				},
-				InstanceTypeWP:    "m8g.large",
-				InstanceTypeCP:    "c4.large",
-				InstanceTypeDS:    "r5.large",
-				InstanceTypeLB:    "t3.medium",
-				CurrentRegion:     "ap-south-1",
-				ControlPlaneCount: 3,
-				WorkerPlaneCount:  3,
-				DataStoreCount:    3,
-				CurrentTotalCost:  50.0,
-			}).Run()
-			os.Exit(1)
 
 			k.baseMetadataFields(&meta)
 
@@ -153,7 +84,7 @@ func (k *KsctlCommand) CostOptimizeAcrossRegion(inp chan CliRecommendation, meta
 				return
 			}
 
-			k.PrintRecommendation(meta.ClusterType, optimizeResp)
+			// k.PrintRecommendation(meta.ClusterType, optimizeResp)
 			selectedReg, err := NewRegionRecommendation(meta.ClusterType, optimizeResp).Run()
 			if err != nil {
 				k.l.Error("Failed to get the recommendation options from user", "Reason", err)
@@ -506,134 +437,134 @@ func (k *KsctlCommand) metadataForManagedCluster(meta *controller.Metadata) {
 	return
 }
 
-func (k *KsctlCommand) PrintRecommendation(
-	clusterType consts.KsctlClusterType,
-	optimizations *optimizer.RecommendationAcrossRegions) {
+// func (k *KsctlCommand) PrintRecommendation(
+// 	clusterType consts.KsctlClusterType,
+// 	optimizations *optimizer.RecommendationAcrossRegions) {
 
-	k.l.Print(k.Ctx,
-		"Here is your recommendation",
-		"Parameter", "Region wise cost",
-	)
+// 	k.l.Print(k.Ctx,
+// 		"Here is your recommendation",
+// 		"Parameter", "Region wise cost",
+// 	)
 
-	var headers []string
-	var data [][]string
+// 	var headers []string
+// 	var data [][]string
 
-	if clusterType == consts.ClusterTypeMang {
-		headers = []string{
-			"Region",
-			"🏭 Emission",
-			fmt.Sprintf("ControlPlane (%s)", optimizations.ManagedOffering),
-			fmt.Sprintf("WorkerPlane (%s)", optimizations.InstanceTypeWP),
-			"Total Monthly Cost",
-		}
+// 	if clusterType == consts.ClusterTypeMang {
+// 		headers = []string{
+// 			"Region",
+// 			"🏭 Emission",
+// 			fmt.Sprintf("ControlPlane (%s)", optimizations.ManagedOffering),
+// 			fmt.Sprintf("WorkerPlane (%s)", optimizations.InstanceTypeWP),
+// 			"Total Monthly Cost",
+// 		}
 
-		for _, cost := range optimizations.RegionRecommendations {
-			total := cost.TotalCost
-			reg := cost.Region
-			managed := cost.ControlPlaneCost
-			worker := cost.WorkerPlaneCost
+// 		for _, cost := range optimizations.RegionRecommendations {
+// 			total := cost.TotalCost
+// 			reg := cost.Region
+// 			managed := cost.ControlPlaneCost
+// 			worker := cost.WorkerPlaneCost
 
-			regEmissions := cost.Emissions
-			var emissions string
-			if regEmissions == nil {
-				emissions = "N/A"
-			} else {
-				emissions = fmt.Sprintf(
-					"D: %.2f %s\nR: %.2f%%\nLC: %.2f%%\nLCA: %.2f %s",
-					regEmissions.DirectCarbonIntensity, regEmissions.Unit,
-					regEmissions.RenewablePercentage,
-					regEmissions.LowCarbonPercentage,
-					regEmissions.LCACarbonIntensity, regEmissions.Unit,
-				)
-			}
+// 			regEmissions := cost.Emissions
+// 			var emissions string
+// 			if regEmissions == nil {
+// 				emissions = "N/A"
+// 			} else {
+// 				emissions = fmt.Sprintf(
+// 					"D: %.2f %s\nR: %.2f%%\nLC: %.2f%%\nLCA: %.2f %s",
+// 					regEmissions.DirectCarbonIntensity, regEmissions.Unit,
+// 					regEmissions.RenewablePercentage,
+// 					regEmissions.LowCarbonPercentage,
+// 					regEmissions.LCACarbonIntensity, regEmissions.Unit,
+// 				)
+// 			}
 
-			data = append(data, []string{
-				reg,
-				emissions,
-				fmt.Sprintf("$%.2f X 1", managed),
-				fmt.Sprintf("$%.2f X %d", worker, optimizations.WorkerPlaneCount),
-				fmt.Sprintf("$%.2f", total),
-			})
+// 			data = append(data, []string{
+// 				reg,
+// 				emissions,
+// 				fmt.Sprintf("$%.2f X 1", managed),
+// 				fmt.Sprintf("$%.2f X %d", worker, optimizations.WorkerPlaneCount),
+// 				fmt.Sprintf("$%.2f", total),
+// 			})
 
-		}
+// 		}
 
-		regEmissions := optimizations.CurrentEmissions
+// 		regEmissions := optimizations.CurrentEmissions
 
-		var emissions string
-		if regEmissions == nil {
-			emissions = "N/A"
-		} else {
-			emissions = fmt.Sprintf("%.2f %s", regEmissions.DirectCarbonIntensity, regEmissions.Unit)
-		}
+// 		var emissions string
+// 		if regEmissions == nil {
+// 			emissions = "N/A"
+// 		} else {
+// 			emissions = fmt.Sprintf("%.2f %s", regEmissions.DirectCarbonIntensity, regEmissions.Unit)
+// 		}
 
-		data = append(data, []string{"", "", "", "", ""})
+// 		data = append(data, []string{"", "", "", "", ""})
 
-		data = append(data, []string{
-			optimizations.CurrentRegion + " (*)",
-			emissions,
-			"", "",
-			fmt.Sprintf("$%.2f", optimizations.CurrentTotalCost),
-		})
-	} else if clusterType == consts.ClusterTypeSelfMang {
-		headers = []string{
-			"Region",
-			"🏭 Emission",
-			fmt.Sprintf("ControlPlane (%s)", optimizations.InstanceTypeCP),
-			fmt.Sprintf("WorkerPlane (%s)", optimizations.InstanceTypeWP),
-			fmt.Sprintf("DatastorePlane (%s)", optimizations.InstanceTypeDS),
-			fmt.Sprintf("LoadBalancer (%s)", optimizations.InstanceTypeLB),
-			"Total Monthly Cost",
-		}
+// 		data = append(data, []string{
+// 			optimizations.CurrentRegion + " (*)",
+// 			emissions,
+// 			"", "",
+// 			fmt.Sprintf("$%.2f", optimizations.CurrentTotalCost),
+// 		})
+// 	} else if clusterType == consts.ClusterTypeSelfMang {
+// 		headers = []string{
+// 			"Region",
+// 			"🏭 Emission",
+// 			fmt.Sprintf("ControlPlane (%s)", optimizations.InstanceTypeCP),
+// 			fmt.Sprintf("WorkerPlane (%s)", optimizations.InstanceTypeWP),
+// 			fmt.Sprintf("DatastorePlane (%s)", optimizations.InstanceTypeDS),
+// 			fmt.Sprintf("LoadBalancer (%s)", optimizations.InstanceTypeLB),
+// 			"Total Monthly Cost",
+// 		}
 
-		for _, cost := range optimizations.RegionRecommendations {
-			total := cost.TotalCost
-			reg := cost.Region
-			cp := cost.ControlPlaneCost
-			wp := cost.WorkerPlaneCost
-			ds := cost.DataStoreCost
-			lb := cost.LoadBalancerCost
-			regEmissions := cost.Emissions
+// 		for _, cost := range optimizations.RegionRecommendations {
+// 			total := cost.TotalCost
+// 			reg := cost.Region
+// 			cp := cost.ControlPlaneCost
+// 			wp := cost.WorkerPlaneCost
+// 			ds := cost.DataStoreCost
+// 			lb := cost.LoadBalancerCost
+// 			regEmissions := cost.Emissions
 
-			var emissions string
-			if regEmissions == nil {
-				emissions = "N/A"
-			} else {
-				emissions = fmt.Sprintf(
-					"D: %.2f %s\nR: %.2f%%\nLC: %.2f%%\nLCA: %.2f %s",
-					regEmissions.DirectCarbonIntensity, regEmissions.Unit,
-					regEmissions.RenewablePercentage,
-					regEmissions.LowCarbonPercentage,
-					regEmissions.LCACarbonIntensity, regEmissions.Unit,
-				)
-			}
+// 			var emissions string
+// 			if regEmissions == nil {
+// 				emissions = "N/A"
+// 			} else {
+// 				emissions = fmt.Sprintf(
+// 					"D: %.2f %s\nR: %.2f%%\nLC: %.2f%%\nLCA: %.2f %s",
+// 					regEmissions.DirectCarbonIntensity, regEmissions.Unit,
+// 					regEmissions.RenewablePercentage,
+// 					regEmissions.LowCarbonPercentage,
+// 					regEmissions.LCACarbonIntensity, regEmissions.Unit,
+// 				)
+// 			}
 
-			data = append(data, []string{
-				reg,
-				emissions,
-				fmt.Sprintf("$%.2f X %d", cp, optimizations.ControlPlaneCount),
-				fmt.Sprintf("$%.2f X %d", wp, optimizations.WorkerPlaneCount),
-				fmt.Sprintf("$%.2f X %d", ds, optimizations.DataStoreCount),
-				fmt.Sprintf("$%.2f X 1", lb),
-				fmt.Sprintf("$%.2f", total),
-			})
-		}
-		regEmissions := optimizations.CurrentEmissions
+// 			data = append(data, []string{
+// 				reg,
+// 				emissions,
+// 				fmt.Sprintf("$%.2f X %d", cp, optimizations.ControlPlaneCount),
+// 				fmt.Sprintf("$%.2f X %d", wp, optimizations.WorkerPlaneCount),
+// 				fmt.Sprintf("$%.2f X %d", ds, optimizations.DataStoreCount),
+// 				fmt.Sprintf("$%.2f X 1", lb),
+// 				fmt.Sprintf("$%.2f", total),
+// 			})
+// 		}
+// 		regEmissions := optimizations.CurrentEmissions
 
-		var emissions string
-		if regEmissions == nil {
-			emissions = "N/A"
-		} else {
-			emissions = fmt.Sprintf("%.2f %s", regEmissions.DirectCarbonIntensity, regEmissions.Unit)
-		}
-		data = append(data, []string{"", "", "", "", "", "", ""})
+// 		var emissions string
+// 		if regEmissions == nil {
+// 			emissions = "N/A"
+// 		} else {
+// 			emissions = fmt.Sprintf("%.2f %s", regEmissions.DirectCarbonIntensity, regEmissions.Unit)
+// 		}
+// 		data = append(data, []string{"", "", "", "", "", "", ""})
 
-		data = append(data, []string{
-			optimizations.CurrentRegion + " (*)",
-			emissions,
-			"", "", "", "",
-			fmt.Sprintf("$%.2f", optimizations.CurrentTotalCost),
-		})
-	}
+// 		data = append(data, []string{
+// 			optimizations.CurrentRegion + " (*)",
+// 			emissions,
+// 			"", "", "", "",
+// 			fmt.Sprintf("$%.2f", optimizations.CurrentTotalCost),
+// 		})
+// 	}
 
-	k.l.Table(k.Ctx, headers, data)
-}
+// 	k.l.Table(k.Ctx, headers, data)
+// }
