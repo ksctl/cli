@@ -198,20 +198,33 @@ func (m Model) View() string {
 		}
 
 		priceStyle := lipgloss.NewStyle().
-			Bold(true).
 			Foreground(textColor).
 			Width(cardWidth - 3).
 			Align(lipgloss.Center).
 			PaddingTop(1)
 
+		if isActive {
+			priceStyle = priceStyle.Bold(true)
+		}
+
 		priceStr := strings.Builder{}
 		priceDrop := (m.recommendI.CurrentTotalCost - plan.TotalCost) / m.recommendI.CurrentTotalCost * 100
 		priceStr.WriteString(fmt.Sprintf("Price: $%.2f %s\n", plan.TotalCost, color.HiGreenString(fmt.Sprintf("↓ %.0f%%", priceDrop))))
 		if plan.Emissions != nil {
-			priceStr.WriteString(fmt.Sprintf("Direct: %.2f%s\n", plan.Emissions.DirectCarbonIntensity, plan.Emissions.Unit))
+			dco2_val := fmt.Sprintf("%.2f %s", plan.Emissions.DirectCarbonIntensity, plan.Emissions.Unit)
+			if plan.Emissions.DirectCarbonIntensity > 400 {
+				dco2_val = color.HiRedString(dco2_val)
+			} else if plan.Emissions.DirectCarbonIntensity > 200 {
+				dco2_val = color.HiYellowString(dco2_val)
+			} else {
+				dco2_val = color.HiGreenString(dco2_val)
+			}
+			priceStr.WriteString(fmt.Sprintf("Direct: %s\n", dco2_val))
 			priceStr.WriteString(fmt.Sprintf("Renewable: %.2f%%\n", plan.Emissions.RenewablePercentage))
 			priceStr.WriteString(fmt.Sprintf("Low Co2: %.2f%%\n", plan.Emissions.LowCarbonPercentage))
-			priceStr.WriteString(fmt.Sprintf("Lifecycle: %.2f%s", plan.Emissions.LCACarbonIntensity, plan.Emissions.Unit))
+			priceStr.WriteString(fmt.Sprintf("Lifecycle: %.2f %s", plan.Emissions.LCACarbonIntensity, plan.Emissions.Unit))
+		} else {
+			priceStr.WriteString(color.HiYellowString("Emissions data is currently unavailable 🌍\n"))
 		}
 
 		priceSection := priceStyle.Render(priceStr.String())
@@ -229,6 +242,10 @@ func (m Model) View() string {
 			Width(cardWidth - 3).
 			Align(lipgloss.Center).
 			PaddingLeft(1)
+
+		if isActive {
+			specsStyle = specsStyle.Bold(true)
+		}
 
 		specsStr := strings.Builder{}
 		specsStr.WriteString(fmt.Sprintf("Region: %s\n", color.HiCyanString(plan.Region)))

@@ -51,9 +51,9 @@ ksctl create --help
 			NewRegionRecommendation(consts.ClusterTypeSelfMang, &optimizer.RecommendationAcrossRegions{
 				RegionRecommendations: []optimizer.RegionRecommendation{
 					{
-						Region: "GGG",
+						Region: "us-east-1",
 						Emissions: &provider.RegionalEmission{
-							DirectCarbonIntensity: 5.0,
+							DirectCarbonIntensity: 233.0,
 							Unit:                  "gCO2/kWh",
 							RenewablePercentage:   5.0,
 							LowCarbonPercentage:   5.0,
@@ -66,9 +66,9 @@ ksctl create --help
 						TotalCost:        20.0,
 					},
 					{
-						Region: "GGG",
+						Region: "us-west-2",
 						Emissions: &provider.RegionalEmission{
-							DirectCarbonIntensity: 5.0,
+							DirectCarbonIntensity: 120.0,
 							Unit:                  "gCO2/kWh",
 							RenewablePercentage:   5.0,
 							LowCarbonPercentage:   5.0,
@@ -81,9 +81,9 @@ ksctl create --help
 						TotalCost:        20.0,
 					},
 					{
-						Region: "HHH",
+						Region: "eu-central-1",
 						Emissions: &provider.RegionalEmission{
-							DirectCarbonIntensity: 4.0,
+							DirectCarbonIntensity: 401.0,
 							Unit:                  "gCO2/kWh",
 							RenewablePercentage:   10.0,
 							LowCarbonPercentage:   8.0,
@@ -95,13 +95,24 @@ ksctl create --help
 						LoadBalancerCost: 6.0,
 						TotalCost:        24.0,
 					},
+					{
+						Region:           "eu-north-1",
+						ControlPlaneCost: 6.0,
+						WorkerPlaneCost:  6.0,
+						DataStoreCost:    6.0,
+						LoadBalancerCost: 6.0,
+						TotalCost:        10.0,
+					},
 				},
-				InstanceTypeWP:   "GGG",
-				InstanceTypeCP:   "GGG",
-				InstanceTypeDS:   "GGG",
-				InstanceTypeLB:   "GGG",
-				CurrentRegion:    "GGG",
-				CurrentTotalCost: 50.0,
+				InstanceTypeWP:    "m8g.large",
+				InstanceTypeCP:    "c4.large",
+				InstanceTypeDS:    "r5.large",
+				InstanceTypeLB:    "t3.medium",
+				CurrentRegion:     "ap-south-1",
+				ControlPlaneCount: 3,
+				WorkerPlaneCount:  3,
+				DataStoreCount:    3,
+				CurrentTotalCost:  50.0,
 			}).Run()
 			os.Exit(1)
 
