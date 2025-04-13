@@ -76,9 +76,18 @@ func (k *KsctlCommand) handleRegionSelection(meta *controllerMeta.Controller, m 
 	ss.Stop()
 
 	k.l.Note(k.Ctx, "Carbon emission data shown represents monthly averages calculated over a one-year period")
-	if v, ok := k.getSelectedRegion(listOfRegions); !ok {
+
+	if v, err := k.menuDriven.CardSelection(
+		cli.ConverterForRegionOutputForCards(listOfRegions),
+	); err != nil {
+		k.l.Error("Failed to get the region", "Reason", err)
 		os.Exit(1)
 	} else {
+		if v == "" {
+			k.l.Error("Region not selected")
+			os.Exit(1)
+		}
+		k.l.Debug(k.Ctx, "Selected region", "Region", v)
 		m.Region = v
 	}
 
