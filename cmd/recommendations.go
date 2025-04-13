@@ -231,13 +231,13 @@ func (m Model) View() string {
 				dco2_val = color.HiGreenString(dco2_val)
 			}
 
-			reneable_val := fmt.Sprintf("%.1f%%", plan.Region.Emission.RenewablePercentage)
+			renewable_val := fmt.Sprintf("%.1f%%", plan.Region.Emission.RenewablePercentage)
 			if plan.Region.Emission.RenewablePercentage < RenewableLowThreshold {
-				reneable_val = color.HiRedString(reneable_val)
+				renewable_val = color.HiRedString(renewable_val)
 			} else if plan.Region.Emission.RenewablePercentage < RenewableMediumThreshold {
-				reneable_val = color.HiYellowString(reneable_val)
+				renewable_val = color.HiYellowString(renewable_val)
 			} else {
-				reneable_val = color.HiGreenString(reneable_val)
+				renewable_val = color.HiGreenString(renewable_val)
 			}
 
 			lowCo2_val := fmt.Sprintf("%.1f%%", plan.Region.Emission.LowCarbonPercentage)
@@ -258,10 +258,43 @@ func (m Model) View() string {
 				lcaIntensity_val = color.HiGreenString(lcaIntensity_val)
 			}
 
-			priceStr.WriteString(fmt.Sprintf("🌍 Direct Emissions: %s\n", dco2_val))
-			priceStr.WriteString(fmt.Sprintf("🌱 Renewable Energy: %s\n", reneable_val))
-			priceStr.WriteString(fmt.Sprintf("💨 Low Carbon Energy: %s\n", lowCo2_val))
-			priceStr.WriteString(fmt.Sprintf("🔄 Lifecycle Emissions: %s\n", lcaIntensity_val))
+			e_r := plan.Region.Emission
+			e_R := m.recommendI.CurrentRegion.Emission
+
+			if e_R != nil {
+				dco2_change := (e_r.DirectCarbonIntensity - e_R.DirectCarbonIntensity) / e_R.DirectCarbonIntensity * 100
+				if dco2_change > 0 {
+					dco2_val += color.HiRedString(fmt.Sprintf(" ↑ %.0f%%", dco2_change))
+				} else {
+					dco2_val += color.HiGreenString(fmt.Sprintf(" ↓ %.0f%%", -dco2_change))
+				}
+
+				renewable_change := (e_r.RenewablePercentage - e_R.RenewablePercentage) / e_R.RenewablePercentage * 100
+				if renewable_change > 0 {
+					renewable_val += color.HiGreenString(fmt.Sprintf(" ↑ %.0f%%", renewable_change))
+				} else {
+					renewable_val += color.HiRedString(fmt.Sprintf(" ↓ %.0f%%", -renewable_change))
+				}
+
+				lowCo2_change := (e_r.LowCarbonPercentage - e_R.LowCarbonPercentage) / e_R.LowCarbonPercentage * 100
+				if lowCo2_change > 0 {
+					lowCo2_val += color.HiGreenString(fmt.Sprintf(" ↑ %.0f%%", lowCo2_change))
+				} else {
+					lowCo2_val += color.HiRedString(fmt.Sprintf(" ↓ %.0f%%", -lowCo2_change))
+				}
+
+				lcaIntensity_change := (e_r.LCACarbonIntensity - e_R.LCACarbonIntensity) / e_R.LCACarbonIntensity * 100
+				if lcaIntensity_change > 0 {
+					lcaIntensity_val += color.HiRedString(fmt.Sprintf(" ↑ %.0f%%", lcaIntensity_change))
+				} else {
+					lcaIntensity_val += color.HiGreenString(fmt.Sprintf(" ↓ %.0f%%", -lcaIntensity_change))
+				}
+			}
+
+			priceStr.WriteString(fmt.Sprintf("🌍 Direct Co2: %s\n", dco2_val))
+			priceStr.WriteString(fmt.Sprintf("🌱 Renewable: %s\n", renewable_val))
+			priceStr.WriteString(fmt.Sprintf("💨 Low Carbon: %s\n", lowCo2_val))
+			priceStr.WriteString(fmt.Sprintf("🔄 Lifecycle Co2: %s\n", lcaIntensity_val))
 		} else {
 			priceStr.WriteString(color.HiYellowString("Emissions data is currently unavailable 🌍\n"))
 		}
