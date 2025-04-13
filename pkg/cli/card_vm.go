@@ -55,6 +55,22 @@ func (c cardVM) GetLower() string {
 	}
 	resp.WriteString(fmt.Sprintf("Arch: %s\n", arch))
 
+	diskSku := c.rr.Disk.Sku
+	diskSize := c.rr.Disk.Size
+	diskTier := c.rr.Disk.Tier
+
+	if diskSku != nil {
+		resp.WriteString(fmt.Sprintf("Disk: %s\n", *diskSku))
+	}
+
+	if diskTier != nil {
+		resp.WriteString(fmt.Sprintf("DiskTier: %s\n", *diskTier))
+	}
+
+	if diskSize != nil {
+		resp.WriteString(fmt.Sprintf("DiskSize: %d GB", *diskSize))
+	}
+
 	return resp.String()
 }
 
