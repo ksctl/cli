@@ -1,3 +1,17 @@
+// Copyright 2025 Ksctl Authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package cli
 
 import (
@@ -5,6 +19,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -13,6 +28,36 @@ import (
 
 type debugMenuDriven struct {
 	progress ProgressAnimation
+}
+
+func (p *debugMenuDriven) CardSelection(element CardPack) (string, error) {
+	for i := 0; i < element.LenOfItems(); i++ {
+		e := element.GetItem(i)
+		gg := fmt.Sprintf("--[%d]--%s\n%s\n-------\n", i, e.GetUpper(), e.GetLower())
+		fmt.Println(gg)
+	}
+	fmt.Sprintln(element.GetInstruction())
+
+	fmt.Printf("Enter the index? for not selecting press -1")
+	var response string
+	_, err := fmt.Scanln(&response)
+	if err != nil {
+		return "", err
+	}
+	if len(response) == 0 {
+		return "", nil
+	}
+
+	if response == "-1" {
+		return "", nil
+	}
+
+	v, err := strconv.Atoi(response)
+	if err != nil {
+		return "", err
+	}
+
+	return element.GetResult(v), nil
 }
 
 type debugSpinner struct {

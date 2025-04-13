@@ -32,6 +32,19 @@ func WithDefaultValue(defaultValue string) func(*option) error {
 	}
 }
 
+type CardItem interface {
+	GetUpper() string
+	GetLower() string
+}
+
+type CardPack interface {
+	LenOfItems() int
+	GetItem(i int) CardItem
+	GetInstruction() string
+	GetResult(index int) string
+	GetCardConfiguration() (cardWidth, noOfVisibleItems int)
+}
+
 type MenuDriven interface {
 	GetProgressAnimation() ProgressAnimation
 	Confirmation(prompt string, opts ...func(*option) error) (proceed bool, err error)
@@ -39,6 +52,7 @@ type MenuDriven interface {
 	TextInputPassword(prompt string) (string, error)
 	DropDown(prompt string, options map[string]string, opts ...func(*option) error) (string, error)
 	DropDownList(prompt string, options []string, opts ...func(*option) error) (string, error)
+	CardSelection(element CardPack) (string, error)
 }
 
 func processOptions(opts []func(*option) error) (option, error) {

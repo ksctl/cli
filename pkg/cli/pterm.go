@@ -22,7 +22,7 @@ import (
 	"github.com/pterm/pterm"
 )
 
-type ptermMenuDriven struct {
+type genericMenuDriven struct {
 	progress ProgressAnimation
 }
 
@@ -32,11 +32,11 @@ type spinner struct {
 	active bool
 }
 
-func NewPtermMenuDriven() *ptermMenuDriven {
-	return &ptermMenuDriven{}
+func NewMenuDriven() *genericMenuDriven {
+	return &genericMenuDriven{}
 }
 
-func (p *ptermMenuDriven) GetProgressAnimation() ProgressAnimation {
+func (p *genericMenuDriven) GetProgressAnimation() ProgressAnimation {
 	if p.progress != nil {
 		return p.progress
 	}
@@ -76,7 +76,7 @@ func (s *spinner) StopWithFailure(msg ...any) {
 	s.active = false
 }
 
-func (p *ptermMenuDriven) Confirmation(prompt string, opts ...func(*option) error) (proceed bool, err error) {
+func (p *genericMenuDriven) Confirmation(prompt string, opts ...func(*option) error) (proceed bool, err error) {
 	o, err := processOptions(opts)
 	if err != nil {
 		return false, err
@@ -89,7 +89,7 @@ func (p *ptermMenuDriven) Confirmation(prompt string, opts ...func(*option) erro
 	return x.Show(prompt)
 }
 
-func (p *ptermMenuDriven) TextInput(prompt string, opts ...func(*option) error) (string, error) {
+func (p *genericMenuDriven) TextInput(prompt string, opts ...func(*option) error) (string, error) {
 	o, err := processOptions(opts)
 	if err != nil {
 		return "", err
@@ -102,12 +102,12 @@ func (p *ptermMenuDriven) TextInput(prompt string, opts ...func(*option) error) 
 	return x.Show(prompt)
 }
 
-func (p *ptermMenuDriven) TextInputPassword(prompt string) (string, error) {
+func (p *genericMenuDriven) TextInputPassword(prompt string) (string, error) {
 	x := pterm.DefaultInteractiveTextInput.WithMask("*")
 	return x.Show(prompt)
 }
 
-func (p *ptermMenuDriven) DropDown(prompt string, options map[string]string, opts ...func(*option) error) (string, error) {
+func (p *genericMenuDriven) DropDown(prompt string, options map[string]string, opts ...func(*option) error) (string, error) {
 	o, err := processOptions(opts)
 	if err != nil {
 		return "", err
@@ -137,7 +137,7 @@ func (p *ptermMenuDriven) DropDown(prompt string, options map[string]string, opt
 
 }
 
-func (p *ptermMenuDriven) DropDownList(prompt string, options []string, opts ...func(*option) error) (string, error) {
+func (p *genericMenuDriven) DropDownList(prompt string, options []string, opts ...func(*option) error) (string, error) {
 	o, err := processOptions(opts)
 	if err != nil {
 		return "", err

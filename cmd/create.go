@@ -84,8 +84,9 @@ func (k *KsctlCommand) CostOptimizeAcrossRegion(inp chan CliRecommendation, meta
 				return
 			}
 
-			// k.PrintRecommendation(meta.ClusterType, optimizeResp)
-			selectedReg, err := NewRegionRecommendation(meta.ClusterType, optimizeResp).Run()
+			selectedReg, err := k.menuDriven.CardSelection(
+				cli.ConverterForRecommendationIOutputForCards(optimizeResp, meta.ClusterType),
+			)
 			if err != nil {
 				k.l.Error("Failed to get the recommendation options from user", "Reason", err)
 				return
