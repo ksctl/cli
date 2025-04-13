@@ -43,7 +43,7 @@ func (k *KsctlCommand) NewRootCmd() *cobra.Command {
 				k.CliLog.Box(k.Ctx, "CLI Mode", "CLI is running in debug mode")
 				k.menuDriven = cli.NewDebugMenuDriven()
 			} else {
-				k.menuDriven = cli.NewPtermMenuDriven()
+				k.menuDriven = cli.NewMenuDriven()
 			}
 
 			_ = k.menuDriven.GetProgressAnimation() // Just boot it up...
