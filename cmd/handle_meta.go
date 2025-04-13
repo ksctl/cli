@@ -76,6 +76,7 @@ func (k *KsctlCommand) handleRegionSelection(meta *controllerMeta.Controller, m 
 	ss.Stop()
 
 	k.l.Note(k.Ctx, "Carbon emission data shown represents monthly averages calculated over a one-year period")
+	k.l.Note(k.Ctx, "Select the region for the cluster")
 
 	if v, err := k.menuDriven.CardSelection(
 		cli.ConverterForRegionOutputForCards(listOfRegions),
@@ -130,17 +131,25 @@ func (k *KsctlCommand) handleInstanceTypeSelection(
 		k.inMemInstanceTypesInReg = listOfVMs
 	}
 
-	availableOptions := make(provider.InstancesRegionOutput, len(k.inMemInstanceTypesInReg))
+	availableOptions := make(provider.InstancesRegionOutput, 0, len(k.inMemInstanceTypesInReg))
+
+	k.l.Note(k.Ctx, prompt)
 
 	for _, v := range k.inMemInstanceTypesInReg {
-		if v.Category == category {
+		if v.Category == category && v.CpuArch == provider.ArchAmd64 {
 			availableOptions = append(availableOptions, v)
 		}
 	}
 
-	v, ok := k.getSelectedInstanceType(prompt, availableOptions)
-	if !ok {
-		k.l.Error("Failed to get the instance type")
+	v, err := k.menuDriven.CardSelection(
+		cli.ConverterForInstanceTypesForCards(availableOptions),
+	)
+	if err != nil {
+		k.l.Error("Failed to get the instance type from user", "Reason", err)
+		os.Exit(1)
+	}
+	if v == "" {
+		k.l.Error("Instance type not selected")
 		os.Exit(1)
 	}
 
