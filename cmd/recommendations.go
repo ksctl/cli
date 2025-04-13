@@ -157,7 +157,7 @@ func (m Model) View() string {
 	if m.quitting {
 		if m.selectedPlan >= 0 && m.selectedPlan < len(m.recommendI.RegionRecommendations) {
 			plan := m.recommendI.RegionRecommendations[m.selectedPlan]
-			return plan.Region
+			return plan.Region.Sku
 		}
 		return "NULL"
 	}
@@ -221,38 +221,38 @@ func (m Model) View() string {
 		priceStr := strings.Builder{}
 		priceDrop := (m.recommendI.CurrentTotalCost - plan.TotalCost) / m.recommendI.CurrentTotalCost * 100
 		priceStr.WriteString(fmt.Sprintf("Price: %s %s\n", color.MagentaString(fmt.Sprintf("$%.2f", plan.TotalCost)), color.HiGreenString(fmt.Sprintf("↓ %.0f%%", priceDrop))))
-		if plan.Emissions != nil {
-			dco2_val := fmt.Sprintf("%.2f %s", plan.Emissions.DirectCarbonIntensity, plan.Emissions.Unit)
-			if plan.Emissions.DirectCarbonIntensity > DirectCo2MediumThreshold {
+		if plan.Region.Emission != nil {
+			dco2_val := fmt.Sprintf("%.2f %s", plan.Region.Emission.DirectCarbonIntensity, plan.Region.Emission.Unit)
+			if plan.Region.Emission.DirectCarbonIntensity > DirectCo2MediumThreshold {
 				dco2_val = color.HiRedString(dco2_val)
-			} else if plan.Emissions.DirectCarbonIntensity > DirectCo2LowThreshold {
+			} else if plan.Region.Emission.DirectCarbonIntensity > DirectCo2LowThreshold {
 				dco2_val = color.HiYellowString(dco2_val)
 			} else {
 				dco2_val = color.HiGreenString(dco2_val)
 			}
 
-			reneable_val := fmt.Sprintf("%.1f%%", plan.Emissions.RenewablePercentage)
-			if plan.Emissions.RenewablePercentage < RenewableLowThreshold {
+			reneable_val := fmt.Sprintf("%.1f%%", plan.Region.Emission.RenewablePercentage)
+			if plan.Region.Emission.RenewablePercentage < RenewableLowThreshold {
 				reneable_val = color.HiRedString(reneable_val)
-			} else if plan.Emissions.RenewablePercentage < RenewableMediumThreshold {
+			} else if plan.Region.Emission.RenewablePercentage < RenewableMediumThreshold {
 				reneable_val = color.HiYellowString(reneable_val)
 			} else {
 				reneable_val = color.HiGreenString(reneable_val)
 			}
 
-			lowCo2_val := fmt.Sprintf("%.1f%%", plan.Emissions.LowCarbonPercentage)
-			if plan.Emissions.LowCarbonPercentage < LowCarbonLowThreshold {
+			lowCo2_val := fmt.Sprintf("%.1f%%", plan.Region.Emission.LowCarbonPercentage)
+			if plan.Region.Emission.LowCarbonPercentage < LowCarbonLowThreshold {
 				lowCo2_val = color.HiRedString(lowCo2_val)
-			} else if plan.Emissions.LowCarbonPercentage < LowCarbonMediumThreshold {
+			} else if plan.Region.Emission.LowCarbonPercentage < LowCarbonMediumThreshold {
 				lowCo2_val = color.HiYellowString(lowCo2_val)
 			} else {
 				lowCo2_val = color.HiGreenString(lowCo2_val)
 			}
 
-			lcaIntensity_val := fmt.Sprintf("%.1f %s", plan.Emissions.LCACarbonIntensity, plan.Emissions.Unit)
-			if plan.Emissions.LCACarbonIntensity > LCACarbonIntensityHighThreshold {
+			lcaIntensity_val := fmt.Sprintf("%.1f %s", plan.Region.Emission.LCACarbonIntensity, plan.Region.Emission.Unit)
+			if plan.Region.Emission.LCACarbonIntensity > LCACarbonIntensityHighThreshold {
 				lcaIntensity_val = color.HiRedString(lcaIntensity_val)
-			} else if plan.Emissions.LCACarbonIntensity > LCACarbonIntensityMediumThreshold {
+			} else if plan.Region.Emission.LCACarbonIntensity > LCACarbonIntensityMediumThreshold {
 				lcaIntensity_val = color.HiYellowString(lcaIntensity_val)
 			} else {
 				lcaIntensity_val = color.HiGreenString(lcaIntensity_val)
@@ -287,7 +287,7 @@ func (m Model) View() string {
 		}
 
 		specsStr := strings.Builder{}
-		specsStr.WriteString(fmt.Sprintf("Region: %s\n", color.HiCyanString(plan.Region)))
+		specsStr.WriteString(fmt.Sprintf("Region: %s\n", color.HiCyanString(plan.Region.Name)))
 		if m.clusterType == consts.ClusterTypeSelfMang {
 			specsStr.WriteString(fmt.Sprintf("ControlPlane: %s x %d\n", m.recommendI.InstanceTypeCP, m.recommendI.ControlPlaneCount))
 			specsStr.WriteString(fmt.Sprintf("Worker: %s x %d\n", m.recommendI.InstanceTypeWP, m.recommendI.WorkerPlaneCount))
@@ -329,7 +329,7 @@ func (m Model) View() string {
 		Width(maxWidth)
 
 	instructions := "← → to navigate • enter to select plan • q to skip changing region"
-	instructions += " • Currently it costs " + fmt.Sprintf("`$%.2f`", m.recommendI.CurrentTotalCost) + " in " + color.HiCyanString(m.recommendI.CurrentRegion) + "\n\n"
+	instructions += " • Currently it costs " + fmt.Sprintf("`$%.2f`", m.recommendI.CurrentTotalCost) + " in " + color.HiCyanString(m.recommendI.CurrentRegion.Name) + "\n\n"
 	builder.WriteString(instructionStyle.Render(instructions))
 
 	return builder.String()
@@ -362,7 +362,7 @@ func (t *RegionRecommendation) Run() (string, error) {
 
 	if m.selectedPlan >= 0 && m.selectedPlan < len(m.recommendI.RegionRecommendations) {
 		plan := m.recommendI.RegionRecommendations[m.selectedPlan]
-		return plan.Region, nil
+		return plan.Region.Sku, nil
 	}
 
 	if m.quitting {
