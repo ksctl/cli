@@ -9,7 +9,7 @@ require (
 	github.com/charmbracelet/lipgloss v1.1.0
 	github.com/creack/pty v1.1.24
 	github.com/fatih/color v1.18.0
-	github.com/ksctl/ksctl/v2 v2.4.3
+	github.com/ksctl/ksctl/v2 v2.4.4
 	github.com/pterm/pterm v0.12.80
 	github.com/rodaine/table v1.3.0
 	github.com/spf13/cobra v1.9.1
@@ -17,8 +17,6 @@ require (
 	golang.org/x/term v0.28.0
 	k8s.io/client-go v0.32.2
 )
-
-replace github.com/ksctl/ksctl/v2 => ../ksctl
 
 require (
 	al.essio.dev/pkg/shellescape v1.5.1 // indirect
