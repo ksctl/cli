@@ -18,12 +18,11 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"math"
 	"reflect"
 	"strings"
 	"sync"
 
-	box "github.com/Delta456/box-cli-maker/v2"
+	"github.com/charmbracelet/lipgloss"
 	"github.com/fatih/color"
 	"github.com/ksctl/ksctl/v2/pkg/logger"
 	"github.com/rodaine/table"
@@ -38,11 +37,11 @@ type GeneralLog struct {
 }
 
 func (l *GeneralLog) ExternalLogHandler(ctx context.Context, msgType logger.CustomExternalLogLevel, message string) {
-	l.log(false, false, ctx, msgType, message)
+	l.log(false, msgType, message)
 }
 
 func (l *GeneralLog) ExternalLogHandlerf(ctx context.Context, msgType logger.CustomExternalLogLevel, format string, args ...interface{}) {
-	l.log(false, false, ctx, msgType, format, args...)
+	l.log(false, msgType, format, args...)
 }
 
 func formGroups(v ...any) (format string, vals []any) {
@@ -84,11 +83,11 @@ func isLogEnabled(level uint, msgType logger.CustomExternalLogLevel) bool {
 	return true
 }
 
-func (l *GeneralLog) logErrorf(disableContext bool, disablePrefix bool, ctx context.Context, msg string, args ...any) error {
+func (l *GeneralLog) logErrorf(disablePrefix bool, msg string, args ...any) error {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 	if !disablePrefix {
-		prefix := fmt.Sprintf("%s%s ", getTime(l.level), logger.LogError)
+		prefix := fmt.Sprintf("%s%s ", getTime(), logger.LogError)
 		msg = prefix + msg
 	}
 	format, _args := formGroups(args...)
@@ -103,18 +102,13 @@ func (l *GeneralLog) logErrorf(disableContext bool, disablePrefix bool, ctx cont
 	return errMsg
 }
 
-func (l *GeneralLog) log(disableContext bool, useGroupFormer bool, ctx context.Context, msgType logger.CustomExternalLogLevel, msg string, args ...any) {
+func (l *GeneralLog) log(useGroupFormer bool, msgType logger.CustomExternalLogLevel, msg string, args ...any) {
 	if !isLogEnabled(l.level, msgType) {
 		return
 	}
 	l.mu.Lock()
 	defer l.mu.Unlock()
-	prefix := fmt.Sprintf("%s%s ", getTime(l.level), msgType)
-
-	context := ""
-	if !disableContext {
-		context = color.HiBlackString("component=" + getPackageName(ctx) + " ")
-	}
+	prefix := fmt.Sprintf("%s%s ", getTime(), msgType)
 
 	if useGroupFormer {
 
@@ -133,29 +127,29 @@ func (l *GeneralLog) log(disableContext bool, useGroupFormer bool, ctx context.C
 		case logger.LogError:
 			msgColored = color.HiRedString(msg)
 		}
-		msg = prefix + context + msgColored
+		msg = prefix + msgColored
 		format, _args := formGroups(args...)
 		if _args == nil {
-			if disableContext && msgType == logger.LogError {
+			if msgType == logger.LogError {
 				l.boxBox(
-					"Error", msg+" "+format, "Red")
+					"🛑 We Have Problem", msgColored+" "+format, "Red")
 				return
 			}
 			fmt.Fprint(l.writter, msg+" "+format)
 		} else {
-			if disableContext && msgType == logger.LogError {
+			if msgType == logger.LogError {
 				l.boxBox(
-					"Error", fmt.Sprintf(msg+" "+format, _args...), "Red")
+					"🛑 We Have Problem", fmt.Sprintf(msgColored+" "+format, _args...), "Red")
 				return
 			}
 			fmt.Fprintf(l.writter, msg+" "+format, _args...)
 		}
 	} else {
-		fmt.Fprintf(l.writter, prefix+context+msg+"\n", args...)
+		fmt.Fprintf(l.writter, prefix+msg+"\n", args...)
 	}
 }
 
-func getTime(level uint) string {
+func getTime() string {
 	t := time.Now()
 	return color.HiBlackString(fmt.Sprintf("%02d:%02d:%02d ", t.Hour(), t.Minute(), t.Second()))
 }
@@ -176,31 +170,31 @@ func NewLogger(verbose int, out io.Writer) *GeneralLog {
 }
 
 func (l *GeneralLog) Print(ctx context.Context, msg string, args ...any) {
-	l.log(false, true, ctx, logger.LogInfo, msg, args...)
+	l.log(true, logger.LogInfo, msg, args...)
 }
 
 func (l *GeneralLog) Success(ctx context.Context, msg string, args ...any) {
-	l.log(false, true, ctx, logger.LogSuccess, msg, args...)
+	l.log(true, logger.LogSuccess, msg, args...)
 }
 
 func (l *GeneralLog) Note(ctx context.Context, msg string, args ...any) {
-	l.log(false, true, ctx, logger.LogNote, msg, args...)
+	l.log(true, logger.LogNote, msg, args...)
 }
 
 func (l *GeneralLog) Debug(ctx context.Context, msg string, args ...any) {
-	l.log(false, true, ctx, logger.LogDebug, msg, args...)
+	l.log(true, logger.LogDebug, msg, args...)
 }
 
 func (l *GeneralLog) Error(msg string, args ...any) {
-	l.log(true, true, nil, logger.LogError, msg, args...)
+	l.log(true, logger.LogError, msg, args...)
 }
 
 func (l *GeneralLog) NewError(ctx context.Context, msg string, args ...any) error {
-	return l.logErrorf(false, true, ctx, msg, args...)
+	return l.logErrorf(true, msg, args...)
 }
 
 func (l *GeneralLog) Warn(ctx context.Context, msg string, args ...any) {
-	l.log(false, true, ctx, logger.LogWarning, msg, args...)
+	l.log(true, logger.LogWarning, msg, args...)
 }
 
 func (l *GeneralLog) Table(ctx context.Context, headers []string, data [][]string) {
@@ -230,23 +224,52 @@ func (l *GeneralLog) Table(ctx context.Context, headers []string, data [][]strin
 	tbl.Print()
 }
 
-func (l *GeneralLog) boxBox(title, lines string, color string) {
-
-	px := 4
-
-	if len(title) >= 2*px+len(lines) {
-		// some maths
-		px = int(math.Ceil(float64(len(title)-len(lines))/2)) + 1
+func (l *GeneralLog) boxBox(title, lines string, colorName string) {
+	var borderColor lipgloss.Color
+	switch colorName {
+	case "Red":
+		borderColor = lipgloss.Color("9") // Bright red
+	case "Green":
+		borderColor = lipgloss.Color("10") // Bright green
+	default:
+		borderColor = lipgloss.Color("#555555") // Default gray
 	}
 
-	Box := box.New(box.Config{
-		Px:       px,
-		Py:       2,
-		Type:     "Round",
-		TitlePos: "Top",
-		Color:    color})
+	width := max(min(len(lines), 80), min(len(title), 80)) + 2
 
-	Box.Println(title, addLineTerminationForLongStrings(lines))
+	var builder strings.Builder
+	builder.WriteString("\n\n")
+
+	boxStyle := lipgloss.NewStyle().
+		BorderStyle(lipgloss.RoundedBorder()).
+		BorderForeground(borderColor).
+		Align(lipgloss.Center).
+		Padding(0, 1).
+		Width(width)
+
+	contentStyle := lipgloss.NewStyle().
+		Foreground(lipgloss.Color("#FFFFFF")).
+		Align(lipgloss.Center).
+		PaddingLeft(1).
+		PaddingRight(1)
+
+	titleStyle := lipgloss.NewStyle().
+		Foreground(borderColor).
+		Align(lipgloss.Center).
+		Bold(true).
+		PaddingBottom(1).
+		PaddingLeft(1).
+		PaddingRight(1)
+
+	cardContent := lipgloss.JoinVertical(lipgloss.Center,
+		titleStyle.Render(title),
+		contentStyle.Render(lines),
+	)
+
+	builder.WriteString(boxStyle.Render(cardContent))
+	builder.WriteString("\n\n")
+
+	fmt.Fprintln(l.writter, builder.String())
 }
 
 func (l *GeneralLog) Box(ctx context.Context, title string, lines string) {
