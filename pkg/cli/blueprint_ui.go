@@ -156,13 +156,7 @@ func (ui *BlueprintUI) RenderClusterBlueprint(meta controller.Metadata) {
 	}
 
 	if len(meta.Addons) > 0 {
-		var sectionContent strings.Builder
-		addonBlock := lipgloss.NewStyle().
-			BorderStyle(lipgloss.RoundedBorder()).
-			BorderForeground(lipgloss.Color("10")).
-			Padding(1, 2).
-			MarginTop(1).
-			Width(70)
+		var contentBuilder strings.Builder
 
 		for i, addon := range meta.Addons {
 			addonTitle := color.HiMagentaString(addon.Name)
@@ -191,14 +185,15 @@ func (ui *BlueprintUI) RenderClusterBlueprint(meta controller.Metadata) {
 				addonInfo += "\n\t" + color.HiCyanString("CNI Add-on")
 			}
 
-			sectionContent.WriteString(addonBlock.Render(addonInfo))
+			contentBuilder.WriteString(addonInfo)
 			if i < len(meta.Addons)-1 {
-				sectionContent.WriteString("\n")
+				contentBuilder.WriteString("\n\n") // Add spacing between addons
 			}
 		}
 
+		contentBlock := infoBlock.Render(contentBuilder.String())
 		titleBlock := sectionTitle.Render("🧩 Add-ons")
-		fullSection := lipgloss.JoinVertical(lipgloss.Left, titleBlock, sectionContent.String())
+		fullSection := lipgloss.JoinVertical(lipgloss.Left, titleBlock, contentBlock)
 
 		parentBoxContent.WriteString(fullSection)
 	}
