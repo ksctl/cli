@@ -18,7 +18,6 @@ import (
 	"os"
 	"time"
 
-	"github.com/ksctl/ksctl/v2/pkg/addons"
 	"github.com/ksctl/ksctl/v2/pkg/provider/optimizer"
 
 	"github.com/fatih/color"
@@ -46,42 +45,17 @@ ksctl create --help
 		Long:  "It is used to create cluster with the given name from user",
 
 		Run: func(cmd *cobra.Command, args []string) {
-			meta := controller.Metadata{
-				ClusterName:          "ggg",
-				ClusterType:          consts.ClusterTypeSelfMang,
-				Provider:             consts.CloudAws,
-				Region:               "us-east-1",
-				StateLocation:        consts.StoreLocal,
-				K8sDistro:            consts.K8sK3s,
-				K8sVersion:           "v1.25.0",
-				NoCP:                 3,
-				NoWP:                 1,
-				NoDS:                 3,
-				NoMP:                 1,
-				ControlPlaneNodeType: "t2.micro",
-				WorkerPlaneNodeType:  "t2.micro",
-				DataStoreNodeType:    "t2.micro",
-				LoadBalancerNodeType: "t2.micro",
-				Addons: addons.ClusterAddons{
-					{
-						Name:  "cilium",
-						Label: "ksctl",
-						IsCNI: true,
-					},
-				},
+			meta := controller.Metadata{}
+
+			k.baseMetadataFields(&meta)
+
+			if meta.ClusterType == consts.ClusterTypeMang {
+				k.metadataForManagedCluster(&meta)
+			} else {
+				k.metadataForSelfManagedCluster(&meta)
 			}
 
-			cli.NewBlueprintUI(os.Stdout).RenderClusterBlueprint(meta)
-
-			// k.baseMetadataFields(&meta)
-
-			// if meta.ClusterType == consts.ClusterTypeMang {
-			// 	k.metadataForManagedCluster(&meta)
-			// } else {
-			// 	k.metadataForSelfManagedCluster(&meta)
-			// }
-
-			// k.l.Success(k.Ctx, "Created the cluster", "Name", meta.ClusterName)
+			k.l.Success(k.Ctx, "Created the cluster", "Name", meta.ClusterName)
 		},
 	}
 

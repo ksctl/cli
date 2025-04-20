@@ -155,7 +155,7 @@ func (ui *BlueprintUI) RenderClusterBlueprint(meta controller.Metadata) {
 			MarginTop(1).
 			Width(50)
 
-		for i, addon := range meta.Addons {
+		for _, addon := range meta.Addons {
 			addonTitle := color.HiMagentaString(addon.Name)
 
 			config := addon.Config
@@ -163,13 +163,18 @@ func (ui *BlueprintUI) RenderClusterBlueprint(meta controller.Metadata) {
 			if config == nil {
 				vConfig = "No configuration available"
 			} else {
-				vConfigBytes, _ := json.MarshalIndent(config, "", "  ")
-				vConfig = string(vConfigBytes)
+				var v any
+				if err := json.Unmarshal([]byte(*config), &v); err != nil {
+					vConfig = "Invalid configuration format"
+				} else {
+					_v, _ := json.MarshalIndent(v, "\t", "  ")
+					vConfig = string(_v)
+				}
 			}
 			addonInfo := fmt.Sprintf("%s\n\t%s: %s\n\t%s: %s",
 				addonTitle,
 				color.HiCyanString("From"),
-				color.HiGreenString(addon.Label), // This would be replaced with actual type when available
+				color.HiGreenString(addon.Label),
 				color.HiCyanString("Config"),
 				color.HiGreenString(vConfig),
 			)
@@ -179,10 +184,9 @@ func (ui *BlueprintUI) RenderClusterBlueprint(meta controller.Metadata) {
 
 			fmt.Fprintln(ui.writer, addonBlock.Render(addonInfo))
 
-			// Add spacing between addons
-			if i < len(meta.Addons)-1 {
-				fmt.Fprintln(ui.writer)
-			}
+			// if i < len(meta.Addons)-1 {
+			// 	fmt.Fprintln(ui.writer)
+			// }
 		}
 	}
 
@@ -192,8 +196,7 @@ func (ui *BlueprintUI) RenderClusterBlueprint(meta controller.Metadata) {
 		Foreground(lipgloss.Color("#919191")).
 		Padding(1, 0).
 		MarginTop(1).
-		Align(lipgloss.Center).
-		Width(78)
+		Align(lipgloss.Center)
 
 	fmt.Fprintln(ui.writer)
 	fmt.Fprintln(ui.writer, noteStyle.Render("Your cluster will be provisioned with these specifications"))
