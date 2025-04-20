@@ -69,16 +69,22 @@ func (ui *BlueprintUI) RenderClusterBlueprint(meta controller.Metadata) {
 
 	// Header banner
 	bannerContent := fmt.Sprintf("✨ %s ✨\n\n%s",
-		lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("#FFFFFF")).Render("Cluster Blueprint"),
-		lipgloss.NewStyle().Italic(true).Foreground(lipgloss.Color("#DDDDDD")).Render("Your Kubernetes cluster plan"))
+		lipgloss.NewStyle().Bold(true).Align(lipgloss.Center).Foreground(lipgloss.Color("#FFFFFF")).Render("Cluster Blueprint"),
+		lipgloss.NewStyle().Italic(true).Align(lipgloss.Center).Foreground(lipgloss.Color("#DDDDDD")).Render("Your Kubernetes cluster plan"))
 
 	fmt.Fprintln(ui.writer, banner.Render(bannerContent))
-
 	fmt.Fprintln(ui.writer)
 
-	{
-		fmt.Fprintln(ui.writer, sectionTitle.Render("🔑 Key Attributes"))
+	// Define a container for all sections
+	gridContainer := lipgloss.NewStyle().
+		Width(120). // Double the width to accommodate two sections side by side
+		Align(lipgloss.Center)
 
+	// Create slices to hold our sections and their titles
+	var sectionBlocks []string
+
+	// Key Attributes section
+	{
 		var content strings.Builder
 		content.WriteString(keyValueRow("🔖 Cluster Name", meta.ClusterName))
 		content.WriteString("\n")
@@ -88,13 +94,15 @@ func (ui *BlueprintUI) RenderClusterBlueprint(meta controller.Metadata) {
 		content.WriteString("\n")
 		content.WriteString(keyValueRow("🔧 Cluster Type", string(meta.ClusterType)))
 
-		fmt.Fprintln(ui.writer, infoBlock.Render(content.String()))
+		contentBlock := infoBlock.Render(content.String())
+		titleBlock := sectionTitle.Render("🔑 Key Attributes")
+		fullSection := lipgloss.JoinVertical(lipgloss.Left, titleBlock, contentBlock)
+
+		sectionBlocks = append(sectionBlocks, fullSection)
 	}
 
 	// Infrastructure section
 	if meta.NoCP > 0 || meta.NoWP > 0 || meta.NoDS > 0 || len(meta.ManagedNodeType) > 0 {
-		fmt.Fprintln(ui.writer, sectionTitle.Render("🖥️  Infrastructure"))
-
 		var content strings.Builder
 		if meta.NoCP > 0 {
 			content.WriteString(keyValueRow("🎮 Control Plane", fmt.Sprintf("%d × %s", meta.NoCP, color.HiMagentaString(meta.ControlPlaneNodeType))))
@@ -118,13 +126,15 @@ func (ui *BlueprintUI) RenderClusterBlueprint(meta controller.Metadata) {
 
 		// Trim trailing newline if present
 		contentStr := strings.TrimSuffix(content.String(), "\n")
-		fmt.Fprintln(ui.writer, infoBlock.Render(contentStr))
+		contentBlock := infoBlock.Render(contentStr)
+		titleBlock := sectionTitle.Render("🖥️  Infrastructure")
+		fullSection := lipgloss.JoinVertical(lipgloss.Left, titleBlock, contentBlock)
+
+		sectionBlocks = append(sectionBlocks, fullSection)
 	}
 
 	// Kubernetes configuration section
 	if meta.K8sDistro != "" || meta.EtcdVersion != "" || meta.K8sVersion != "" {
-		fmt.Fprintln(ui.writer, sectionTitle.Render("⚙️  Kubernetes Configuration"))
-
 		var content strings.Builder
 		if meta.K8sDistro != "" {
 			content.WriteString(keyValueRow("🚀 Bootstrap Provider", string(meta.K8sDistro)))
@@ -140,14 +150,16 @@ func (ui *BlueprintUI) RenderClusterBlueprint(meta controller.Metadata) {
 
 		// Trim trailing newline if present
 		contentStr := strings.TrimSuffix(content.String(), "\n")
-		fmt.Fprintln(ui.writer, infoBlock.Render(contentStr))
+		contentBlock := infoBlock.Render(contentStr)
+		titleBlock := sectionTitle.Render("⚙️  Kubernetes Configuration")
+		fullSection := lipgloss.JoinVertical(lipgloss.Left, titleBlock, contentBlock)
+
+		sectionBlocks = append(sectionBlocks, fullSection)
 	}
 
 	// Addons section
 	if len(meta.Addons) > 0 {
-		fmt.Fprintln(ui.writer, sectionTitle.Render("🧩 Cluster Add-ons"))
-
-		// Create a more visually appealing add-on display
+		var sectionContent strings.Builder
 		addonBlock := lipgloss.NewStyle().
 			BorderStyle(lipgloss.RoundedBorder()).
 			BorderForeground(lipgloss.Color("10")).
@@ -155,7 +167,7 @@ func (ui *BlueprintUI) RenderClusterBlueprint(meta controller.Metadata) {
 			MarginTop(1).
 			Width(50)
 
-		for _, addon := range meta.Addons {
+		for i, addon := range meta.Addons {
 			addonTitle := color.HiMagentaString(addon.Name)
 
 			config := addon.Config
@@ -182,13 +194,54 @@ func (ui *BlueprintUI) RenderClusterBlueprint(meta controller.Metadata) {
 				addonInfo += "\n\t" + color.HiCyanString("CNI Add-on")
 			}
 
-			fmt.Fprintln(ui.writer, addonBlock.Render(addonInfo))
-
-			// if i < len(meta.Addons)-1 {
-			// 	fmt.Fprintln(ui.writer)
-			// }
+			sectionContent.WriteString(addonBlock.Render(addonInfo))
+			if i < len(meta.Addons)-1 {
+				sectionContent.WriteString("\n")
+			}
 		}
+
+		titleBlock := sectionTitle.Render("🧩 Cluster Add-ons")
+		fullSection := lipgloss.JoinVertical(lipgloss.Left, titleBlock, sectionContent.String())
+
+		sectionBlocks = append(sectionBlocks, fullSection)
 	}
+
+	// Render the grid layout with 2 sections per row
+	var gridRows []string
+
+	// Process sections in pairs
+	for i := 0; i < len(sectionBlocks); i += 2 {
+		row := ""
+
+		if i+1 < len(sectionBlocks) {
+			// If we have a pair, join them horizontally with padding
+			left := sectionBlocks[i]
+			right := sectionBlocks[i+1]
+
+			// Create padding between columns
+			spacing := lipgloss.NewStyle().PaddingLeft(1).PaddingRight(1).Render("")
+
+			row = lipgloss.JoinHorizontal(
+				lipgloss.Top, // Align top edges of sections
+				left,
+				spacing,
+				right,
+			)
+		} else {
+			// If we have an odd number of sections, center the last one
+			row = lipgloss.NewStyle().Align(lipgloss.Center).Render(sectionBlocks[i])
+		}
+
+		gridRows = append(gridRows, row)
+	}
+
+	// Join all rows vertically with padding
+	finalGrid := lipgloss.JoinVertical(
+		lipgloss.Center,
+		gridRows...,
+	)
+
+	fmt.Fprintln(ui.writer, gridContainer.Render(finalGrid))
 
 	// Footer note
 	noteStyle := lipgloss.NewStyle().
