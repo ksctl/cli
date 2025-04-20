@@ -18,7 +18,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"strconv"
 
 	"github.com/ksctl/cli/v2/pkg/cli"
 	"github.com/ksctl/ksctl/v2/pkg/addons"
@@ -211,85 +210,128 @@ func (k *KsctlCommand) handleManagedK8sVersion(meta *controllerMeta.Controller, 
 }
 
 func (k *KsctlCommand) metadataSummary(meta controller.Metadata) {
-	k.l.Box(k.Ctx, "Cluster Blueprint", "Here is the blueprint of the cluster")
+	// Add more space before the first box for better visual separation
+	println()
 
-	headers := []string{"Attributes", "Values"}
+	k.l.Box(k.Ctx, "✨ Cluster Blueprint", "Summary of your planned Kubernetes cluster")
 
+	// Add consistent spacing between sections
+	println()
+	println()
+
+	// Main cluster attributes section
 	{
-		k.l.Box(k.Ctx, "Ksctl Cluster Summary", "Key attributes of the cluster")
-		dd := [][]string{}
-		dd = append(dd,
-			[]string{"ClusterName", meta.ClusterName},
-			[]string{"Region", meta.Region},
-			[]string{"CloudProvider", string(meta.Provider)},
-			[]string{"ClusterType", string(meta.ClusterType)},
-		)
+		k.l.Box(k.Ctx, "🔑 Key Attributes", "Core configuration details")
+
+		headers := []string{"Attribute", "Value"}
+		dd := [][]string{
+			{"🔖 Cluster Name", meta.ClusterName},
+			{"📍 Region", meta.Region},
+			{"☁️  Cloud Provider", string(meta.Provider)},
+			{"🏗️  Cluster Type", string(meta.ClusterType)},
+		}
 
 		k.l.Table(k.Ctx, headers, dd)
 	}
 
+	// Add consistent spacing between sections
+	println()
 	println()
 
+	// Infrastructure details section
 	{
-		dd := [][]string{}
+		if meta.NoCP > 0 || meta.NoWP > 0 || meta.NoDS > 0 || len(meta.ManagedNodeType) > 0 {
+			k.l.Box(k.Ctx, "🖥️  Infrastructure", "Node configuration and topology")
 
-		if meta.NoCP > 0 {
-			dd = append(dd, []string{"ControlPlaneNodes", strconv.Itoa(meta.NoCP) + " X " + meta.ControlPlaneNodeType})
-		}
-		if meta.NoWP > 0 {
-			dd = append(dd, []string{"WorkerPlaneNodes", strconv.Itoa(meta.NoWP) + " X " + meta.WorkerPlaneNodeType})
-		}
-		if meta.NoDS > 0 {
-			dd = append(dd, []string{"EtcdNodes", strconv.Itoa(meta.NoDS) + " X " + meta.DataStoreNodeType})
-		}
-		if meta.LoadBalancerNodeType != "" {
-			dd = append(dd, []string{"LoadBalancer", meta.LoadBalancerNodeType})
-		}
-		if len(meta.ManagedNodeType) > 0 {
-			dd = append(dd, []string{"ManagedNodes", strconv.Itoa(meta.NoMP) + " X " + meta.ManagedNodeType})
-		}
-
-		if len(dd) > 0 {
-			k.l.Box(k.Ctx, "Ksctl Cluster Summary", "Infrastructure details of the cluster")
-			k.l.Table(k.Ctx, headers, dd)
-		}
-	}
-	println()
-
-	{
-		dd := [][]string{}
-
-		if meta.K8sDistro != "" {
-			dd = append(dd, []string{"BootstrapProvider", string(meta.K8sDistro)})
-		}
-		if meta.EtcdVersion != "" {
-			dd = append(dd, []string{"EtcdVersion", meta.EtcdVersion})
-		}
-		if meta.K8sVersion != "" {
-			dd = append(dd, []string{"BootstrapKubernetesVersion", meta.K8sVersion})
-		}
-
-		if len(dd) > 0 {
-			k.l.Box(k.Ctx, "Ksctl Cluster Summary", "Bootstrap details of the cluster")
-			k.l.Table(k.Ctx, headers, dd)
-		}
-
-	}
-	println()
-
-	{
-		// Addons Summary
-		if len(meta.Addons) > 0 {
+			headers := []string{"Component", "Specification"}
 			dd := [][]string{}
 
-			k.l.Box(k.Ctx, "Ksctl Cluster Summary", "Addons details of the cluster")
+			if meta.NoCP > 0 {
+				dd = append(dd, []string{"🎮 Control Plane", fmt.Sprintf("%d × %s", meta.NoCP, meta.ControlPlaneNodeType)})
+			}
+			if meta.NoWP > 0 {
+				dd = append(dd, []string{"🔋 Worker Nodes", fmt.Sprintf("%d × %s", meta.NoWP, meta.WorkerPlaneNodeType)})
+			}
+			if meta.NoDS > 0 {
+				dd = append(dd, []string{"💾 Etcd Nodes", fmt.Sprintf("%d × %s", meta.NoDS, meta.DataStoreNodeType)})
+			}
+			if meta.LoadBalancerNodeType != "" {
+				dd = append(dd, []string{"⚖️  Load Balancer", meta.LoadBalancerNodeType})
+			}
+			if len(meta.ManagedNodeType) > 0 {
+				dd = append(dd, []string{"🌐 Managed Nodes", fmt.Sprintf("%d × %s", meta.NoMP, meta.ManagedNodeType)})
+			}
 
-			v, _ := json.MarshalIndent(meta.Addons, "", "  ")
-			dd = append(dd, []string{"Addons", string(v)})
 			k.l.Table(k.Ctx, headers, dd)
-			println()
 		}
 	}
+
+	// Add consistent spacing between sections
+	println()
+	println()
+
+	// Kubernetes configuration section
+	{
+		if meta.K8sDistro != "" || meta.EtcdVersion != "" || meta.K8sVersion != "" {
+			k.l.Box(k.Ctx, "⚙️  Kubernetes Configuration", "Software versions and distributions")
+
+			headers := []string{"Component", "Version/Type"}
+			dd := [][]string{}
+
+			if meta.K8sDistro != "" {
+				dd = append(dd, []string{"🚀 Bootstrap Provider", string(meta.K8sDistro)})
+			}
+			if meta.K8sVersion != "" {
+				dd = append(dd, []string{"🔄 Kubernetes Version", meta.K8sVersion})
+			}
+			if meta.EtcdVersion != "" {
+				dd = append(dd, []string{"📦 Etcd Version", meta.EtcdVersion})
+			}
+
+			k.l.Table(k.Ctx, headers, dd)
+		}
+	}
+
+	// Add consistent spacing between sections
+	println()
+	println()
+
+	// Addons section
+	{
+		if len(meta.Addons) > 0 {
+			k.l.Box(k.Ctx, "🧩 Cluster Add-ons", "Additional components to be installed")
+
+			headers := []string{"Add-on", "Details"}
+			dd := [][]string{}
+
+			for _, addon := range meta.Addons {
+				v := struct {
+					Label  string
+					IsCNI  bool
+					Config *string
+				}{
+					Label:  addon.Label,
+					IsCNI:  addon.IsCNI,
+					Config: addon.Config,
+				}
+
+				b, err := json.MarshalIndent(v, "", "  ")
+				if err != nil {
+					k.l.Error("Failed to marshal addon config", "Reason", err)
+					os.Exit(1)
+				}
+				dd = append(dd, []string{addon.Name, string(b)})
+			}
+
+			k.l.Table(k.Ctx, headers, dd)
+		}
+	}
+
+	// End summary note with extra spacing
+	println()
+	println()
+	k.l.Note(k.Ctx, "Your cluster will be provisioned with these specifications")
+	println()
 }
 
 func (k *KsctlCommand) handleCNI(managedCNI addons.ClusterAddons, defaultOptionManaged string, ksctlCNI addons.ClusterAddons, defaultOptionKsctl string) (addons.ClusterAddons, error) {
