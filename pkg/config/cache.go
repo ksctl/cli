@@ -33,11 +33,19 @@ var DefaultUpdateCache = &UpdateCache{
 }
 
 func locateUpdateCacheFile() (string, error) {
-	configDir, err := locateConfig()
+	homeDir, err := os.UserHomeDir()
 	if err != nil {
 		return "", err
 	}
-	return filepath.Join(configDir, "update-check-cache.json"), nil
+
+	configDir := filepath.Join(homeDir, ".config", "ksctl")
+	configFile := filepath.Join(configDir, "cache-update.json")
+	if _, err := os.Stat(configDir); os.IsNotExist(err) {
+		if err := os.MkdirAll(configDir, 0755); err != nil {
+			return configFile, fmt.Errorf("failed to create directory %s: %v", configDir, err)
+		}
+	}
+	return configFile, nil
 }
 
 func LoadUpdateCache(c *UpdateCache) (errC error) {
@@ -62,7 +70,7 @@ func LoadUpdateCache(c *UpdateCache) (errC error) {
 }
 
 func SaveUpdateCache(c *UpdateCache) error {
-	configFile, err := locateConfig()
+	configFile, err := locateUpdateCacheFile()
 	if err != nil {
 		return err
 	}

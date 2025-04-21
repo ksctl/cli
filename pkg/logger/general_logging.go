@@ -235,7 +235,7 @@ func (l *GeneralLog) boxBox(title, lines string, colorName string) {
 		borderColor = lipgloss.Color("#555555") // Default gray
 	}
 
-	//width := max(min(len(lines), 80), min(len(title), 80)) + 2
+	width := max(min(len(lines), 80), min(len(title), 80)) + 2
 
 	var builder strings.Builder
 	builder.WriteString("\n\n")
@@ -244,21 +244,20 @@ func (l *GeneralLog) boxBox(title, lines string, colorName string) {
 		BorderStyle(lipgloss.RoundedBorder()).
 		BorderForeground(borderColor).
 		Padding(1)
-	//Width(width)
 
 	contentStyle := lipgloss.NewStyle().
 		Foreground(lipgloss.Color("#FFFFFF")).
-		Align(lipgloss.Left).
+		Align(lipgloss.Center).
 		PaddingLeft(1).
-		PaddingRight(1)
+		PaddingRight(1).Width(width)
 
 	titleStyle := lipgloss.NewStyle().
 		Foreground(borderColor).
-		Align(lipgloss.Left).
+		Align(lipgloss.Center).
 		Bold(true).
 		PaddingBottom(1).
 		PaddingLeft(1).
-		PaddingRight(1)
+		PaddingRight(1).Width(width)
 
 	cardContent := lipgloss.JoinVertical(lipgloss.Center,
 		titleStyle.Render(title),

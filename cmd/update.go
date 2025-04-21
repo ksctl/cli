@@ -44,14 +44,12 @@ func (k *KsctlCommand) CheckForUpdates() (bool, error) {
 		k.l.Error("Failed to load update cache", "error", errC)
 		return false, errC
 	}
-
-	if !cacheFile.LastChecked.IsZero() && cacheFile.AvailableVersions &&
-		time.Since(cacheFile.LastChecked) < cacheFile.UpdateCheckInterval {
-		return cacheFile.AvailableVersions, nil
-	}
-
 	if config.InDevMode() {
 		return false, nil
+	}
+
+	if !cacheFile.LastChecked.IsZero() && time.Since(cacheFile.LastChecked) < cacheFile.UpdateCheckInterval {
+		return cacheFile.AvailableVersions, nil
 	}
 
 	versions, err := k.fetchLatestVersion()
@@ -94,6 +92,7 @@ ksctl self-update --help
 
 			k.l.Warn(k.Ctx, "Currently no migrations are supported", "msg", "Please help us by creating a PR to support migrations. Thank you!")
 
+			k.l.Print(k.Ctx, "Fetching available versions")
 			vers, err := k.fetchLatestVersion()
 			if err != nil {
 				k.l.Error("Failed to fetch latest version", "error", err)
@@ -144,8 +143,6 @@ ksctl self-update --help
 }
 
 func (k *KsctlCommand) fetchLatestVersion() ([]string, error) {
-
-	k.l.Print(k.Ctx, "Fetching available versions")
 
 	poller.InitSharedGithubReleasePoller()
 	return poller.GetSharedPoller().Get("ksctl", "cli")
