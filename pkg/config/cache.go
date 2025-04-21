@@ -29,7 +29,7 @@ type UpdateCache struct {
 }
 
 var DefaultUpdateCache = &UpdateCache{
-	UpdateCheckInterval: time.Minute,
+	UpdateCheckInterval: time.Hour * 24,
 }
 
 func locateUpdateCacheFile() (string, error) {
