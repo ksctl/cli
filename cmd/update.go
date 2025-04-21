@@ -71,7 +71,7 @@ func (k *KsctlCommand) CheckForUpdates() (bool, error) {
 }
 
 func (k *KsctlCommand) NotifyAvailableUpdates() {
-	k.l.Box(k.Ctx, "Update Available!", "Run 'ksctl self-update' to update.")
+	k.l.Box(k.Ctx, "Update Available! ✨", "Run 'ksctl self-update' to upgrade to the latest version!")
 }
 
 func (k *KsctlCommand) SelfUpdate() *cobra.Command {
