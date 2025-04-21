@@ -27,6 +27,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
+	"time"
 
 	"github.com/ksctl/cli/v2/pkg/cli"
 	"github.com/ksctl/cli/v2/pkg/config"
@@ -35,6 +36,45 @@ import (
 	"github.com/spf13/cobra"
 	"golang.org/x/mod/semver"
 )
+
+func (k *KsctlCommand) CheckForUpdates() (bool, error) {
+
+	cacheFile := &config.UpdateCache{}
+	if errC := config.LoadUpdateCache(cacheFile); errC != nil {
+		k.l.Error("Failed to load update cache", "error", errC)
+		return false, errC
+	}
+
+	if !cacheFile.LastChecked.IsZero() && cacheFile.AvailableVersions &&
+		time.Since(cacheFile.LastChecked) < cacheFile.UpdateCheckInterval {
+		return cacheFile.AvailableVersions, nil
+	}
+
+	if config.InDevMode() {
+		return false, nil
+	}
+
+	versions, err := k.fetchLatestVersion()
+	if err != nil {
+		return false, err
+	}
+
+	upgradeableVersions := k.filterToUpgradeableVersions(versions)
+
+	cacheFile.LastChecked = time.Now()
+	cacheFile.AvailableVersions = len(upgradeableVersions) > 0
+
+	if err := config.SaveUpdateCache(cacheFile); err != nil {
+		k.l.Error("Failed to save update cache", "error", err)
+		return false, err
+	}
+
+	return cacheFile.AvailableVersions, nil
+}
+
+func (k *KsctlCommand) NotifyAvailableUpdates() {
+	k.l.Box(k.Ctx, "Update Available!", "Run 'ksctl self-update' to update.")
+}
 
 func (k *KsctlCommand) SelfUpdate() *cobra.Command {
 
@@ -75,6 +115,20 @@ ksctl self-update --help
 
 			if err := k.telemetry.Send(k.Ctx, k.l, telemetry.EventClusterUpgrade, telemetry.TelemetryMeta{}); err != nil {
 				k.l.Debug(k.Ctx, "Failed to send the telemetry", "Reason", err)
+			}
+
+			{
+				c := &config.UpdateCache{}
+				err := config.LoadUpdateCache(c)
+				if err == nil {
+					c.LastChecked = time.Now()
+					c.AvailableVersions = false
+					if err := config.SaveUpdateCache(c); err != nil {
+						k.l.Error("Failed to save update cache", "error", err)
+					}
+				} else {
+					k.l.Error("Failed to load update cache", "error", err)
+				}
 			}
 
 			if err := k.update(newVer); err != nil {
