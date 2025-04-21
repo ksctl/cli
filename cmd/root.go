@@ -56,6 +56,14 @@ func (k *KsctlCommand) NewRootCmd() *cobra.Command {
 			k.l = cLogger.NewLogger(k.verbose, os.Stdout)
 
 			k.telemetry = telemetry.NewTelemetry(k.KsctlConfig.Telemetry)
+
+			cmdName := cmd.Name()
+			if cmdName != "self-update" && cmdName != "version" {
+				hasUpdates, err := k.CheckForUpdates()
+				if err == nil && hasUpdates {
+					k.NotifyAvailableUpdates()
+				}
+			}
 		},
 	}
 

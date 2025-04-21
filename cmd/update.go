@@ -27,6 +27,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
+	"time"
 
 	"github.com/ksctl/cli/v2/pkg/cli"
 	"github.com/ksctl/cli/v2/pkg/config"
@@ -35,6 +36,43 @@ import (
 	"github.com/spf13/cobra"
 	"golang.org/x/mod/semver"
 )
+
+func (k *KsctlCommand) CheckForUpdates() (bool, error) {
+
+	cacheFile := &config.UpdateCache{}
+	if errC := config.LoadUpdateCache(cacheFile); errC != nil {
+		k.l.Error("Failed to load update cache", "error", errC)
+		return false, errC
+	}
+	if config.InDevMode() {
+		return false, nil
+	}
+
+	if !cacheFile.LastChecked.IsZero() && time.Since(cacheFile.LastChecked) < cacheFile.UpdateCheckInterval {
+		return cacheFile.AvailableVersions, nil
+	}
+
+	versions, err := k.fetchLatestVersion()
+	if err != nil {
+		return false, err
+	}
+
+	upgradeableVersions := k.filterToUpgradeableVersions(versions)
+
+	cacheFile.LastChecked = time.Now()
+	cacheFile.AvailableVersions = len(upgradeableVersions) > 0
+
+	if err := config.SaveUpdateCache(cacheFile); err != nil {
+		k.l.Error("Failed to save update cache", "error", err)
+		return false, err
+	}
+
+	return cacheFile.AvailableVersions, nil
+}
+
+func (k *KsctlCommand) NotifyAvailableUpdates() {
+	k.l.Box(k.Ctx, "Update Available! ✨", "Run 'ksctl self-update' to upgrade to the latest version!")
+}
 
 func (k *KsctlCommand) SelfUpdate() *cobra.Command {
 
@@ -54,6 +92,7 @@ ksctl self-update --help
 
 			k.l.Warn(k.Ctx, "Currently no migrations are supported", "msg", "Please help us by creating a PR to support migrations. Thank you!")
 
+			k.l.Print(k.Ctx, "Fetching available versions")
 			vers, err := k.fetchLatestVersion()
 			if err != nil {
 				k.l.Error("Failed to fetch latest version", "error", err)
@@ -77,6 +116,20 @@ ksctl self-update --help
 				k.l.Debug(k.Ctx, "Failed to send the telemetry", "Reason", err)
 			}
 
+			{
+				c := &config.UpdateCache{}
+				err := config.LoadUpdateCache(c)
+				if err == nil {
+					c.LastChecked = time.Now()
+					c.AvailableVersions = false
+					if err := config.SaveUpdateCache(c); err != nil {
+						k.l.Error("Failed to save update cache", "error", err)
+					}
+				} else {
+					k.l.Error("Failed to load update cache", "error", err)
+				}
+			}
+
 			if err := k.update(newVer); err != nil {
 				k.l.Error("Failed to update ksctl cli", "error", err)
 				os.Exit(1)
@@ -90,8 +143,6 @@ ksctl self-update --help
 }
 
 func (k *KsctlCommand) fetchLatestVersion() ([]string, error) {
-
-	k.l.Print(k.Ctx, "Fetching available versions")
 
 	poller.InitSharedGithubReleasePoller()
 	return poller.GetSharedPoller().Get("ksctl", "cli")
