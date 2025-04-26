@@ -16,7 +16,6 @@ package main
 
 import (
 	"os"
-	"time"
 
 	"github.com/ksctl/cli/v2/cmd"
 )
@@ -27,11 +26,6 @@ func main() {
 		c.CliLog.Error("cli initialization failed", "Reason", err)
 		os.Exit(1)
 	}
-
-	timer := time.Now()
-	defer func() {
-		c.CliLog.Print(c.Ctx, "Time Took", "time", time.Since(timer).String())
-	}()
 
 	err = c.Execute()
 	if err != nil {

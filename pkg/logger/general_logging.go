@@ -18,6 +18,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"os"
 	"reflect"
 	"strings"
 	"sync"
@@ -26,6 +27,7 @@ import (
 	"github.com/fatih/color"
 	"github.com/ksctl/ksctl/v2/pkg/logger"
 	"github.com/rodaine/table"
+	"golang.org/x/term"
 
 	"time"
 )
@@ -34,14 +36,27 @@ type GeneralLog struct {
 	mu      *sync.Mutex
 	writter io.Writer
 	level   uint
+	started time.Time
 }
 
-func (l *GeneralLog) ExternalLogHandler(ctx context.Context, msgType logger.CustomExternalLogLevel, message string) {
-	l.log(false, msgType, message)
+func NewLogger(verbose int, out io.Writer) *GeneralLog {
+
+	var ve uint
+
+	if verbose < 0 {
+		ve = 9
+	}
+
+	return &GeneralLog{
+		writter: out,
+		level:   ve,
+		mu:      new(sync.Mutex),
+		started: time.Now().UTC(),
+	}
 }
 
-func (l *GeneralLog) ExternalLogHandlerf(ctx context.Context, msgType logger.CustomExternalLogLevel, format string, args ...interface{}) {
-	l.log(false, msgType, format, args...)
+func (l *GeneralLog) getTime() string {
+	return color.HiBlackString(fmt.Sprintf("(%s)", time.Since(l.started).Round(time.Second).String()))
 }
 
 func formGroups(v ...any) (format string, vals []any) {
@@ -87,7 +102,7 @@ func (l *GeneralLog) logErrorf(disablePrefix bool, msg string, args ...any) erro
 	l.mu.Lock()
 	defer l.mu.Unlock()
 	if !disablePrefix {
-		prefix := fmt.Sprintf("%s%s ", getTime(), logger.LogError)
+		prefix := fmt.Sprintf("%s%s ", l.getTime(), logger.LogError)
 		msg = prefix + msg
 	}
 	format, _args := formGroups(args...)
@@ -108,10 +123,18 @@ func (l *GeneralLog) log(useGroupFormer bool, msgType logger.CustomExternalLogLe
 	}
 	l.mu.Lock()
 	defer l.mu.Unlock()
-	prefix := fmt.Sprintf("%s%s ", getTime(), msgType)
+
+	prefix := fmt.Sprintf("%s ", msgType)
+	elapsedTime := color.HiBlackString(fmt.Sprintf("(%s)", time.Since(l.started).Round(time.Second).String()))
+
+	// Get terminal width for right-aligned time
+	width, _, err := term.GetSize(int(os.Stdout.Fd()))
+	if err != nil {
+		// Fallback to a default width if we can't determine terminal size
+		width = 110
+	}
 
 	if useGroupFormer {
-
 		msgColored := ""
 		switch msgType {
 		case logger.LogSuccess:
@@ -127,46 +150,48 @@ func (l *GeneralLog) log(useGroupFormer bool, msgType logger.CustomExternalLogLe
 		case logger.LogError:
 			msgColored = color.HiRedString(msg)
 		}
-		msg = prefix + msgColored
+
+		// Create the base message with prefix and colored text
+		baseMsg := prefix + msgColored
+
 		format, _args := formGroups(args...)
+
 		if _args == nil {
 			if msgType == logger.LogError {
 				l.boxBox(
 					"🛑 We Have Problem", msgColored+" "+format, "Red")
 				return
 			}
-			fmt.Fprint(l.writter, msg+" "+format)
+
+			// Format the message with right-aligned elapsed time
+			formattedMessage := formatWithRightAlignedTime(baseMsg+" "+format, elapsedTime, width)
+			fmt.Fprint(l.writter, formattedMessage)
 		} else {
 			if msgType == logger.LogError {
 				l.boxBox(
 					"🛑 We Have Problem", fmt.Sprintf(msgColored+" "+format, _args...), "Red")
 				return
 			}
-			fmt.Fprintf(l.writter, msg+" "+format, _args...)
+
+			// Format the message with args and right-aligned elapsed time
+			fullMsg := fmt.Sprintf(baseMsg+" "+format, _args...)
+			formattedMessage := formatWithRightAlignedTime(fullMsg, elapsedTime, width)
+			fmt.Fprint(l.writter, formattedMessage)
 		}
 	} else {
-		fmt.Fprintf(l.writter, prefix+msg+"\n", args...)
+		// Format non-group messages with right-aligned time
+		fullMsg := fmt.Sprintf(prefix+msg+"\n", args...)
+		formattedMessage := formatWithRightAlignedTime(fullMsg, elapsedTime, width)
+		fmt.Fprint(l.writter, formattedMessage)
 	}
 }
 
-func getTime() string {
-	t := time.Now()
-	return color.HiBlackString(fmt.Sprintf("%02d:%02d:%02d ", t.Hour(), t.Minute(), t.Second()))
+func (l *GeneralLog) ExternalLogHandler(ctx context.Context, msgType logger.CustomExternalLogLevel, message string) {
+	l.log(false, msgType, message)
 }
 
-func NewLogger(verbose int, out io.Writer) *GeneralLog {
-
-	var ve uint
-
-	if verbose < 0 {
-		ve = 9
-	}
-
-	return &GeneralLog{
-		writter: out,
-		level:   ve,
-		mu:      new(sync.Mutex),
-	}
+func (l *GeneralLog) ExternalLogHandlerf(ctx context.Context, msgType logger.CustomExternalLogLevel, format string, args ...interface{}) {
+	l.log(false, msgType, format, args...)
 }
 
 func (l *GeneralLog) Print(ctx context.Context, msg string, args ...any) {
@@ -275,4 +300,65 @@ func (l *GeneralLog) Box(ctx context.Context, title string, lines string) {
 	l.Debug(ctx, "PostUpdate Box", "title", len(title), "lines", len(lines))
 
 	l.boxBox(title, lines, "Green")
+}
+
+// formatWithRightAlignedTime formats a log message with the elapsed time right-aligned
+func formatWithRightAlignedTime(message string, elapsedTime string, width int) string {
+	// Strip ANSI color codes for length calculation
+	plainMessage := stripANSIColors(message)
+	plainTime := stripANSIColors(elapsedTime)
+
+	// If message ends with newline, we need to handle it specially
+	endsWithNewline := strings.HasSuffix(plainMessage, "\n")
+	if endsWithNewline {
+		plainMessage = plainMessage[:len(plainMessage)-1]
+	}
+
+	// Calculate available space and padding needed
+	msgLen := len(plainMessage)
+	timeLen := len(plainTime)
+
+	// Ensure we have enough space, accounting for at least 2 spaces between message and time
+	padding := width - msgLen - timeLen
+	if padding < 2 {
+		padding = 2
+	}
+
+	// Build the formatted line
+	var result strings.Builder
+	result.WriteString(message[:len(message)-1]) // Remove the newline if present
+	result.WriteString(strings.Repeat(" ", padding))
+	result.WriteString(elapsedTime)
+	if endsWithNewline {
+		result.WriteString("\n")
+	}
+
+	return result.String()
+}
+
+// stripANSIColors removes ANSI color codes from a string to get its visual length
+func stripANSIColors(s string) string {
+	// ANSI escape code regex: \x1b\[[0-9;]*m
+	var result strings.Builder
+	inEscapeSeq := false
+
+	for _, r := range s {
+		if inEscapeSeq {
+			if r == 'm' {
+				inEscapeSeq = false
+			}
+			continue
+		}
+
+		if r == '\x1b' {
+			inEscapeSeq = true
+			continue
+		}
+
+		if !inEscapeSeq {
+			result.WriteRune(r)
+		}
+	}
+
+	return result.String()
 }
