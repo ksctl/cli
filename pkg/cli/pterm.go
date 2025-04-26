@@ -154,3 +154,25 @@ func (p *genericMenuDriven) DropDownList(prompt string, options []string, opts .
 		return v, nil
 	}
 }
+
+func (p *genericMenuDriven) MultiSelect(prompt string, options map[string]string, opts ...func(*option) error) ([]string, error) {
+	var _options []string
+	for k, _ := range options {
+		_options = append(_options, k)
+	}
+
+	x := pterm.DefaultInteractiveMultiselect.WithOptions(_options)
+
+	if v, err := x.Show(prompt); err != nil {
+		return nil, err
+	} else {
+		if len(v) == 0 {
+			return nil, fmt.Errorf("no options selected")
+		}
+		_v := make([]string, 0, len(v))
+		for _, k := range v {
+			_v = append(_v, options[k])
+		}
+		return _v, nil
+	}
+}

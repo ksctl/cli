@@ -259,3 +259,25 @@ func (p *debugMenuDriven) DropDownList(prompt string, options []string, opts ...
 
 	return response, nil
 }
+
+func (p *debugMenuDriven) MultiSelect(prompt string, options map[string]string, opts ...func(*option) error) ([]string, error) {
+	fmt.Println("Options[make sure to enter value and not the key]:")
+	for k, v := range options {
+		fmt.Printf("%s: %s\n", k, color.HiCyanString(v))
+	}
+
+	var response string
+	_, err := fmt.Scanln(&response)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(response) == 0 {
+		return nil, fmt.Errorf("No response provided")
+	}
+
+	fmt.Println("Got response:", response)
+	fmt.Println()
+
+	return strings.Split(response, ","), nil
+}

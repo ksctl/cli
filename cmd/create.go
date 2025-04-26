@@ -239,7 +239,7 @@ func (k *KsctlCommand) metadataForSelfManagedCluster(meta *controller.Metadata) 
 		os.Exit(1)
 	}
 
-	v, err := k.handleCNI(managedCNI, defaultCNI, ksctlCNI, defaultKsctl)
+	v, err := k.handleCNI(metaClient, managedCNI, defaultCNI, ksctlCNI, defaultKsctl)
 	if err != nil {
 		k.l.Error("Failed to get the CNI", "Reason", err)
 		os.Exit(1)
@@ -380,7 +380,7 @@ func (k *KsctlCommand) metadataForManagedCluster(meta *controller.Metadata) {
 		os.Exit(1)
 	}
 
-	if v, err := k.handleCNI(managedCNI, defaultCNI, ksctlCNI, defaultKsctl); err != nil {
+	if v, err := k.handleCNI(metaClient, managedCNI, defaultCNI, ksctlCNI, defaultKsctl); err != nil {
 		k.l.Error("Failed to get the CNI", "Reason", err)
 		os.Exit(1)
 	} else {

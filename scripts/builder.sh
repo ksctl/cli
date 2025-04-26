@@ -2,7 +2,7 @@
 
 cd .. || echo -e "\033[1;31mUnable to cd into ksctl root\033[0m\n"
 
-go get -d
+go mod tidy
 go build -v -o ksctl .
 chmod +x ksctl
 

@@ -52,6 +52,7 @@ type MenuDriven interface {
 	TextInputPassword(prompt string) (string, error)
 	DropDown(prompt string, options map[string]string, opts ...func(*option) error) (string, error)
 	DropDownList(prompt string, options []string, opts ...func(*option) error) (string, error)
+	MultiSelect(prompt string, options map[string]string, opts ...func(*option) error) ([]string, error)
 	CardSelection(element CardPack) (string, error)
 }
 
