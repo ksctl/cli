@@ -304,7 +304,7 @@ func (k *KsctlCommand) handleCNI(metaClient *controllerMeta.Controller, managedC
 
 		// Get the Cilium Specific options
 		// where 2 modes are there one if guided and another is advance
-		ciliumMode, err := k.menuDriven.DropDownList("Select the cilium mode", []string{"guided", "advanced", "default"}, cli.WithDefaultValue("default"))
+		ciliumMode, err := k.menuDriven.DropDownList("Select the cilium mode", []string{"guided", "advanced", "ksctl default"}, cli.WithDefaultValue("ksctl default"))
 		if err != nil {
 			return nil, errors.WrapError(
 				errors.ErrInvalidUserInput,
