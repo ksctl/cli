@@ -38,6 +38,7 @@ func (k *KsctlCommand) CommandMapping() error {
 		k.Connect(),
 		k.ScaleUp(),
 		k.ScaleDown(),
+		k.Summary(),
 	)
 
 	cli.RegisterCommand(
