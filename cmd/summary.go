@@ -4,7 +4,7 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/gookit/goutil/dump"
+	"github.com/ksctl/cli/v2/pkg/cli"
 	"github.com/ksctl/cli/v2/pkg/telemetry"
 	"github.com/ksctl/ksctl/v2/pkg/handler/cluster/common"
 	"github.com/ksctl/ksctl/v2/pkg/handler/cluster/controller"
@@ -93,71 +93,13 @@ ksctl cluster summary --help
 				k.l.Error("Failed to connect to the cluster", "Reason", err)
 				os.Exit(1)
 			}
-			d := dump.NewWithOptions(dump.SkipNilField(), dump.SkipPrivate())
-			d.MaxDepth = 10
-			d.Println(health)
+			printClusterSummary(health)
 		},
 	}
 
 	return cmd
 }
 
-// func printClusterSummary(summary *common.SummaryOutput) {
-// 	// Format and color-code the output for better readability
-// 	fmt.Printf("Cluster Summary: %s (%s)\n", summary.ClusterName, summary.OverallStatus)
-// 	fmt.Printf("Kubernetes: %s %s, Provider: %s\n",
-// 		summary.K8sDistro, summary.K8sVersion, summary.CloudProvider)
-
-// 	fmt.Println("\n=== Node Status ===")
-// 	fmt.Printf("Total Nodes: %d (Control Plane: %d, Workers: %d)\n",
-// 		summary.NodeCounts["total"], summary.NodeCounts["master"], summary.NodeCounts["worker"])
-
-// 	// Print nodes with issues first
-// 	fmt.Println("\nNodes with issues:")
-// 	hasNodeIssues := false
-// 	for _, node := range summary.Nodes {
-// 		if !node.Ready || node.MemoryPressure || node.DiskPressure || node.NetworkUnavailable {
-// 			hasNodeIssues = true
-// 			fmt.Printf("  ❌ %s - Ready: %v, MemoryPressure: %v, DiskPressure: %v, Network: %v\n",
-// 				node.Name, node.Ready, node.MemoryPressure, node.DiskPressure, node.NetworkUnavailable)
-// 		}
-// 	}
-// 	if !hasNodeIssues {
-// 		fmt.Println("  No issues detected 👍")
-// 	}
-
-// 	fmt.Println("\n=== Resource Utilization ===")
-// 	fmt.Printf("CPU: %.1f%% requested, %.1f%% limit\n",
-// 		summary.ResourceUtilization.CPURequestPercentage,
-// 		summary.ResourceUtilization.CPULimitPercentage)
-// 	fmt.Printf("Memory: %.1f%% requested, %.1f%% limit\n",
-// 		summary.ResourceUtilization.MemoryRequestPercentage,
-// 		summary.ResourceUtilization.MemoryLimitPercentage)
-// 	fmt.Printf("Pods: %d/%d (%.1f%%)\n",
-// 		summary.ResourceUtilization.PodCount,
-// 		summary.ResourceUtilization.PodCapacity,
-// 		float64(summary.ResourceUtilization.PodCount)/float64(summary.ResourceUtilization.PodCapacity)*100)
-
-// 	// Print other sections...
-
-// 	if len(summary.DetectedIssues) > 0 {
-// 		fmt.Println("\n=== Detected Issues ===")
-// 		for _, issue := range summary.DetectedIssues {
-// 			var icon string
-// 			switch issue.Severity {
-// 			case "Critical":
-// 				icon = "🔴"
-// 			case "Error":
-// 				icon = "❌"
-// 			case "Warning":
-// 				icon = "⚠️"
-// 			default:
-// 				icon = "ℹ️"
-// 			}
-// 			fmt.Printf("%s %s - %s\n", icon, issue.Component, issue.Message)
-// 			fmt.Printf("   Recommendation: %s\n", issue.Recommendation)
-// 		}
-// 	} else {
-// 		fmt.Println("\n✅ No issues detected!")
-// 	}
-// }
+func printClusterSummary(summary *common.SummaryOutput) {
+	cli.NewSummaryUI(os.Stdout).RenderClusterSummary(summary)
+}
