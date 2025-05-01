@@ -8,8 +8,7 @@ require (
 	github.com/charmbracelet/lipgloss v1.1.1-0.20250404203927-76690c660834
 	github.com/creack/pty v1.1.24
 	github.com/fatih/color v1.18.0
-	github.com/gookit/goutil v0.6.18
-	github.com/ksctl/ksctl/v2 v2.5.0
+	github.com/ksctl/ksctl/v2 v2.6.0
 	github.com/pterm/pterm v0.12.80
 	github.com/rodaine/table v1.3.0
 	github.com/spf13/cobra v1.9.1
