@@ -18,6 +18,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"os"
 	"reflect"
 	"strings"
 	"sync"
@@ -26,6 +27,7 @@ import (
 	"github.com/fatih/color"
 	"github.com/ksctl/ksctl/v2/pkg/logger"
 	"github.com/rodaine/table"
+	"golang.org/x/term"
 
 	"time"
 )
@@ -34,14 +36,36 @@ type GeneralLog struct {
 	mu      *sync.Mutex
 	writter io.Writer
 	level   uint
+	started time.Time
 }
 
-func (l *GeneralLog) ExternalLogHandler(ctx context.Context, msgType logger.CustomExternalLogLevel, message string) {
-	l.log(false, msgType, message)
+var (
+	warnLvl = logger.CustomExternalLogLevel(color.New(color.FgBlack, color.BgYellow).Sprintf("[W]"))
+	infoLvl = logger.CustomExternalLogLevel(color.New(color.FgBlack, color.BgBlue).Sprintf("[I]"))
+	noteLvl = logger.CustomExternalLogLevel(color.New(color.FgBlack, color.BgCyan).Sprintf("[N]"))
+	dbgLvl  = logger.CustomExternalLogLevel(color.New(color.FgBlack, color.BgMagenta).Sprintf("[D]"))
+	passLvl = logger.CustomExternalLogLevel(color.New(color.FgBlack, color.BgGreen).Sprintf("[S]"))
+	errLvl  = logger.CustomExternalLogLevel(color.New(color.FgBlack, color.BgRed).Sprintf("[E]"))
+)
+
+func NewLogger(verbose int, out io.Writer) *GeneralLog {
+
+	var ve uint
+
+	if verbose < 0 {
+		ve = 9
+	}
+
+	return &GeneralLog{
+		writter: out,
+		level:   ve,
+		mu:      new(sync.Mutex),
+		started: time.Now().UTC(),
+	}
 }
 
-func (l *GeneralLog) ExternalLogHandlerf(ctx context.Context, msgType logger.CustomExternalLogLevel, format string, args ...interface{}) {
-	l.log(false, msgType, format, args...)
+func (l *GeneralLog) getTime() string {
+	return color.HiBlackString(fmt.Sprintf("(%s)", time.Since(l.started).Round(time.Second).String()))
 }
 
 func formGroups(v ...any) (format string, vals []any) {
@@ -77,7 +101,7 @@ func formGroups(v ...any) (format string, vals []any) {
 }
 
 func isLogEnabled(level uint, msgType logger.CustomExternalLogLevel) bool {
-	if msgType == logger.LogDebug {
+	if msgType == dbgLvl {
 		return level >= 9
 	}
 	return true
@@ -87,7 +111,7 @@ func (l *GeneralLog) logErrorf(disablePrefix bool, msg string, args ...any) erro
 	l.mu.Lock()
 	defer l.mu.Unlock()
 	if !disablePrefix {
-		prefix := fmt.Sprintf("%s%s ", getTime(), logger.LogError)
+		prefix := fmt.Sprintf("%s%s ", l.getTime(), errLvl)
 		msg = prefix + msg
 	}
 	format, _args := formGroups(args...)
@@ -108,85 +132,121 @@ func (l *GeneralLog) log(useGroupFormer bool, msgType logger.CustomExternalLogLe
 	}
 	l.mu.Lock()
 	defer l.mu.Unlock()
-	prefix := fmt.Sprintf("%s%s ", getTime(), msgType)
+
+	prefix := fmt.Sprintf("%s ", msgType)
+	elapsedTime := color.HiBlackString(fmt.Sprintf("(%s)", time.Since(l.started).Round(time.Second).String()))
+
+	// Get terminal width for right-aligned time
+	width, _, err := term.GetSize(int(os.Stdout.Fd()))
+	if err != nil || width <= 0 {
+		// Fallback to a reasonable default width if we can't determine terminal size
+		width = 120
+	}
 
 	if useGroupFormer {
-
 		msgColored := ""
 		switch msgType {
-		case logger.LogSuccess:
+		case passLvl:
 			msgColored = color.HiGreenString(msg)
-		case logger.LogWarning:
+		case warnLvl:
 			msgColored = color.HiYellowString(msg)
-		case logger.LogDebug:
+		case dbgLvl:
 			msgColored = color.HiMagentaString(msg)
-		case logger.LogNote:
+		case noteLvl:
 			msgColored = color.HiCyanString(msg)
-		case logger.LogInfo:
+		case infoLvl:
 			msgColored = color.HiBlueString(msg)
-		case logger.LogError:
+		case errLvl:
 			msgColored = color.HiRedString(msg)
 		}
-		msg = prefix + msgColored
+
+		// Create the base message with prefix and colored text
+		baseMsg := prefix + msgColored
+
 		format, _args := formGroups(args...)
+
 		if _args == nil {
-			if msgType == logger.LogError {
+			if msgType == errLvl {
 				l.boxBox(
 					"🛑 We Have Problem", msgColored+" "+format, "Red")
 				return
 			}
-			fmt.Fprint(l.writter, msg+" "+format)
+
+			// Format the message with right-aligned elapsed time
+			formattedMessage := formatWithRightAlignedTime(baseMsg+" "+format, elapsedTime, width)
+			fmt.Fprint(l.writter, formattedMessage)
 		} else {
-			if msgType == logger.LogError {
+			if msgType == errLvl {
 				l.boxBox(
 					"🛑 We Have Problem", fmt.Sprintf(msgColored+" "+format, _args...), "Red")
 				return
 			}
-			fmt.Fprintf(l.writter, msg+" "+format, _args...)
+
+			// Format the message with args and right-aligned elapsed time
+			fullMsg := fmt.Sprintf(baseMsg+" "+format, _args...)
+			formattedMessage := formatWithRightAlignedTime(fullMsg, elapsedTime, width)
+			fmt.Fprint(l.writter, formattedMessage)
 		}
 	} else {
-		fmt.Fprintf(l.writter, prefix+msg+"\n", args...)
+		// Format non-group messages with right-aligned time
+		fullMsg := fmt.Sprintf(prefix+msg+"\n", args...)
+		formattedMessage := formatWithRightAlignedTime(fullMsg, elapsedTime, width)
+		fmt.Fprint(l.writter, formattedMessage)
 	}
 }
 
-func getTime() string {
-	t := time.Now()
-	return color.HiBlackString(fmt.Sprintf("%02d:%02d:%02d ", t.Hour(), t.Minute(), t.Second()))
+func (l *GeneralLog) ExternalLogHandler(ctx context.Context, msgType logger.CustomExternalLogLevel, message string) {
+	if msgType == logger.LogDebug {
+		msgType = dbgLvl
+	} else if msgType == logger.LogError {
+		msgType = errLvl
+	} else if msgType == logger.LogInfo {
+		msgType = infoLvl
+	} else if msgType == logger.LogWarning {
+		msgType = warnLvl
+	} else if msgType == logger.LogSuccess {
+		msgType = passLvl
+	} else if msgType == logger.LogNote {
+		msgType = noteLvl
+	}
+	l.log(false, msgType, message)
 }
 
-func NewLogger(verbose int, out io.Writer) *GeneralLog {
-
-	var ve uint
-
-	if verbose < 0 {
-		ve = 9
+func (l *GeneralLog) ExternalLogHandlerf(ctx context.Context, msgType logger.CustomExternalLogLevel, format string, args ...interface{}) {
+	if msgType == logger.LogDebug {
+		msgType = dbgLvl
+	} else if msgType == logger.LogError {
+		msgType = errLvl
+	} else if msgType == logger.LogInfo {
+		msgType = infoLvl
+	} else if msgType == logger.LogWarning {
+		msgType = warnLvl
+	} else if msgType == logger.LogSuccess {
+		msgType = passLvl
+	} else if msgType == logger.LogNote {
+		msgType = noteLvl
 	}
-
-	return &GeneralLog{
-		writter: out,
-		level:   ve,
-		mu:      new(sync.Mutex),
-	}
+	l.log(false, msgType, format, args...)
 }
 
 func (l *GeneralLog) Print(ctx context.Context, msg string, args ...any) {
-	l.log(true, logger.LogInfo, msg, args...)
+	l.log(true, infoLvl, msg, args...)
 }
 
 func (l *GeneralLog) Success(ctx context.Context, msg string, args ...any) {
-	l.log(true, logger.LogSuccess, msg, args...)
+	l.log(true, passLvl, msg, args...)
 }
 
 func (l *GeneralLog) Note(ctx context.Context, msg string, args ...any) {
-	l.log(true, logger.LogNote, msg, args...)
+	l.log(true, noteLvl, msg, args...)
 }
 
 func (l *GeneralLog) Debug(ctx context.Context, msg string, args ...any) {
-	l.log(true, logger.LogDebug, msg, args...)
+	l.log(true, dbgLvl, msg, args...)
 }
 
 func (l *GeneralLog) Error(msg string, args ...any) {
-	l.log(true, logger.LogError, msg, args...)
+	l.log(true, errLvl, msg, args...)
 }
 
 func (l *GeneralLog) NewError(ctx context.Context, msg string, args ...any) error {
@@ -194,7 +254,7 @@ func (l *GeneralLog) NewError(ctx context.Context, msg string, args ...any) erro
 }
 
 func (l *GeneralLog) Warn(ctx context.Context, msg string, args ...any) {
-	l.log(true, logger.LogWarning, msg, args...)
+	l.log(true, warnLvl, msg, args...)
 }
 
 func (l *GeneralLog) Table(ctx context.Context, headers []string, data [][]string) {
@@ -275,4 +335,70 @@ func (l *GeneralLog) Box(ctx context.Context, title string, lines string) {
 	l.Debug(ctx, "PostUpdate Box", "title", len(title), "lines", len(lines))
 
 	l.boxBox(title, lines, "Green")
+}
+
+// formatWithRightAlignedTime formats a log message with the elapsed time right-aligned
+func formatWithRightAlignedTime(message string, elapsedTime string, width int) string {
+	// Strip ANSI color codes for length calculation
+	plainMessage := stripANSIColors(message)
+	plainTime := stripANSIColors(elapsedTime)
+
+	// Check if message has newline
+	endsWithNewline := strings.HasSuffix(plainMessage, "\n")
+
+	// Remove trailing newline for calculations
+	if endsWithNewline {
+		plainMessage = plainMessage[:len(plainMessage)-1]
+	}
+
+	// Get the actual message without newline for length calculation
+	messageWithoutNewline := message
+	if endsWithNewline && len(message) > 0 {
+		messageWithoutNewline = message[:len(message)-1]
+	}
+
+	// Calculate available space and padding needed
+	msgLen := len(plainMessage)
+	timeLen := len(plainTime)
+
+	// Ensure we have enough space, accounting for at least 2 spaces between message and time
+	padding := max(width-msgLen-timeLen, 2)
+
+	// Build the formatted line
+	var result strings.Builder
+	result.WriteString(messageWithoutNewline)
+	result.WriteString(strings.Repeat(" ", padding))
+	result.WriteString(elapsedTime)
+	if endsWithNewline {
+		result.WriteString("\n")
+	}
+
+	return result.String()
+}
+
+// stripANSIColors removes ANSI color codes from a string to get its visual length
+func stripANSIColors(s string) string {
+	// ANSI escape code regex: \x1b\[[0-9;]*m
+	var result strings.Builder
+	inEscapeSeq := false
+
+	for _, r := range s {
+		if inEscapeSeq {
+			if r == 'm' {
+				inEscapeSeq = false
+			}
+			continue
+		}
+
+		if r == '\x1b' {
+			inEscapeSeq = true
+			continue
+		}
+
+		if !inEscapeSeq {
+			result.WriteRune(r)
+		}
+	}
+
+	return result.String()
 }
