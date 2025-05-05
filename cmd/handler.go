@@ -26,6 +26,7 @@ func (k *KsctlCommand) CommandMapping() error {
 		c,
 		k.Version(),
 		k.SelfUpdate(),
+		k.ShellCompletion(),
 		cr,
 	)
 	cli.RegisterCommand(
