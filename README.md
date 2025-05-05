@@ -2,7 +2,7 @@
 
 # Ksctl CLI
 
-It utilizes [Ksctl](https://github.com/ksctl/ksctl) and builds on top to provide Command Line user experience
+This CLI utilizes the core components from [Ksctl](https://github.com/ksctl/ksctl) to provide a Command Line user experience
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/ksctl/cli)](https://goreportcard.com/report/github.com/ksctl/cli) [![](https://pkg.go.dev/badge/github.com/ksctl/cli.svg)](https://pkg.go.dev/github.com/ksctl/cli) [![OpenSSF Best Practices](https://www.bestpractices.dev/projects/7469/badge)](https://www.bestpractices.dev/projects/7469)
 
@@ -13,7 +13,7 @@ It utilizes [Ksctl](https://github.com/ksctl/ksctl) and builds on top to provide
 Repo | Description
 -|-
 [Ksctl](https://github.com/ksctl/ksctl) | It provides the core components aka the internals of ksctl features
-[Ksctl CLI](https://github.com/ksctl/cli) | It uses the ksctl repo to make a CLI tool
+[Ksctl CLI](https://github.com/ksctl/cli) | Builds on top of the core Ksctl repository to provide a CLI tool
 [Ksctl Docs](https://github.com/ksctl/docs) | It's for documentation purpose and to host the ksctl website
 
 ## Getting Started guide
